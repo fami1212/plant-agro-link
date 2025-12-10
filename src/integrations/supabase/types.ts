@@ -14,6 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
+      crops: {
+        Row: {
+          actual_harvest_date: string | null
+          actual_yield_kg: number | null
+          area_hectares: number | null
+          created_at: string
+          crop_type: Database["public"]["Enums"]["crop_type"]
+          expected_harvest_date: string | null
+          expected_yield_kg: number | null
+          field_id: string
+          id: string
+          metadata: Json | null
+          name: string
+          notes: string | null
+          sowing_date: string | null
+          status: Database["public"]["Enums"]["crop_status"]
+          updated_at: string
+          user_id: string
+          variety: string | null
+        }
+        Insert: {
+          actual_harvest_date?: string | null
+          actual_yield_kg?: number | null
+          area_hectares?: number | null
+          created_at?: string
+          crop_type?: Database["public"]["Enums"]["crop_type"]
+          expected_harvest_date?: string | null
+          expected_yield_kg?: number | null
+          field_id: string
+          id?: string
+          metadata?: Json | null
+          name: string
+          notes?: string | null
+          sowing_date?: string | null
+          status?: Database["public"]["Enums"]["crop_status"]
+          updated_at?: string
+          user_id: string
+          variety?: string | null
+        }
+        Update: {
+          actual_harvest_date?: string | null
+          actual_yield_kg?: number | null
+          area_hectares?: number | null
+          created_at?: string
+          crop_type?: Database["public"]["Enums"]["crop_type"]
+          expected_harvest_date?: string | null
+          expected_yield_kg?: number | null
+          field_id?: string
+          id?: string
+          metadata?: Json | null
+          name?: string
+          notes?: string | null
+          sowing_date?: string | null
+          status?: Database["public"]["Enums"]["crop_status"]
+          updated_at?: string
+          user_id?: string
+          variety?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crops_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "fields"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       device_data: {
         Row: {
           device_id: string
@@ -222,6 +290,23 @@ export type Database = {
     }
     Enums: {
       app_role: "agriculteur" | "veterinaire" | "acheteur" | "admin"
+      crop_status:
+        | "planifie"
+        | "seme"
+        | "en_croissance"
+        | "floraison"
+        | "maturation"
+        | "recolte"
+        | "termine"
+      crop_type:
+        | "cereale"
+        | "legumineuse"
+        | "oleagineux"
+        | "tubercule"
+        | "maraicher"
+        | "fruitier"
+        | "fourrage"
+        | "autre"
       field_status: "active" | "en_jachère" | "en_préparation" | "inactive"
       soil_type:
         | "argileux"
@@ -358,6 +443,25 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["agriculteur", "veterinaire", "acheteur", "admin"],
+      crop_status: [
+        "planifie",
+        "seme",
+        "en_croissance",
+        "floraison",
+        "maturation",
+        "recolte",
+        "termine",
+      ],
+      crop_type: [
+        "cereale",
+        "legumineuse",
+        "oleagineux",
+        "tubercule",
+        "maraicher",
+        "fruitier",
+        "fourrage",
+        "autre",
+      ],
       field_status: ["active", "en_jachère", "en_préparation", "inactive"],
       soil_type: [
         "argileux",
