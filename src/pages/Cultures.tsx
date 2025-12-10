@@ -4,13 +4,31 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Plus, Wheat, Calendar, TrendingUp, X } from "lucide-react";
+import { Plus, Wheat, Calendar, TrendingUp, X, Edit, Trash2, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { CropForm } from "@/components/crops/CropForm";
+import { HarvestRecordForm } from "@/components/crops/HarvestRecordForm";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
 type CropStatus = Database["public"]["Enums"]["crop_status"];
@@ -18,6 +36,7 @@ type CropStatus = Database["public"]["Enums"]["crop_status"];
 interface Crop {
   id: string;
   name: string;
+  field_id: string;
   crop_type: string;
   variety: string | null;
   status: CropStatus;
@@ -27,9 +46,17 @@ interface Crop {
   area_hectares: number | null;
   expected_yield_kg: number | null;
   actual_yield_kg: number | null;
+  notes: string | null;
   field: {
     name: string;
   } | null;
+}
+
+interface HarvestRecord {
+  id: string;
+  harvest_date: string;
+  quantity_kg: number;
+  quality_grade: string | null;
 }
 
 const statusConfig: Record<CropStatus, { label: string; color: string; progress: number }> = {
@@ -56,8 +83,13 @@ const cropTypeLabels: Record<string, string> = {
 export default function Cultures() {
   const { user } = useAuth();
   const [crops, setCrops] = useState<Crop[]>([]);
+  const [harvestRecords, setHarvestRecords] = useState<Record<string, HarvestRecord[]>>({});
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingCrop, setEditingCrop] = useState<Crop | null>(null);
+  const [deletingCrop, setDeletingCrop] = useState<Crop | null>(null);
+  const [harvestingCrop, setHarvestingCrop] = useState<Crop | null>(null);
+  const [viewingHarvests, setViewingHarvests] = useState<Crop | null>(null);
 
   const fetchCrops = async () => {
     if (!user) return;
@@ -67,6 +99,7 @@ export default function Cultures() {
       .select(`
         id,
         name,
+        field_id,
         crop_type,
         variety,
         status,
@@ -76,12 +109,31 @@ export default function Cultures() {
         area_hectares,
         expected_yield_kg,
         actual_yield_kg,
+        notes,
         field:fields(name)
       `)
       .order("created_at", { ascending: false });
 
     if (!error && data) {
       setCrops(data as Crop[]);
+      // Fetch harvest records for all crops
+      const cropIds = data.map((c) => c.id);
+      if (cropIds.length > 0) {
+        const { data: harvests } = await supabase
+          .from("harvest_records")
+          .select("id, crop_id, harvest_date, quantity_kg, quality_grade")
+          .in("crop_id", cropIds)
+          .order("harvest_date", { ascending: false });
+
+        if (harvests) {
+          const grouped: Record<string, HarvestRecord[]> = {};
+          harvests.forEach((h: any) => {
+            if (!grouped[h.crop_id]) grouped[h.crop_id] = [];
+            grouped[h.crop_id].push(h);
+          });
+          setHarvestRecords(grouped);
+        }
+      }
     }
     setLoading(false);
   };
@@ -89,6 +141,20 @@ export default function Cultures() {
   useEffect(() => {
     fetchCrops();
   }, [user]);
+
+  const handleDelete = async () => {
+    if (!deletingCrop) return;
+    try {
+      const { error } = await supabase.from("crops").delete().eq("id", deletingCrop.id);
+      if (error) throw error;
+      toast.success("Culture supprimée");
+      fetchCrops();
+    } catch (error: any) {
+      toast.error(error.message || "Erreur lors de la suppression");
+    } finally {
+      setDeletingCrop(null);
+    }
+  };
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return null;
@@ -108,6 +174,11 @@ export default function Cultures() {
     return `${(kg / 1000).toFixed(1)} t`;
   };
 
+  const getTotalHarvest = (cropId: string) => {
+    const records = harvestRecords[cropId] || [];
+    return records.reduce((sum, r) => sum + r.quantity_kg, 0);
+  };
+
   const activeCrops = crops.filter((c) => c.status !== "termine");
 
   return (
@@ -119,7 +190,10 @@ export default function Cultures() {
           <Button
             variant="hero"
             size="icon"
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => {
+              setShowForm(!showForm);
+              setEditingCrop(null);
+            }}
           >
             {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
           </Button>
@@ -127,16 +201,23 @@ export default function Cultures() {
       />
 
       <div className="px-4 space-y-4 pb-6">
-        {showForm && (
+        {(showForm || editingCrop) && (
           <Card className="animate-fade-in">
             <CardContent className="p-4">
-              <h3 className="font-semibold text-foreground mb-4">Nouvelle culture</h3>
+              <h3 className="font-semibold text-foreground mb-4">
+                {editingCrop ? "Modifier la culture" : "Nouvelle culture"}
+              </h3>
               <CropForm
+                crop={editingCrop || undefined}
                 onSuccess={() => {
                   setShowForm(false);
+                  setEditingCrop(null);
                   fetchCrops();
                 }}
-                onCancel={() => setShowForm(false)}
+                onCancel={() => {
+                  setShowForm(false);
+                  setEditingCrop(null);
+                }}
               />
             </CardContent>
           </Card>
@@ -173,6 +254,9 @@ export default function Cultures() {
           <div className="space-y-3">
             {crops.map((crop, index) => {
               const config = statusConfig[crop.status];
+              const totalHarvest = getTotalHarvest(crop.id);
+              const harvestCount = (harvestRecords[crop.id] || []).length;
+              
               return (
                 <Card
                   key={crop.id}
@@ -228,17 +312,58 @@ export default function Cultures() {
                               : "Non planifié"}
                           </span>
                         </div>
-                        {(crop.actual_yield_kg || crop.expected_yield_kg) && (
+                        {(totalHarvest > 0 || crop.actual_yield_kg || crop.expected_yield_kg) && (
                           <div className="flex items-center gap-1.5 text-success font-medium">
                             <TrendingUp className="w-4 h-4" />
                             <span>
-                              {formatYield(
-                                crop.actual_yield_kg || crop.expected_yield_kg,
-                                crop.area_hectares
-                              )}
+                              {totalHarvest > 0
+                                ? `${(totalHarvest / 1000).toFixed(1)} t`
+                                : formatYield(
+                                    crop.actual_yield_kg || crop.expected_yield_kg,
+                                    crop.area_hectares
+                                  )}
                             </span>
                           </div>
                         )}
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-2 pt-2 border-t border-border">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => setHarvestingCrop(crop)}
+                        >
+                          <Package className="w-4 h-4 mr-1" />
+                          Récolte
+                        </Button>
+                        {harvestCount > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setViewingHarvests(crop)}
+                          >
+                            {harvestCount} entrée{harvestCount > 1 ? "s" : ""}
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setEditingCrop(crop);
+                            setShowForm(false);
+                          }}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setDeletingCrop(crop)}
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -248,6 +373,77 @@ export default function Cultures() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deletingCrop} onOpenChange={() => setDeletingCrop(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cette culture ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. La culture "{deletingCrop?.name}" et tout son historique
+              de récoltes seront supprimés définitivement.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Harvest Form Dialog */}
+      <Dialog open={!!harvestingCrop} onOpenChange={() => setHarvestingCrop(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enregistrer une récolte - {harvestingCrop?.name}</DialogTitle>
+          </DialogHeader>
+          {harvestingCrop && (
+            <HarvestRecordForm
+              cropId={harvestingCrop.id}
+              onSuccess={() => {
+                setHarvestingCrop(null);
+                fetchCrops();
+              }}
+              onCancel={() => setHarvestingCrop(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Harvest History Dialog */}
+      <Dialog open={!!viewingHarvests} onOpenChange={() => setViewingHarvests(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Historique des récoltes - {viewingHarvests?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {viewingHarvests && (harvestRecords[viewingHarvests.id] || []).map((record) => (
+              <div
+                key={record.id}
+                className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+              >
+                <div>
+                  <p className="font-medium text-foreground">{formatDate(record.harvest_date)}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Qualité: {record.quality_grade || "Non spécifié"}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-semibold text-success">{record.quantity_kg} kg</p>
+                  <p className="text-xs text-muted-foreground">
+                    {(record.quantity_kg / 1000).toFixed(2)} t
+                  </p>
+                </div>
+              </div>
+            ))}
+            {viewingHarvests && (harvestRecords[viewingHarvests.id] || []).length === 0 && (
+              <p className="text-center text-muted-foreground py-4">Aucune récolte enregistrée</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

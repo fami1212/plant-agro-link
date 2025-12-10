@@ -41,26 +41,41 @@ interface Field {
   name: string;
 }
 
+interface Crop {
+  id: string;
+  name: string;
+  field_id: string;
+  crop_type: string;
+  variety: string | null;
+  sowing_date: string | null;
+  expected_harvest_date: string | null;
+  status: string;
+  area_hectares: number | null;
+  expected_yield_kg: number | null;
+  notes: string | null;
+}
+
 interface CropFormProps {
+  crop?: Crop;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-export function CropForm({ onSuccess, onCancel }: CropFormProps) {
+export function CropForm({ crop, onSuccess, onCancel }: CropFormProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [fields, setFields] = useState<Field[]>([]);
   const [formData, setFormData] = useState({
-    name: "",
-    field_id: "",
-    crop_type: "cereale" as const,
-    variety: "",
-    sowing_date: "",
-    expected_harvest_date: "",
-    status: "planifie" as const,
-    area_hectares: "",
-    expected_yield_kg: "",
-    notes: "",
+    name: crop?.name || "",
+    field_id: crop?.field_id || "",
+    crop_type: (crop?.crop_type || "cereale") as "cereale" | "legumineuse" | "oleagineux" | "tubercule" | "maraicher" | "fruitier" | "fourrage" | "autre",
+    variety: crop?.variety || "",
+    sowing_date: crop?.sowing_date || "",
+    expected_harvest_date: crop?.expected_harvest_date || "",
+    status: (crop?.status || "planifie") as "planifie" | "seme" | "en_croissance" | "floraison" | "maturation" | "recolte" | "termine",
+    area_hectares: crop?.area_hectares?.toString() || "",
+    expected_yield_kg: crop?.expected_yield_kg?.toString() || "",
+    notes: crop?.notes || "",
   });
 
   useEffect(() => {
@@ -91,7 +106,7 @@ export function CropForm({ onSuccess, onCancel }: CropFormProps) {
 
     setLoading(true);
     try {
-      const { error } = await supabase.from("crops").insert({
+      const payload = {
         user_id: user.id,
         field_id: formData.field_id,
         name: formData.name,
@@ -103,14 +118,21 @@ export function CropForm({ onSuccess, onCancel }: CropFormProps) {
         area_hectares: formData.area_hectares ? parseFloat(formData.area_hectares) : null,
         expected_yield_kg: formData.expected_yield_kg ? parseFloat(formData.expected_yield_kg) : null,
         notes: formData.notes || null,
-      });
+      };
 
-      if (error) throw error;
+      if (crop) {
+        const { error } = await supabase.from("crops").update(payload).eq("id", crop.id);
+        if (error) throw error;
+        toast.success("Culture modifiée avec succès");
+      } else {
+        const { error } = await supabase.from("crops").insert(payload);
+        if (error) throw error;
+        toast.success("Culture ajoutée avec succès");
+      }
 
-      toast.success("Culture ajoutée avec succès");
       onSuccess?.();
     } catch (error: any) {
-      toast.error(error.message || "Erreur lors de l'ajout");
+      toast.error(error.message || "Erreur lors de l'enregistrement");
     } finally {
       setLoading(false);
     }
@@ -261,7 +283,7 @@ export function CropForm({ onSuccess, onCancel }: CropFormProps) {
         )}
         <Button type="submit" disabled={loading} className="flex-1">
           {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-          Ajouter la culture
+          {crop ? "Modifier" : "Ajouter"}
         </Button>
       </div>
     </form>
