@@ -165,6 +165,47 @@ export type Database = {
         }
         Relationships: []
       }
+      harvest_records: {
+        Row: {
+          created_at: string
+          crop_id: string
+          harvest_date: string
+          id: string
+          notes: string | null
+          quality_grade: string | null
+          quantity_kg: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          crop_id: string
+          harvest_date: string
+          id?: string
+          notes?: string | null
+          quality_grade?: string | null
+          quantity_kg: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          crop_id?: string
+          harvest_date?: string
+          id?: string
+          notes?: string | null
+          quality_grade?: string | null
+          quantity_kg?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "harvest_records_crop_id_fkey"
+            columns: ["crop_id"]
+            isOneToOne: false
+            referencedRelation: "crops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       iot_devices: {
         Row: {
           created_at: string
@@ -211,6 +252,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      livestock: {
+        Row: {
+          acquisition_date: string | null
+          acquisition_price: number | null
+          birth_date: string | null
+          breed: string | null
+          created_at: string
+          health_status: Database["public"]["Enums"]["livestock_health_status"]
+          id: string
+          identifier: string
+          metadata: Json | null
+          notes: string | null
+          species: Database["public"]["Enums"]["livestock_species"]
+          updated_at: string
+          user_id: string
+          weight_kg: number | null
+        }
+        Insert: {
+          acquisition_date?: string | null
+          acquisition_price?: number | null
+          birth_date?: string | null
+          breed?: string | null
+          created_at?: string
+          health_status?: Database["public"]["Enums"]["livestock_health_status"]
+          id?: string
+          identifier: string
+          metadata?: Json | null
+          notes?: string | null
+          species?: Database["public"]["Enums"]["livestock_species"]
+          updated_at?: string
+          user_id: string
+          weight_kg?: number | null
+        }
+        Update: {
+          acquisition_date?: string | null
+          acquisition_price?: number | null
+          birth_date?: string | null
+          breed?: string | null
+          created_at?: string
+          health_status?: Database["public"]["Enums"]["livestock_health_status"]
+          id?: string
+          identifier?: string
+          metadata?: Json | null
+          notes?: string | null
+          species?: Database["public"]["Enums"]["livestock_species"]
+          updated_at?: string
+          user_id?: string
+          weight_kg?: number | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -275,6 +367,56 @@ export type Database = {
         }
         Relationships: []
       }
+      veterinary_records: {
+        Row: {
+          cost: number | null
+          created_at: string
+          description: string | null
+          id: string
+          livestock_id: string
+          next_appointment: string | null
+          record_type: string
+          recorded_at: string
+          treatment: string | null
+          user_id: string
+          veterinarian_name: string | null
+        }
+        Insert: {
+          cost?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          livestock_id: string
+          next_appointment?: string | null
+          record_type: string
+          recorded_at?: string
+          treatment?: string | null
+          user_id: string
+          veterinarian_name?: string | null
+        }
+        Update: {
+          cost?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          livestock_id?: string
+          next_appointment?: string | null
+          record_type?: string
+          recorded_at?: string
+          treatment?: string | null
+          user_id?: string
+          veterinarian_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "veterinary_records_livestock_id_fkey"
+            columns: ["livestock_id"]
+            isOneToOne: false
+            referencedRelation: "livestock"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -308,6 +450,20 @@ export type Database = {
         | "fourrage"
         | "autre"
       field_status: "active" | "en_jachère" | "en_préparation" | "inactive"
+      livestock_health_status:
+        | "sain"
+        | "malade"
+        | "traitement"
+        | "quarantaine"
+        | "decede"
+      livestock_species:
+        | "bovin"
+        | "ovin"
+        | "caprin"
+        | "volaille"
+        | "porcin"
+        | "equin"
+        | "autre"
       soil_type:
         | "argileux"
         | "sableux"
@@ -463,6 +619,22 @@ export const Constants = {
         "autre",
       ],
       field_status: ["active", "en_jachère", "en_préparation", "inactive"],
+      livestock_health_status: [
+        "sain",
+        "malade",
+        "traitement",
+        "quarantaine",
+        "decede",
+      ],
+      livestock_species: [
+        "bovin",
+        "ovin",
+        "caprin",
+        "volaille",
+        "porcin",
+        "equin",
+        "autre",
+      ],
       soil_type: [
         "argileux",
         "sableux",
