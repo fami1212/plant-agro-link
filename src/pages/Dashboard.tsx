@@ -2,37 +2,48 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
-import { AlertBanner } from "@/components/dashboard/AlertBanner";
+import { HarvestChart } from "@/components/dashboard/HarvestChart";
+import { LivestockChart } from "@/components/dashboard/LivestockChart";
+import { AlertsList } from "@/components/dashboard/AlertsList";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   MapPin,
   Wheat,
   PawPrint,
-  Droplets,
   Plus,
   CloudSun,
   TrendingUp,
   Bell,
-  Thermometer,
+  Droplets,
   Wind,
+  Scale,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { profile } = useAuth();
+  const { stats, harvestTrend, livestockEvolution, alerts, isLoading } = useDashboardData();
+
+  const userName = profile?.full_name?.split(" ")[0] || "Agriculteur";
 
   return (
     <AppLayout>
       <div className="gradient-earth min-h-screen">
         {/* Header */}
         <PageHeader
-          title="Bonjour, Amadou 👋"
+          title={`Bonjour, ${userName} 👋`}
           subtitle="Votre exploitation est en bonne santé"
           action={
             <Button variant="ghost" size="icon-sm" className="relative">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
+              {(alerts?.length || 0) > 0 && (
+                <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
+              )}
             </Button>
           }
         />
@@ -67,70 +78,59 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          {/* Alert */}
-          <AlertBanner
-            title="Alerte irrigation"
-            message="La parcelle 'Mil Nord' nécessite une irrigation dans les 24h"
-            type="warning"
-          />
-
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard
-              icon={<MapPin className="w-6 h-6" />}
-              label="Parcelles"
-              value={12}
-              iconBg="primary"
-            />
-            <StatCard
-              icon={<Wheat className="w-6 h-6" />}
-              label="Cultures actives"
-              value={8}
-              iconBg="accent"
-            />
-            <StatCard
-              icon={<PawPrint className="w-6 h-6" />}
-              label="Têtes de bétail"
-              value={45}
-              iconBg="secondary"
-            />
-            <StatCard
-              icon={<TrendingUp className="w-6 h-6" />}
-              label="Rendement"
-              value="+15%"
-              trend={{ value: 15, positive: true }}
-              iconBg="success"
-            />
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-2 gap-3">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-24 rounded-xl" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <StatCard
+                icon={<MapPin className="w-6 h-6" />}
+                label="Parcelles"
+                value={stats?.totalFields || 0}
+                subtitle={`${stats?.totalArea?.toFixed(1) || 0} ha`}
+                iconBg="primary"
+              />
+              <StatCard
+                icon={<Wheat className="w-6 h-6" />}
+                label="Cultures actives"
+                value={stats?.activeCrops || 0}
+                iconBg="accent"
+              />
+              <StatCard
+                icon={<PawPrint className="w-6 h-6" />}
+                label="Têtes de bétail"
+                value={stats?.totalLivestock || 0}
+                subtitle={stats?.healthAlerts ? `${stats.healthAlerts} alertes` : undefined}
+                iconBg="secondary"
+              />
+              <StatCard
+                icon={<Scale className="w-6 h-6" />}
+                label="Total récolté"
+                value={`${((stats?.totalHarvested || 0) / 1000).toFixed(1)}t`}
+                iconBg="success"
+              />
+            </div>
+          )}
 
-          {/* IoT Sensors Quick View */}
-          <Card variant="default">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Thermometer className="w-5 h-5 text-primary" />
-                Capteurs en temps réel
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="text-center p-3 rounded-xl bg-muted/50">
-                  <p className="text-xs text-muted-foreground">Sol</p>
-                  <p className="text-lg font-bold text-foreground">38%</p>
-                  <p className="text-xs text-warning">Bas</p>
-                </div>
-                <div className="text-center p-3 rounded-xl bg-muted/50">
-                  <p className="text-xs text-muted-foreground">Temp.</p>
-                  <p className="text-lg font-bold text-foreground">32°C</p>
-                  <p className="text-xs text-success">Normal</p>
-                </div>
-                <div className="text-center p-3 rounded-xl bg-muted/50">
-                  <p className="text-xs text-muted-foreground">pH</p>
-                  <p className="text-lg font-bold text-foreground">6.8</p>
-                  <p className="text-xs text-success">Optimal</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Charts */}
+          {isLoading ? (
+            <>
+              <Skeleton className="h-[250px] rounded-xl" />
+              <Skeleton className="h-[250px] rounded-xl" />
+            </>
+          ) : (
+            <>
+              <HarvestChart data={harvestTrend || []} />
+              <LivestockChart data={livestockEvolution || []} />
+            </>
+          )}
+
+          {/* Alerts */}
+          <AlertsList alerts={alerts || []} />
 
           {/* Quick Actions */}
           <div className="space-y-3">
@@ -141,20 +141,20 @@ export default function Dashboard() {
               icon={<Plus className="w-6 h-6" />}
               title="Ajouter une parcelle"
               description="Créer une nouvelle parcelle"
-              onClick={() => navigate("/parcelles/new")}
+              onClick={() => navigate("/parcelles")}
               variant="primary"
             />
             <QuickActionCard
               icon={<Wheat className="w-6 h-6" />}
               title="Enregistrer une récolte"
               description="Saisir les données de récolte"
-              onClick={() => navigate("/cultures/harvest")}
+              onClick={() => navigate("/cultures")}
             />
             <QuickActionCard
               icon={<PawPrint className="w-6 h-6" />}
               title="Suivi santé animal"
               description="Journal des soins vétérinaires"
-              onClick={() => navigate("/betail/health")}
+              onClick={() => navigate("/betail")}
             />
           </div>
 
@@ -168,12 +168,9 @@ export default function Dashboard() {
                 <div className="flex-1">
                   <p className="font-semibold text-foreground">Marketplace</p>
                   <p className="text-sm text-muted-foreground">
-                    3 nouvelles demandes pour vos produits
+                    Vendez vos produits agricoles
                   </p>
                 </div>
-                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-accent text-accent-foreground text-sm font-bold">
-                  3
-                </span>
               </div>
             </CardContent>
           </Card>
