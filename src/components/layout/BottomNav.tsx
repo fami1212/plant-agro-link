@@ -36,6 +36,7 @@ const allNavItems = [
   { icon: MapPin, label: "Parcelles", path: "/parcelles", roles: ['agriculteur', 'admin'] },
   { icon: Wheat, label: "Cultures", path: "/cultures", roles: ['agriculteur', 'admin'] },
   { icon: PawPrint, label: "Bétail", path: "/betail", roles: ['agriculteur', 'veterinaire', 'admin'] },
+  { icon: TrendingUp, label: "Investir", path: "/investisseur", roles: ['investisseur', 'admin'] },
   { icon: ShoppingBag, label: "Marché", path: "/marketplace", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
 ];
 
