@@ -15,11 +15,11 @@ interface StatCardProps {
 }
 
 const iconBgColors = {
-  primary: "bg-primary/15 text-primary",
-  accent: "bg-accent/15 text-accent",
-  secondary: "bg-secondary/15 text-secondary",
-  success: "bg-success/15 text-success",
-  warning: "bg-warning/15 text-warning",
+  primary: "bg-primary/10 text-primary",
+  accent: "bg-accent/10 text-accent",
+  secondary: "bg-secondary/10 text-secondary-foreground",
+  success: "bg-success/10 text-success",
+  warning: "bg-warning/10 text-warning",
 };
 
 export function StatCard({
@@ -34,7 +34,7 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 p-4 rounded-xl bg-card border border-border shadow-soft",
+        "flex items-center gap-3 p-4 rounded-xl bg-card border border-border/60 shadow-soft transition-all hover:shadow-elevated",
         className
       )}
     >
