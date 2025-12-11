@@ -304,6 +304,237 @@ export type Database = {
         }
         Relationships: []
       }
+      marketplace_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_favorites_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_listings: {
+        Row: {
+          available_from: string | null
+          available_until: string | null
+          category: string | null
+          created_at: string
+          crop_id: string | null
+          delivery_available: boolean | null
+          delivery_regions: string[] | null
+          description: string | null
+          field_id: string | null
+          harvest_record_id: string | null
+          id: string
+          images: string[] | null
+          input_category: Database["public"]["Enums"]["input_category"] | null
+          is_verified: boolean | null
+          listing_type: Database["public"]["Enums"]["listing_type"]
+          livestock_id: string | null
+          location: string | null
+          location_gps: unknown
+          metadata: Json | null
+          price: number | null
+          price_negotiable: boolean | null
+          quantity: string | null
+          quantity_kg: number | null
+          service_category:
+            | Database["public"]["Enums"]["service_category"]
+            | null
+          status: Database["public"]["Enums"]["listing_status"]
+          title: string
+          traceability_qr: string | null
+          unit: string | null
+          updated_at: string
+          user_id: string
+          views_count: number | null
+        }
+        Insert: {
+          available_from?: string | null
+          available_until?: string | null
+          category?: string | null
+          created_at?: string
+          crop_id?: string | null
+          delivery_available?: boolean | null
+          delivery_regions?: string[] | null
+          description?: string | null
+          field_id?: string | null
+          harvest_record_id?: string | null
+          id?: string
+          images?: string[] | null
+          input_category?: Database["public"]["Enums"]["input_category"] | null
+          is_verified?: boolean | null
+          listing_type?: Database["public"]["Enums"]["listing_type"]
+          livestock_id?: string | null
+          location?: string | null
+          location_gps?: unknown
+          metadata?: Json | null
+          price?: number | null
+          price_negotiable?: boolean | null
+          quantity?: string | null
+          quantity_kg?: number | null
+          service_category?:
+            | Database["public"]["Enums"]["service_category"]
+            | null
+          status?: Database["public"]["Enums"]["listing_status"]
+          title: string
+          traceability_qr?: string | null
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+          views_count?: number | null
+        }
+        Update: {
+          available_from?: string | null
+          available_until?: string | null
+          category?: string | null
+          created_at?: string
+          crop_id?: string | null
+          delivery_available?: boolean | null
+          delivery_regions?: string[] | null
+          description?: string | null
+          field_id?: string | null
+          harvest_record_id?: string | null
+          id?: string
+          images?: string[] | null
+          input_category?: Database["public"]["Enums"]["input_category"] | null
+          is_verified?: boolean | null
+          listing_type?: Database["public"]["Enums"]["listing_type"]
+          livestock_id?: string | null
+          location?: string | null
+          location_gps?: unknown
+          metadata?: Json | null
+          price?: number | null
+          price_negotiable?: boolean | null
+          quantity?: string | null
+          quantity_kg?: number | null
+          service_category?:
+            | Database["public"]["Enums"]["service_category"]
+            | null
+          status?: Database["public"]["Enums"]["listing_status"]
+          title?: string
+          traceability_qr?: string | null
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_listings_crop_id_fkey"
+            columns: ["crop_id"]
+            isOneToOne: false
+            referencedRelation: "crops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "fields"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_harvest_record_id_fkey"
+            columns: ["harvest_record_id"]
+            isOneToOne: false
+            referencedRelation: "harvest_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_livestock_id_fkey"
+            columns: ["livestock_id"]
+            isOneToOne: false
+            referencedRelation: "livestock"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_offers: {
+        Row: {
+          buyer_id: string
+          counter_offer_message: string | null
+          counter_offer_price: number | null
+          created_at: string
+          delivery_date: string | null
+          expires_at: string | null
+          id: string
+          listing_id: string
+          message: string | null
+          payment_method: string | null
+          proposed_price: number
+          proposed_quantity: string | null
+          responded_at: string | null
+          seller_id: string
+          status: Database["public"]["Enums"]["offer_status"]
+          updated_at: string
+        }
+        Insert: {
+          buyer_id: string
+          counter_offer_message?: string | null
+          counter_offer_price?: number | null
+          created_at?: string
+          delivery_date?: string | null
+          expires_at?: string | null
+          id?: string
+          listing_id: string
+          message?: string | null
+          payment_method?: string | null
+          proposed_price: number
+          proposed_quantity?: string | null
+          responded_at?: string | null
+          seller_id: string
+          status?: Database["public"]["Enums"]["offer_status"]
+          updated_at?: string
+        }
+        Update: {
+          buyer_id?: string
+          counter_offer_message?: string | null
+          counter_offer_price?: number | null
+          created_at?: string
+          delivery_date?: string | null
+          expires_at?: string | null
+          id?: string
+          listing_id?: string
+          message?: string | null
+          payment_method?: string | null
+          proposed_price?: number
+          proposed_quantity?: string | null
+          responded_at?: string | null
+          seller_id?: string
+          status?: Database["public"]["Enums"]["offer_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_offers_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           address: string | null
@@ -343,6 +574,140 @@ export type Database = {
           preferred_language?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      service_bookings: {
+        Row: {
+          client_id: string
+          created_at: string
+          description: string | null
+          duration_hours: number | null
+          id: string
+          notes: string | null
+          price: number | null
+          provider_id: string
+          rating: number | null
+          review: string | null
+          scheduled_date: string
+          scheduled_time: string | null
+          service_type: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          description?: string | null
+          duration_hours?: number | null
+          id?: string
+          notes?: string | null
+          price?: number | null
+          provider_id: string
+          rating?: number | null
+          review?: string | null
+          scheduled_date: string
+          scheduled_time?: string | null
+          service_type: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          duration_hours?: number | null
+          id?: string
+          notes?: string | null
+          price?: number | null
+          provider_id?: string
+          rating?: number | null
+          review?: string | null
+          scheduled_date?: string
+          scheduled_time?: string | null
+          service_type?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_bookings_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "service_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_providers: {
+        Row: {
+          availability: Json | null
+          business_name: string
+          certifications: string[] | null
+          created_at: string
+          description: string | null
+          hourly_rate: number | null
+          id: string
+          is_active: boolean | null
+          is_verified: boolean | null
+          location: string | null
+          location_gps: unknown
+          metadata: Json | null
+          phone: string | null
+          rating: number | null
+          reviews_count: number | null
+          service_areas: string[] | null
+          service_category: Database["public"]["Enums"]["service_category"]
+          specializations: string[] | null
+          updated_at: string
+          user_id: string
+          whatsapp: string | null
+        }
+        Insert: {
+          availability?: Json | null
+          business_name: string
+          certifications?: string[] | null
+          created_at?: string
+          description?: string | null
+          hourly_rate?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          location?: string | null
+          location_gps?: unknown
+          metadata?: Json | null
+          phone?: string | null
+          rating?: number | null
+          reviews_count?: number | null
+          service_areas?: string[] | null
+          service_category: Database["public"]["Enums"]["service_category"]
+          specializations?: string[] | null
+          updated_at?: string
+          user_id: string
+          whatsapp?: string | null
+        }
+        Update: {
+          availability?: Json | null
+          business_name?: string
+          certifications?: string[] | null
+          created_at?: string
+          description?: string | null
+          hourly_rate?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          location?: string | null
+          location_gps?: unknown
+          metadata?: Json | null
+          phone?: string | null
+          rating?: number | null
+          reviews_count?: number | null
+          service_areas?: string[] | null
+          service_category?: Database["public"]["Enums"]["service_category"]
+          specializations?: string[] | null
+          updated_at?: string
+          user_id?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -450,6 +815,22 @@ export type Database = {
         | "fourrage"
         | "autre"
       field_status: "active" | "en_jachère" | "en_préparation" | "inactive"
+      input_category:
+        | "engrais"
+        | "semences"
+        | "materiel"
+        | "irrigation"
+        | "phytosanitaire"
+        | "autre"
+      listing_status:
+        | "brouillon"
+        | "publie"
+        | "consulte"
+        | "negociation"
+        | "reserve"
+        | "vendu"
+        | "archive"
+      listing_type: "produit" | "service" | "intrant" | "investissement"
       livestock_health_status:
         | "sain"
         | "malade"
@@ -463,6 +844,19 @@ export type Database = {
         | "volaille"
         | "porcin"
         | "equin"
+        | "autre"
+      offer_status:
+        | "en_attente"
+        | "acceptee"
+        | "refusee"
+        | "contre_offre"
+        | "expiree"
+      service_category:
+        | "veterinaire"
+        | "technicien_iot"
+        | "transporteur"
+        | "conseiller"
+        | "cooperative"
         | "autre"
       soil_type:
         | "argileux"
@@ -619,6 +1013,24 @@ export const Constants = {
         "autre",
       ],
       field_status: ["active", "en_jachère", "en_préparation", "inactive"],
+      input_category: [
+        "engrais",
+        "semences",
+        "materiel",
+        "irrigation",
+        "phytosanitaire",
+        "autre",
+      ],
+      listing_status: [
+        "brouillon",
+        "publie",
+        "consulte",
+        "negociation",
+        "reserve",
+        "vendu",
+        "archive",
+      ],
+      listing_type: ["produit", "service", "intrant", "investissement"],
       livestock_health_status: [
         "sain",
         "malade",
@@ -633,6 +1045,21 @@ export const Constants = {
         "volaille",
         "porcin",
         "equin",
+        "autre",
+      ],
+      offer_status: [
+        "en_attente",
+        "acceptee",
+        "refusee",
+        "contre_offre",
+        "expiree",
+      ],
+      service_category: [
+        "veterinaire",
+        "technicien_iot",
+        "transporteur",
+        "conseiller",
+        "cooperative",
         "autre",
       ],
       soil_type: [
