@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
-import { Tractor, Stethoscope, ShoppingCart, Shield } from "lucide-react";
+import { Tractor, Stethoscope, ShoppingCart, TrendingUp } from "lucide-react";
 
-type AppRole = 'agriculteur' | 'veterinaire' | 'acheteur' | 'admin';
+type AppRole = 'agriculteur' | 'veterinaire' | 'acheteur' | 'investisseur' | 'admin';
 
 interface RoleSelectorProps {
   value: AppRole;
@@ -12,11 +12,12 @@ const roles: { value: AppRole; label: string; icon: React.ElementType; descripti
   { value: 'agriculteur', label: 'Agriculteur', icon: Tractor, description: 'Gérer parcelles et cultures' },
   { value: 'veterinaire', label: 'Vétérinaire', icon: Stethoscope, description: 'Soins animaux' },
   { value: 'acheteur', label: 'Acheteur', icon: ShoppingCart, description: 'Acheter des produits' },
+  { value: 'investisseur', label: 'Investisseur', icon: TrendingUp, description: 'Financer des cultures' },
 ];
 
 export function RoleSelector({ value, onChange }: RoleSelectorProps) {
   return (
-    <div className="grid grid-cols-1 gap-2">
+    <div className="grid grid-cols-2 gap-2">
       {roles.map((role) => {
         const Icon = role.icon;
         const isSelected = value === role.value;
@@ -27,7 +28,7 @@ export function RoleSelector({ value, onChange }: RoleSelectorProps) {
             type="button"
             onClick={() => onChange(role.value)}
             className={cn(
-              "flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left",
+              "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all text-center",
               isSelected
                 ? "border-primary bg-primary/10 shadow-sm"
                 : "border-border bg-card hover:border-primary/50"
@@ -39,7 +40,7 @@ export function RoleSelector({ value, onChange }: RoleSelectorProps) {
             )}>
               <Icon className="w-5 h-5" />
             </div>
-            <div className="flex-1">
+            <div>
               <p className={cn(
                 "font-semibold text-sm",
                 isSelected ? "text-primary" : "text-foreground"

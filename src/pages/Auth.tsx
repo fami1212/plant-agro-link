@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { RoleSelector } from "@/components/auth/RoleSelector";
 
 type AuthMode = "login" | "register";
-type AppRole = 'agriculteur' | 'veterinaire' | 'acheteur' | 'admin';
+type AppRole = 'agriculteur' | 'veterinaire' | 'acheteur' | 'investisseur' | 'admin';
 
 export default function Auth() {
   const navigate = useNavigate();
