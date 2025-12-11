@@ -59,9 +59,9 @@ export function BottomNav() {
     item.roles.some(role => roles.includes(role as any)) || roles.length === 0
   );
 
-  // Filter menu items based on user roles
+  // Filter menu items based on user roles (Settings is always visible for authenticated users)
   const menuItems = allMenuItems.filter(item =>
-    item.roles.some(role => roles.includes(role as any))
+    item.roles.some(role => roles.includes(role as any)) || item.path === '/settings'
   );
 
   const handleSignOut = async () => {
