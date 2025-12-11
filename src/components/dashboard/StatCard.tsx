@@ -5,6 +5,7 @@ interface StatCardProps {
   icon: ReactNode;
   label: string;
   value: string | number;
+  subtitle?: string;
   trend?: {
     value: number;
     positive: boolean;
@@ -25,6 +26,7 @@ export function StatCard({
   icon,
   label,
   value,
+  subtitle,
   trend,
   iconBg = "primary",
   className,
@@ -60,6 +62,7 @@ export function StatCard({
             </span>
           )}
         </div>
+        {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
       </div>
     </div>
   );
