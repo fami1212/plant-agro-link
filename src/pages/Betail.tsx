@@ -7,6 +7,7 @@ import { Plus, Heart, Syringe, AlertCircle, X, Edit, Trash2, Stethoscope, Scale,
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useRoleAccess } from "@/hooks/useRoleAccess";
 import { LivestockForm } from "@/components/livestock/LivestockForm";
 import { VetRecordForm } from "@/components/livestock/VetRecordForm";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -46,6 +47,7 @@ interface Livestock {
   acquisition_date: string | null;
   acquisition_price: number | null;
   notes: string | null;
+  user_id: string;
 }
 
 interface VetRecord {
@@ -90,6 +92,7 @@ const healthStatusOrder: LivestockHealthStatus[] = ['malade', 'traitement', 'qua
 
 export default function Betail() {
   const { user } = useAuth();
+  const { isVeterinaire, isAgriculteur, isAdmin } = useRoleAccess();
   const [livestock, setLivestock] = useState<Livestock[]>([]);
   const [vetRecords, setVetRecords] = useState<Record<string, VetRecord[]>>({});
   const [loading, setLoading] = useState(true);
@@ -100,6 +103,14 @@ export default function Betail() {
   const [viewingRecords, setViewingRecords] = useState<Livestock | null>(null);
   const [updatingWeight, setUpdatingWeight] = useState<Livestock | null>(null);
   const [newWeight, setNewWeight] = useState("");
+
+  // Vétérinaires can see all livestock, others only their own
+  const canManageAnimal = (animal: Livestock) => {
+    return isAdmin || animal.user_id === user?.id;
+  };
+
+  const canAddAnimal = isAgriculteur || isAdmin;
+  const canAddVetRecord = isVeterinaire || isAgriculteur || isAdmin;
 
   const fetchLivestock = async () => {
     if (!user) return;
@@ -233,19 +244,21 @@ export default function Betail() {
   return (
     <AppLayout>
       <PageHeader
-        title="Mon Bétail"
+        title={isVeterinaire && !isAgriculteur ? "Animaux à suivre" : "Mon Bétail"}
         subtitle={`${livestock.filter(a => a.health_status !== 'decede').length} tête${livestock.length > 1 ? "s" : ""}`}
         action={
-          <Button
-            variant="hero"
-            size="icon"
-            onClick={() => {
-              setShowForm(!showForm);
-              setEditingAnimal(null);
-            }}
-          >
-            {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-          </Button>
+          canAddAnimal ? (
+            <Button
+              variant="hero"
+              size="icon"
+              onClick={() => {
+                setShowForm(!showForm);
+                setEditingAnimal(null);
+              }}
+            >
+              {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+            </Button>
+          ) : null
         }
       />
 
