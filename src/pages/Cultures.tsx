@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Plus, Wheat, Calendar, TrendingUp, X, Edit, Trash2, Package } from "lucide-react";
+import { Plus, Wheat, Calendar, TrendingUp, X, Edit, Trash2, Package, ChevronRight, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -68,6 +68,8 @@ const statusConfig: Record<CropStatus, { label: string; color: string; progress:
   recolte: { label: "Récolte", color: "bg-success", progress: 95 },
   termine: { label: "Terminé", color: "bg-muted-foreground", progress: 100 },
 };
+
+const statusOrder: CropStatus[] = ['planifie', 'seme', 'en_croissance', 'floraison', 'maturation', 'recolte', 'termine'];
 
 const cropTypeLabels: Record<string, string> = {
   cereale: "Céréale",
@@ -145,6 +147,9 @@ export default function Cultures() {
   const handleDelete = async () => {
     if (!deletingCrop) return;
     try {
+      // First delete harvest records
+      await supabase.from("harvest_records").delete().eq("crop_id", deletingCrop.id);
+      
       const { error } = await supabase.from("crops").delete().eq("id", deletingCrop.id);
       if (error) throw error;
       toast.success("Culture supprimée");
@@ -156,12 +161,37 @@ export default function Cultures() {
     }
   };
 
+  // Quick status update
+  const advanceStatus = async (crop: Crop) => {
+    const currentIndex = statusOrder.indexOf(crop.status);
+    if (currentIndex < statusOrder.length - 1) {
+      const nextStatus = statusOrder[currentIndex + 1];
+      try {
+        const updates: any = { status: nextStatus };
+        
+        // Auto-fill dates based on status
+        if (nextStatus === 'seme' && !crop.sowing_date) {
+          updates.sowing_date = new Date().toISOString().split('T')[0];
+        }
+        if (nextStatus === 'recolte' || nextStatus === 'termine') {
+          updates.actual_harvest_date = new Date().toISOString().split('T')[0];
+        }
+        
+        const { error } = await supabase.from("crops").update(updates).eq("id", crop.id);
+        if (error) throw error;
+        toast.success(`Statut mis à jour: ${statusConfig[nextStatus].label}`);
+        fetchCrops();
+      } catch (error: any) {
+        toast.error("Erreur lors de la mise à jour");
+      }
+    }
+  };
+
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return null;
     return new Date(dateStr).toLocaleDateString("fr-FR", {
       day: "numeric",
       month: "short",
-      year: "numeric",
     });
   };
 
@@ -180,12 +210,14 @@ export default function Cultures() {
   };
 
   const activeCrops = crops.filter((c) => c.status !== "termine");
+  const totalArea = crops.reduce((sum, c) => sum + (c.area_hectares || 0), 0);
+  const totalHarvested = Object.values(harvestRecords).flat().reduce((sum, r) => sum + r.quantity_kg, 0);
 
   return (
     <AppLayout>
       <PageHeader
         title="Cultures"
-        subtitle={`${activeCrops.length} culture${activeCrops.length > 1 ? "s" : ""} active${activeCrops.length > 1 ? "s" : ""}`}
+        subtitle={`${activeCrops.length} active${activeCrops.length > 1 ? "s" : ""} • ${totalArea.toFixed(1)} ha`}
         action={
           <Button
             variant="hero"
@@ -199,6 +231,26 @@ export default function Cultures() {
           </Button>
         }
       />
+
+      {/* Quick Stats */}
+      {crops.length > 0 && (
+        <div className="px-4 mb-4">
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
+            <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20">
+              <p className="text-xs text-muted-foreground">En cours</p>
+              <p className="text-lg font-bold text-foreground">{activeCrops.length}</p>
+            </div>
+            <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-success/10 border border-success/20">
+              <p className="text-xs text-muted-foreground">Récolté</p>
+              <p className="text-lg font-bold text-success">{(totalHarvested / 1000).toFixed(1)} t</p>
+            </div>
+            <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-accent/10 border border-accent/20">
+              <p className="text-xs text-muted-foreground">Terminées</p>
+              <p className="text-lg font-bold text-accent">{crops.length - activeCrops.length}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="px-4 space-y-4 pb-6">
         {(showForm || editingCrop) && (
@@ -256,6 +308,7 @@ export default function Cultures() {
               const config = statusConfig[crop.status];
               const totalHarvest = getTotalHarvest(crop.id);
               const harvestCount = (harvestRecords[crop.id] || []).length;
+              const canAdvance = crop.status !== 'termine';
               
               return (
                 <Card
@@ -280,14 +333,23 @@ export default function Cultures() {
                           {crop.field?.name} • {cropTypeLabels[crop.crop_type] || crop.crop_type}
                         </p>
                       </div>
-                      <span
-                        className={cn(
-                          "px-2 py-1 rounded-full text-xs font-medium text-primary-foreground shrink-0",
-                          config.color
-                        )}
-                      >
-                        {config.label}
-                      </span>
+                      {/* Quick Advance Button */}
+                      {canAdvance ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() => advanceStatus(crop)}
+                        >
+                          <span className={cn("w-2 h-2 rounded-full mr-2", config.color)} />
+                          {config.label}
+                          <ChevronRight className="w-4 h-4 ml-1" />
+                        </Button>
+                      ) : (
+                        <span className={cn("px-2 py-1 rounded-full text-xs font-medium text-primary-foreground shrink-0", config.color)}>
+                          {config.label}
+                        </span>
+                      )}
                     </div>
 
                     <div className="space-y-3">

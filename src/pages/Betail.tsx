@@ -3,7 +3,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Heart, Syringe, AlertCircle, X, Edit, Trash2, Stethoscope } from "lucide-react";
+import { Plus, Heart, Syringe, AlertCircle, X, Edit, Trash2, Stethoscope, Scale, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,6 +27,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -84,6 +86,8 @@ const healthStatusConfig: Record<LivestockHealthStatus, { label: string; color: 
   decede: { label: "Décédé", color: "bg-muted text-muted-foreground" },
 };
 
+const healthStatusOrder: LivestockHealthStatus[] = ['malade', 'traitement', 'quarantaine', 'sain'];
+
 export default function Betail() {
   const { user } = useAuth();
   const [livestock, setLivestock] = useState<Livestock[]>([]);
@@ -94,6 +98,8 @@ export default function Betail() {
   const [deletingAnimal, setDeletingAnimal] = useState<Livestock | null>(null);
   const [addingVetRecord, setAddingVetRecord] = useState<Livestock | null>(null);
   const [viewingRecords, setViewingRecords] = useState<Livestock | null>(null);
+  const [updatingWeight, setUpdatingWeight] = useState<Livestock | null>(null);
+  const [newWeight, setNewWeight] = useState("");
 
   const fetchLivestock = async () => {
     if (!user) return;
@@ -135,6 +141,9 @@ export default function Betail() {
   const handleDelete = async () => {
     if (!deletingAnimal) return;
     try {
+      // Delete vet records first
+      await supabase.from("veterinary_records").delete().eq("livestock_id", deletingAnimal.id);
+      
       const { error } = await supabase.from("livestock").delete().eq("id", deletingAnimal.id);
       if (error) throw error;
       toast.success("Animal supprimé");
@@ -143,6 +152,36 @@ export default function Betail() {
       toast.error(error.message || "Erreur lors de la suppression");
     } finally {
       setDeletingAnimal(null);
+    }
+  };
+
+  // Quick health status update
+  const updateHealthStatus = async (animal: Livestock, newStatus: LivestockHealthStatus) => {
+    try {
+      const { error } = await supabase.from("livestock").update({ health_status: newStatus }).eq("id", animal.id);
+      if (error) throw error;
+      toast.success(`Statut mis à jour: ${healthStatusConfig[newStatus].label}`);
+      fetchLivestock();
+    } catch (error: any) {
+      toast.error("Erreur lors de la mise à jour");
+    }
+  };
+
+  // Quick weight update
+  const handleWeightUpdate = async () => {
+    if (!updatingWeight || !newWeight) return;
+    try {
+      const { error } = await supabase
+        .from("livestock")
+        .update({ weight_kg: parseFloat(newWeight) })
+        .eq("id", updatingWeight.id);
+      if (error) throw error;
+      toast.success("Poids mis à jour");
+      setUpdatingWeight(null);
+      setNewWeight("");
+      fetchLivestock();
+    } catch (error: any) {
+      toast.error("Erreur lors de la mise à jour");
     }
   };
 
@@ -175,7 +214,9 @@ export default function Betail() {
 
   // Stats
   const speciesCounts = livestock.reduce((acc, a) => {
-    acc[a.species] = (acc[a.species] || 0) + 1;
+    if (a.health_status !== 'decede') {
+      acc[a.species] = (acc[a.species] || 0) + 1;
+    }
     return acc;
   }, {} as Record<string, number>);
 
@@ -183,11 +224,17 @@ export default function Betail() {
     a.health_status !== "sain" && a.health_status !== "decede"
   ).length;
 
+  const totalWeight = livestock
+    .filter(a => a.health_status !== 'decede' && a.weight_kg)
+    .reduce((sum, a) => sum + (a.weight_kg || 0), 0);
+
+  const upcomingAppointments = livestock.filter(a => getNextAppointment(a.id)).length;
+
   return (
     <AppLayout>
       <PageHeader
         title="Mon Bétail"
-        subtitle={`${livestock.length} tête${livestock.length > 1 ? "s" : ""}`}
+        subtitle={`${livestock.filter(a => a.health_status !== 'decede').length} tête${livestock.length > 1 ? "s" : ""}`}
         action={
           <Button
             variant="hero"
@@ -215,10 +262,22 @@ export default function Betail() {
                 <p className="text-lg font-bold text-foreground">{count}</p>
               </div>
             ))}
+            {totalWeight > 0 && (
+              <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-success/10 border border-success/20">
+                <p className="text-xs text-muted-foreground">Poids total</p>
+                <p className="text-lg font-bold text-success">{(totalWeight / 1000).toFixed(1)} t</p>
+              </div>
+            )}
             {alertCount > 0 && (
               <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-warning/10 border border-warning/20">
-                <p className="text-xs text-muted-foreground">Alertes</p>
+                <p className="text-xs text-muted-foreground">Alertes santé</p>
                 <p className="text-lg font-bold text-warning">{alertCount}</p>
+              </div>
+            )}
+            {upcomingAppointments > 0 && (
+              <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-accent/10 border border-accent/20">
+                <p className="text-xs text-muted-foreground">RDV vétérinaire</p>
+                <p className="text-lg font-bold text-accent">{upcomingAppointments}</p>
               </div>
             )}
           </div>
@@ -281,6 +340,7 @@ export default function Betail() {
               const nextAppt = getNextAppointment(animal.id);
               const recordCount = (vetRecords[animal.id] || []).length;
               const hasAlert = animal.health_status !== "sain" && animal.health_status !== "decede";
+              const canUpdateHealth = animal.health_status !== 'decede';
               
               return (
                 <Card
@@ -305,21 +365,48 @@ export default function Betail() {
                           {animal.weight_kg && ` • ${animal.weight_kg} kg`}
                         </p>
                       </div>
-                      <span className={cn("px-2 py-1 rounded-full text-xs font-medium", statusConfig.color)}>
-                        {statusConfig.label}
-                      </span>
+                      {/* Quick Health Status Toggle */}
+                      {canUpdateHealth ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() => {
+                            const currentIndex = healthStatusOrder.indexOf(animal.health_status);
+                            const nextIndex = (currentIndex + 1) % healthStatusOrder.length;
+                            updateHealthStatus(animal, healthStatusOrder[nextIndex]);
+                          }}
+                        >
+                          <span className={cn("px-2 py-0.5 rounded-full text-xs", statusConfig.color)}>
+                            {statusConfig.label}
+                          </span>
+                          <ChevronRight className="w-4 h-4 ml-1" />
+                        </Button>
+                      ) : (
+                        <span className={cn("px-2 py-1 rounded-full text-xs font-medium", statusConfig.color)}>
+                          {statusConfig.label}
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Heart className="w-4 h-4" />
-                        <span>{statusConfig.label}</span>
-                      </div>
                       {nextAppt && (
                         <div className="flex items-center gap-2 text-sm">
                           <Syringe className="w-4 h-4 text-warning" />
                           <span className="text-warning font-medium">{formatDate(nextAppt)}</span>
                         </div>
+                      )}
+                      {animal.weight_kg && (
+                        <button
+                          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                          onClick={() => {
+                            setUpdatingWeight(animal);
+                            setNewWeight(animal.weight_kg?.toString() || "");
+                          }}
+                        >
+                          <Scale className="w-4 h-4" />
+                          <span>{animal.weight_kg} kg</span>
+                        </button>
                       )}
                     </div>
 
@@ -333,6 +420,17 @@ export default function Betail() {
                       >
                         <Stethoscope className="w-4 h-4 mr-1" />
                         Suivi vétérinaire
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setUpdatingWeight(animal);
+                          setNewWeight(animal.weight_kg?.toString() || "");
+                        }}
+                      >
+                        <Scale className="w-4 h-4 mr-1" />
+                        Poids
                       </Button>
                       {recordCount > 0 && (
                         <Button
@@ -387,6 +485,36 @@ export default function Betail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Weight Update Dialog */}
+      <Dialog open={!!updatingWeight} onOpenChange={() => setUpdatingWeight(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Mettre à jour le poids - {updatingWeight?.identifier}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="weight">Nouveau poids (kg)</Label>
+              <Input
+                id="weight"
+                type="number"
+                step="0.1"
+                value={newWeight}
+                onChange={(e) => setNewWeight(e.target.value)}
+                placeholder="Poids en kg"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={() => setUpdatingWeight(null)}>
+                Annuler
+              </Button>
+              <Button className="flex-1" onClick={handleWeightUpdate}>
+                Enregistrer
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Vet Record Form Dialog */}
       <Dialog open={!!addingVetRecord} onOpenChange={() => setAddingVetRecord(null)}>
