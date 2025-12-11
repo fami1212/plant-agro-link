@@ -143,12 +143,12 @@ export function InvestmentOpportunityForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="crop">Culture associée (optionnel)</Label>
-        <Select value={selectedCropId} onValueChange={setSelectedCropId}>
+        <Select value={selectedCropId || "none"} onValueChange={(value) => setSelectedCropId(value === "none" ? "" : value)}>
           <SelectTrigger>
             <SelectValue placeholder="Sélectionner une culture" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Aucune culture spécifique</SelectItem>
+            <SelectItem value="none">Aucune culture spécifique</SelectItem>
             {crops.map((crop) => (
               <SelectItem key={crop.id} value={crop.id}>
                 {crop.name} - {crop.field?.name}
