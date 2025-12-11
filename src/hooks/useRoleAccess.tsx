@@ -29,8 +29,8 @@ const roleConfigs: Record<AppRole, RoleConfig> = {
     dashboardType: 'acheteur',
   },
   investisseur: {
-    allowedRoutes: ['/dashboard', '/marketplace', '/investissements'],
-    navItems: ['/dashboard', '/marketplace'],
+    allowedRoutes: ['/dashboard', '/marketplace', '/investisseur'],
+    navItems: ['/dashboard', '/investisseur', '/marketplace'],
     menuItems: ['/settings'],
     dashboardType: 'investisseur',
   },

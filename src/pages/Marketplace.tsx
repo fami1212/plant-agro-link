@@ -180,15 +180,23 @@ export default function Marketplace() {
   const fetchOffers = async () => {
     if (!user) return;
     try {
+      // Fetch sent offers with listing info
       const { data: sent } = await supabase
         .from("marketplace_offers")
-        .select("*")
+        .select(`
+          *,
+          listing:marketplace_listings(id, title, category)
+        `)
         .eq("buyer_id", user.id)
         .order("created_at", { ascending: false });
 
+      // Fetch received offers with listing info
       const { data: received } = await supabase
         .from("marketplace_offers")
-        .select("*")
+        .select(`
+          *,
+          listing:marketplace_listings(id, title, category)
+        `)
         .eq("seller_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -549,9 +557,42 @@ export default function Marketplace() {
                     <OfferCard
                       key={offer.id}
                       offer={{ ...offer, is_incoming: true }}
-                      onAccept={() => toast.success("Offre acceptée")}
-                      onReject={() => toast.info("Offre refusée")}
-                      onCounterOffer={() => toast.info("Contre-offre")}
+                      onAccept={async () => {
+                        try {
+                          const { error } = await supabase
+                            .from("marketplace_offers")
+                            .update({ status: "acceptee", responded_at: new Date().toISOString() })
+                            .eq("id", offer.id);
+                          if (error) throw error;
+                          
+                          // Update listing status
+                          await supabase
+                            .from("marketplace_listings")
+                            .update({ status: "reserve" })
+                            .eq("id", offer.listing_id);
+                          
+                          toast.success("Offre acceptée avec succès !");
+                          fetchOffers();
+                        } catch (error) {
+                          console.error("Error accepting offer:", error);
+                          toast.error("Erreur lors de l'acceptation");
+                        }
+                      }}
+                      onReject={async () => {
+                        try {
+                          const { error } = await supabase
+                            .from("marketplace_offers")
+                            .update({ status: "refusee", responded_at: new Date().toISOString() })
+                            .eq("id", offer.id);
+                          if (error) throw error;
+                          toast.info("Offre refusée");
+                          fetchOffers();
+                        } catch (error) {
+                          console.error("Error rejecting offer:", error);
+                          toast.error("Erreur lors du refus");
+                        }
+                      }}
+                      onCounterOffer={() => toast.info("Fonctionnalité contre-offre à venir")}
                       index={index}
                     />
                   ))}
