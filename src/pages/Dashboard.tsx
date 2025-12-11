@@ -5,8 +5,9 @@ import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
 import { HarvestChart } from "@/components/dashboard/HarvestChart";
 import { LivestockChart } from "@/components/dashboard/LivestockChart";
 import { AlertsList } from "@/components/dashboard/AlertsList";
+import { IoTDashboard } from "@/components/iot/IoTDashboard";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   MapPin,
@@ -115,6 +116,9 @@ export default function Dashboard() {
               />
             </div>
           )}
+
+          {/* IoT Sensors Compact */}
+          <IoTDashboard compact />
 
           {/* Charts */}
           {isLoading ? (
