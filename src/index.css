@@ -47,17 +47,17 @@
     --input: 40 20% 88%;
     --ring: 142 71% 45%;
 
-    --radius: 1rem;
+    --radius: 0.875rem;
 
     /* Custom Plantéra tokens */
-    --gradient-hero: linear-gradient(135deg, hsl(142 71% 45%) 0%, hsl(142 60% 35%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(142 71% 45%) 0%, hsl(160 55% 38%) 100%);
     --gradient-earth: linear-gradient(180deg, hsl(40 33% 98%) 0%, hsl(40 25% 94%) 100%);
     --gradient-sunset: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(15 90% 45%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(40 30% 98%) 100%);
     
-    --shadow-soft: 0 4px 20px -4px hsl(24 10% 10% / 0.08);
-    --shadow-elevated: 0 8px 30px -8px hsl(24 10% 10% / 0.12);
-    --shadow-glow: 0 0 40px hsl(142 71% 45% / 0.2);
+    --shadow-soft: 0 2px 12px -2px hsl(24 10% 10% / 0.06), 0 1px 4px -1px hsl(24 10% 10% / 0.04);
+    --shadow-elevated: 0 8px 24px -6px hsl(24 10% 10% / 0.1), 0 2px 8px -2px hsl(24 10% 10% / 0.06);
+    --shadow-glow: 0 0 32px hsl(142 71% 45% / 0.15);
 
     --sidebar-background: 40 30% 99%;
     --sidebar-foreground: 24 10% 10%;
@@ -123,11 +123,18 @@
   html {
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv11", "ss01";
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.02em;
+    font-weight: 600;
   }
 }
 
