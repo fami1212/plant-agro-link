@@ -37,10 +37,11 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            {/* Agriculteur Routes */}
             <Route
               path="/parcelles"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
                   <Parcelles />
                 </ProtectedRoute>
               }
@@ -48,19 +49,21 @@ const App = () => (
             <Route
               path="/cultures"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
                   <Cultures />
                 </ProtectedRoute>
               }
             />
+            {/* Shared: Agriculteur & Veterinaire */}
             <Route
               path="/betail"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['agriculteur', 'veterinaire', 'admin']}>
                   <Betail />
                 </ProtectedRoute>
               }
             />
+            {/* All authenticated users */}
             <Route
               path="/marketplace"
               element={
@@ -69,10 +72,11 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            {/* Agriculteur IoT */}
             <Route
               path="/iot"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
                   <IoT />
                 </ProtectedRoute>
               }

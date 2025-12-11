@@ -10,10 +10,14 @@ import {
   User,
   LogOut,
   Settings,
-  Activity
+  Activity,
+  Stethoscope,
+  TrendingUp,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useRoleAccess } from "@/hooks/useRoleAccess";
 import {
   Sheet,
   SheetContent,
@@ -26,24 +30,38 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
-const navItems = [
-  { icon: Home, label: "Accueil", path: "/dashboard" },
-  { icon: MapPin, label: "Parcelles", path: "/parcelles" },
-  { icon: Wheat, label: "Cultures", path: "/cultures" },
-  { icon: PawPrint, label: "Bétail", path: "/betail" },
-  { icon: ShoppingBag, label: "Marché", path: "/marketplace" },
+// All possible navigation items
+const allNavItems = [
+  { icon: Home, label: "Accueil", path: "/dashboard", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
+  { icon: MapPin, label: "Parcelles", path: "/parcelles", roles: ['agriculteur', 'admin'] },
+  { icon: Wheat, label: "Cultures", path: "/cultures", roles: ['agriculteur', 'admin'] },
+  { icon: PawPrint, label: "Bétail", path: "/betail", roles: ['agriculteur', 'veterinaire', 'admin'] },
+  { icon: ShoppingBag, label: "Marché", path: "/marketplace", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
 ];
 
-const menuItems = [
-  { icon: Activity, label: "Capteurs IoT", path: "/iot" },
-  { icon: Settings, label: "Paramètres", path: "/settings" },
+// All possible menu items
+const allMenuItems = [
+  { icon: Activity, label: "Capteurs IoT", path: "/iot", roles: ['agriculteur', 'admin'] },
+  { icon: Shield, label: "Administration", path: "/admin", roles: ['admin'] },
+  { icon: Settings, label: "Paramètres", path: "/settings", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
 ];
 
 export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, profile, roles, signOut } = useAuth();
+  const { canAccessRoute } = useRoleAccess();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Filter nav items based on user roles
+  const navItems = allNavItems.filter(item => 
+    item.roles.some(role => roles.includes(role as any)) || roles.length === 0
+  );
+
+  // Filter menu items based on user roles
+  const menuItems = allMenuItems.filter(item =>
+    item.roles.some(role => roles.includes(role as any))
+  );
 
   const handleSignOut = async () => {
     try {
@@ -99,7 +117,6 @@ export function BottomNav() {
             </button>
           );
         })}
-        
         {/* Menu Button */}
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild>
