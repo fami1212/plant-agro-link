@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Plus, Wheat, Calendar, TrendingUp, X, Edit, Trash2, Package, ChevronRight, Store, QrCode } from "lucide-react";
+import { Plus, Wheat, Calendar, TrendingUp, X, Edit, Trash2, Package, ChevronRight, Store, QrCode, Banknote } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,6 +12,7 @@ import { CropForm } from "@/components/crops/CropForm";
 import { HarvestRecordForm } from "@/components/crops/HarvestRecordForm";
 import { PublishToMarketplaceButton } from "@/components/crops/PublishToMarketplaceButton";
 import { QRCodeGenerator } from "@/components/traceability/QRCodeGenerator";
+import { InvestmentOpportunityForm } from "@/components/investment/InvestmentOpportunityForm";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -108,6 +109,8 @@ export default function Cultures() {
   const [harvestingCrop, setHarvestingCrop] = useState<Crop | null>(null);
   const [viewingHarvests, setViewingHarvests] = useState<Crop | null>(null);
   const [showTraceability, setShowTraceability] = useState<{ crop: Crop; harvest: HarvestRecord } | null>(null);
+  const [showInvestmentForm, setShowInvestmentForm] = useState(false);
+  const [investmentCrop, setInvestmentCrop] = useState<Crop | null>(null);
 
   const fetchCrops = async () => {
     if (!user) return;
@@ -444,6 +447,17 @@ export default function Cultures() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          onClick={() => {
+                            setInvestmentCrop(crop);
+                            setShowInvestmentForm(true);
+                          }}
+                          title="Créer opportunité d'investissement"
+                        >
+                          <Banknote className="w-4 h-4 text-primary" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => setDeletingCrop(crop)}
                         >
                           <Trash2 className="w-4 h-4 text-destructive" />
@@ -579,6 +593,27 @@ export default function Cultures() {
               }}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Investment Opportunity Form Dialog */}
+      <Dialog open={showInvestmentForm} onOpenChange={setShowInvestmentForm}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Créer une opportunité d'investissement</DialogTitle>
+          </DialogHeader>
+          <InvestmentOpportunityForm
+            cropId={investmentCrop?.id}
+            onSuccess={() => {
+              setShowInvestmentForm(false);
+              setInvestmentCrop(null);
+              toast.success("Opportunité publiée avec succès!");
+            }}
+            onCancel={() => {
+              setShowInvestmentForm(false);
+              setInvestmentCrop(null);
+            }}
+          />
         </DialogContent>
       </Dialog>
     </AppLayout>
