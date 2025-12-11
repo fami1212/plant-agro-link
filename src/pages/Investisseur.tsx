@@ -60,9 +60,15 @@ interface InvestmentOpportunity {
   created_at: string;
   // Joined data
   farmer_name?: string;
+  farmer_phone?: string | null;
+  farmer_address?: string | null;
   crop_name?: string;
+  crop_type?: string | null;
+  crop_variety?: string | null;
+  crop_status?: string | null;
   field_name?: string;
   field_size?: number;
+  soil_type?: string | null;
 }
 
 interface Investment {
@@ -83,6 +89,11 @@ interface Investment {
   // Computed
   expected_return: number;
   farmer_name?: string;
+  farmer_phone?: string | null;
+  crop_name?: string | null;
+  crop_status?: string | null;
+  field_name?: string | null;
+  field_size?: number | null;
 }
 
 const riskColors: Record<string, string> = {
@@ -148,8 +159,8 @@ export default function Investisseur() {
       .from("investment_opportunities")
       .select(`
         *,
-        crops:crop_id (name, crop_type),
-        fields:field_id (name, area_hectares)
+        crops:crop_id (id, name, crop_type, variety, status, expected_harvest_date, area_hectares),
+        fields:field_id (id, name, area_hectares, location_gps, soil_type)
       `)
       .eq("status", "ouverte")
       .order("created_at", { ascending: false });
@@ -161,16 +172,22 @@ export default function Investisseur() {
       (data || []).map(async (opp) => {
         const { data: farmerProfile } = await supabase
           .from("profiles")
-          .select("full_name")
+          .select("full_name, phone, address")
           .eq("user_id", opp.farmer_id)
           .maybeSingle();
 
         return {
           ...opp,
           farmer_name: farmerProfile?.full_name || "Agriculteur",
+          farmer_phone: farmerProfile?.phone || null,
+          farmer_address: farmerProfile?.address || null,
           crop_name: opp.crops?.name || null,
+          crop_type: opp.crops?.crop_type || null,
+          crop_variety: opp.crops?.variety || null,
+          crop_status: opp.crops?.status || null,
           field_name: opp.fields?.name || null,
           field_size: opp.fields?.area_hectares || null,
+          soil_type: opp.fields?.soil_type || null,
         };
       })
     );
@@ -183,7 +200,11 @@ export default function Investisseur() {
 
     const { data, error } = await supabase
       .from("investments")
-      .select("*")
+      .select(`
+        *,
+        crops:crop_id (name, crop_type, status),
+        fields:field_id (name, area_hectares)
+      `)
       .eq("investor_id", user.id)
       .order("investment_date", { ascending: false });
 
@@ -194,7 +215,7 @@ export default function Investisseur() {
       (data || []).map(async (inv) => {
         const { data: farmerProfile } = await supabase
           .from("profiles")
-          .select("full_name")
+          .select("full_name, phone")
           .eq("user_id", inv.farmer_id)
           .maybeSingle();
 
@@ -203,6 +224,11 @@ export default function Investisseur() {
         return {
           ...inv,
           farmer_name: farmerProfile?.full_name || "Agriculteur",
+          farmer_phone: farmerProfile?.phone || null,
+          crop_name: inv.crops?.name || null,
+          crop_status: inv.crops?.status || null,
+          field_name: inv.fields?.name || null,
+          field_size: inv.fields?.area_hectares || null,
           expected_return: expectedReturn,
         };
       })

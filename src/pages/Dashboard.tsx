@@ -254,6 +254,13 @@ export default function Dashboard() {
                   description="Journal des soins vétérinaires"
                   onClick={() => navigate("/betail")}
                 />
+                <QuickActionCard
+                  icon={<DollarSign className="w-6 h-6" />}
+                  title="Chercher un investisseur"
+                  description="Créer une opportunité d'investissement"
+                  onClick={() => navigate("/cultures")}
+                  variant="accent"
+                />
               </>
             )}
 
