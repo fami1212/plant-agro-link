@@ -206,6 +206,156 @@ export type Database = {
           },
         ]
       }
+      investment_opportunities: {
+        Row: {
+          created_at: string
+          crop_id: string | null
+          current_amount: number | null
+          description: string | null
+          expected_harvest_date: string | null
+          expected_return_percent: number | null
+          farmer_id: string
+          field_id: string | null
+          id: string
+          images: string[] | null
+          location: string | null
+          metadata: Json | null
+          risk_level: string | null
+          start_date: string | null
+          status: string
+          target_amount: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          crop_id?: string | null
+          current_amount?: number | null
+          description?: string | null
+          expected_harvest_date?: string | null
+          expected_return_percent?: number | null
+          farmer_id: string
+          field_id?: string | null
+          id?: string
+          images?: string[] | null
+          location?: string | null
+          metadata?: Json | null
+          risk_level?: string | null
+          start_date?: string | null
+          status?: string
+          target_amount: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          crop_id?: string | null
+          current_amount?: number | null
+          description?: string | null
+          expected_harvest_date?: string | null
+          expected_return_percent?: number | null
+          farmer_id?: string
+          field_id?: string | null
+          id?: string
+          images?: string[] | null
+          location?: string | null
+          metadata?: Json | null
+          risk_level?: string | null
+          start_date?: string | null
+          status?: string
+          target_amount?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_opportunities_crop_id_fkey"
+            columns: ["crop_id"]
+            isOneToOne: false
+            referencedRelation: "crops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_opportunities_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "fields"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investments: {
+        Row: {
+          actual_return_amount: number | null
+          actual_return_date: string | null
+          amount_invested: number
+          created_at: string
+          crop_id: string | null
+          description: string | null
+          expected_harvest_date: string | null
+          expected_return_percent: number | null
+          farmer_id: string
+          field_id: string | null
+          id: string
+          investment_date: string
+          investor_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          actual_return_amount?: number | null
+          actual_return_date?: string | null
+          amount_invested: number
+          created_at?: string
+          crop_id?: string | null
+          description?: string | null
+          expected_harvest_date?: string | null
+          expected_return_percent?: number | null
+          farmer_id: string
+          field_id?: string | null
+          id?: string
+          investment_date?: string
+          investor_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          actual_return_amount?: number | null
+          actual_return_date?: string | null
+          amount_invested?: number
+          created_at?: string
+          crop_id?: string | null
+          description?: string | null
+          expected_harvest_date?: string | null
+          expected_return_percent?: number | null
+          farmer_id?: string
+          field_id?: string | null
+          id?: string
+          investment_date?: string
+          investor_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investments_crop_id_fkey"
+            columns: ["crop_id"]
+            isOneToOne: false
+            referencedRelation: "crops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investments_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "fields"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       iot_alert_configs: {
         Row: {
           created_at: string
