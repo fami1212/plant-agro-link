@@ -13,6 +13,7 @@ import Parcelles from "./pages/Parcelles";
 import Cultures from "./pages/Cultures";
 import Betail from "./pages/Betail";
 import Marketplace from "./pages/Marketplace";
+import IoT from "./pages/IoT";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -65,6 +66,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Marketplace />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/iot"
+              element={
+                <ProtectedRoute>
+                  <IoT />
                 </ProtectedRoute>
               }
             />

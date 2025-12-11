@@ -206,6 +206,109 @@ export type Database = {
           },
         ]
       }
+      iot_alert_configs: {
+        Row: {
+          created_at: string
+          device_id: string | null
+          id: string
+          is_enabled: boolean | null
+          max_value: number | null
+          metric: string
+          min_value: number | null
+          notification_push: boolean | null
+          notification_sms: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          max_value?: number | null
+          metric: string
+          min_value?: number | null
+          notification_push?: boolean | null
+          notification_sms?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          max_value?: number | null
+          metric?: string
+          min_value?: number | null
+          notification_push?: boolean | null
+          notification_sms?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "iot_alert_configs_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "iot_devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      iot_alerts: {
+        Row: {
+          created_at: string
+          current_value: number | null
+          device_id: string
+          id: string
+          is_resolved: boolean | null
+          message: string
+          metric: string
+          resolved_at: string | null
+          severity: string | null
+          threshold_max: number | null
+          threshold_min: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_value?: number | null
+          device_id: string
+          id?: string
+          is_resolved?: boolean | null
+          message: string
+          metric: string
+          resolved_at?: string | null
+          severity?: string | null
+          threshold_max?: number | null
+          threshold_min?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_value?: number | null
+          device_id?: string
+          id?: string
+          is_resolved?: boolean | null
+          message?: string
+          metric?: string
+          resolved_at?: string | null
+          severity?: string | null
+          threshold_max?: number | null
+          threshold_min?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "iot_alerts_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "iot_devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       iot_devices: {
         Row: {
           created_at: string
@@ -332,6 +435,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      marketplace_inputs: {
+        Row: {
+          available: boolean | null
+          category: Database["public"]["Enums"]["input_category"]
+          contact_phone: string | null
+          contact_whatsapp: string | null
+          created_at: string
+          description: string | null
+          id: string
+          images: string[] | null
+          location: string | null
+          location_gps: unknown
+          name: string
+          price: number
+          stock_quantity: number | null
+          supplier_name: string
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          available?: boolean | null
+          category: Database["public"]["Enums"]["input_category"]
+          contact_phone?: string | null
+          contact_whatsapp?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          location?: string | null
+          location_gps?: unknown
+          name: string
+          price: number
+          stock_quantity?: number | null
+          supplier_name: string
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          available?: boolean | null
+          category?: Database["public"]["Enums"]["input_category"]
+          contact_phone?: string | null
+          contact_whatsapp?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          location?: string | null
+          location_gps?: unknown
+          name?: string
+          price?: number
+          stock_quantity?: number | null
+          supplier_name?: string
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       marketplace_listings: {
         Row: {
@@ -796,7 +959,12 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "agriculteur" | "veterinaire" | "acheteur" | "admin"
+      app_role:
+        | "agriculteur"
+        | "veterinaire"
+        | "acheteur"
+        | "admin"
+        | "investisseur"
       crop_status:
         | "planifie"
         | "seme"
@@ -992,7 +1160,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["agriculteur", "veterinaire", "acheteur", "admin"],
+      app_role: [
+        "agriculteur",
+        "veterinaire",
+        "acheteur",
+        "admin",
+        "investisseur",
+      ],
       crop_status: [
         "planifie",
         "seme",
