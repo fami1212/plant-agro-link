@@ -4,12 +4,14 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Plus, Wheat, Calendar, TrendingUp, X, Edit, Trash2, Package, ChevronRight, ArrowUpRight } from "lucide-react";
+import { Plus, Wheat, Calendar, TrendingUp, X, Edit, Trash2, Package, ChevronRight, Store, QrCode } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { CropForm } from "@/components/crops/CropForm";
 import { HarvestRecordForm } from "@/components/crops/HarvestRecordForm";
+import { PublishToMarketplaceButton } from "@/components/crops/PublishToMarketplaceButton";
+import { QRCodeGenerator } from "@/components/traceability/QRCodeGenerator";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -54,9 +56,22 @@ interface Crop {
 
 interface HarvestRecord {
   id: string;
+  crop_id: string;
   harvest_date: string;
   quantity_kg: number;
   quality_grade: string | null;
+}
+
+interface TraceabilityData {
+  lotId: string;
+  productName: string;
+  fieldName?: string;
+  sowingDate?: string;
+  harvestDate?: string;
+  quantity?: number;
+  qualityGrade?: string;
+  variety?: string;
+  createdAt: string;
 }
 
 const statusConfig: Record<CropStatus, { label: string; color: string; progress: number }> = {
@@ -92,6 +107,7 @@ export default function Cultures() {
   const [deletingCrop, setDeletingCrop] = useState<Crop | null>(null);
   const [harvestingCrop, setHarvestingCrop] = useState<Crop | null>(null);
   const [viewingHarvests, setViewingHarvests] = useState<Crop | null>(null);
+  const [showTraceability, setShowTraceability] = useState<{ crop: Crop; harvest: HarvestRecord } | null>(null);
 
   const fetchCrops = async () => {
     if (!user) return;
@@ -131,7 +147,13 @@ export default function Cultures() {
           const grouped: Record<string, HarvestRecord[]> = {};
           harvests.forEach((h: any) => {
             if (!grouped[h.crop_id]) grouped[h.crop_id] = [];
-            grouped[h.crop_id].push(h);
+            grouped[h.crop_id].push({
+              id: h.id,
+              crop_id: h.crop_id,
+              harvest_date: h.harvest_date,
+              quantity_kg: h.quantity_kg,
+              quality_grade: h.quality_grade,
+            });
           });
           setHarvestRecords(grouped);
         }
@@ -476,7 +498,7 @@ export default function Cultures() {
 
       {/* Harvest History Dialog */}
       <Dialog open={!!viewingHarvests} onOpenChange={() => setViewingHarvests(null)}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Historique des récoltes - {viewingHarvests?.name}</DialogTitle>
           </DialogHeader>
@@ -484,19 +506,43 @@ export default function Cultures() {
             {viewingHarvests && (harvestRecords[viewingHarvests.id] || []).map((record) => (
               <div
                 key={record.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                className="p-3 rounded-lg bg-muted/50 space-y-2"
               >
-                <div>
-                  <p className="font-medium text-foreground">{formatDate(record.harvest_date)}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Qualité: {record.quality_grade || "Non spécifié"}
-                  </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-foreground">{formatDate(record.harvest_date)}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Qualité: {record.quality_grade || "Non spécifié"}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-success">{record.quantity_kg} kg</p>
+                    <p className="text-xs text-muted-foreground">
+                      {(record.quantity_kg / 1000).toFixed(2)} t
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-semibold text-success">{record.quantity_kg} kg</p>
-                  <p className="text-xs text-muted-foreground">
-                    {(record.quantity_kg / 1000).toFixed(2)} t
-                  </p>
+                {/* Action buttons */}
+                <div className="flex gap-2 pt-2 border-t border-border">
+                  <PublishToMarketplaceButton
+                    harvestRecord={record}
+                    crop={{
+                      id: viewingHarvests.id,
+                      name: viewingHarvests.name,
+                      variety: viewingHarvests.variety,
+                      field_id: viewingHarvests.field_id,
+                      crop_type: viewingHarvests.crop_type,
+                    }}
+                    onSuccess={fetchCrops}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowTraceability({ crop: viewingHarvests, harvest: record })}
+                  >
+                    <QrCode className="w-4 h-4 mr-1" />
+                    QR Code
+                  </Button>
                 </div>
               </div>
             ))}
@@ -504,6 +550,35 @@ export default function Cultures() {
               <p className="text-center text-muted-foreground py-4">Aucune récolte enregistrée</p>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Traceability QR Code Dialog */}
+      <Dialog open={!!showTraceability} onOpenChange={() => setShowTraceability(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Traçabilité & QR Code</DialogTitle>
+          </DialogHeader>
+          {showTraceability && (
+            <QRCodeGenerator
+              data={{
+                lotId: `PLT-${showTraceability.harvest.id.substring(0, 8).toUpperCase()}`,
+                productName: showTraceability.crop.name,
+                variety: showTraceability.crop.variety || undefined,
+                fieldName: showTraceability.crop.field?.name,
+                sowingDate: showTraceability.crop.sowing_date || undefined,
+                harvestDate: showTraceability.harvest.harvest_date,
+                quantity: showTraceability.harvest.quantity_kg,
+                qualityGrade: showTraceability.harvest.quality_grade || undefined,
+                createdAt: new Date().toISOString(),
+                iotData: {
+                  avgHumidity: 45 + Math.floor(Math.random() * 20),
+                  avgTemperature: 26 + Math.floor(Math.random() * 6),
+                  irrigationCount: 8 + Math.floor(Math.random() * 10),
+                },
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </AppLayout>
