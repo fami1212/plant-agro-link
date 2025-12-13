@@ -42,11 +42,14 @@ import {
   Truck,
   Wrench,
   Stethoscope,
+  DollarSign,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useRoleAccess } from "@/hooks/useRoleAccess";
 import { ListingForm } from "@/components/marketplace/ListingForm";
 import { ProductCard } from "@/components/marketplace/ProductCard";
 import { ServiceProviderCard } from "@/components/marketplace/ServiceProviderCard";
@@ -59,6 +62,7 @@ import type { Database } from "@/integrations/supabase/types";
 type Listing = Database["public"]["Tables"]["marketplace_listings"]["Row"];
 type ServiceProvider = Database["public"]["Tables"]["service_providers"]["Row"];
 type Offer = Database["public"]["Tables"]["marketplace_offers"]["Row"];
+type InvestmentOpportunity = Database["public"]["Tables"]["investment_opportunities"]["Row"];
 
 const productCategories = [
   { name: "Tous", value: "all", icon: "🌍" },
@@ -104,7 +108,17 @@ const mockProviders: Partial<ServiceProvider>[] = [
 
 export default function Marketplace() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("acheter");
+  const { isAgriculteur, isVeterinaire, isAcheteur, isInvestisseur, isAdmin } = useRoleAccess();
+  
+  // Determine default tab based on role
+  const getDefaultTab = () => {
+    if (isInvestisseur && !isAgriculteur && !isAdmin) return "acheter";
+    if (isAcheteur && !isAgriculteur && !isAdmin) return "acheter";
+    if (isVeterinaire && !isAgriculteur && !isAdmin) return "acheter";
+    return "acheter";
+  };
+  
+  const [activeTab, setActiveTab] = useState(getDefaultTab());
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProductCategory, setSelectedProductCategory] = useState("all");
   const [selectedServiceCategory, setSelectedServiceCategory] = useState("all");
@@ -112,8 +126,11 @@ export default function Marketplace() {
   const [buySubTab, setBuySubTab] = useState<"produits" | "intrants" | "services">("produits");
   
   const [listings, setListings] = useState<Listing[]>([]);
+  const [serviceProviders, setServiceProviders] = useState<ServiceProvider[]>([]);
+  const [investmentOpportunities, setInvestmentOpportunities] = useState<InvestmentOpportunity[]>([]);
   const [myOffers, setMyOffers] = useState<Offer[]>([]);
   const [incomingOffers, setIncomingOffers] = useState<Offer[]>([]);
+  const [myBookings, setMyBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showListingForm, setShowListingForm] = useState(false);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
@@ -126,13 +143,70 @@ export default function Marketplace() {
     totalOffers: 0,
   });
 
+  const canSell = isAgriculteur || isAdmin;
+  const canInvest = isInvestisseur || isAdmin;
+
   useEffect(() => {
     fetchListings();
+    fetchServiceProviders();
     if (user) {
       fetchStats();
       fetchOffers();
+      fetchMyBookings();
+      if (canInvest) {
+        fetchInvestmentOpportunities();
+      }
     }
   }, [user]);
+
+  const fetchServiceProviders = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("service_providers")
+        .select("*")
+        .eq("is_active", true)
+        .order("rating", { ascending: false });
+
+      if (error) throw error;
+      setServiceProviders(data || []);
+    } catch (error) {
+      console.error("Error fetching service providers:", error);
+    }
+  };
+
+  const fetchInvestmentOpportunities = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("investment_opportunities")
+        .select("*")
+        .eq("status", "ouverte")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setInvestmentOpportunities(data || []);
+    } catch (error) {
+      console.error("Error fetching investment opportunities:", error);
+    }
+  };
+
+  const fetchMyBookings = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from("service_bookings")
+        .select(`
+          *,
+          provider:service_providers(business_name, service_category)
+        `)
+        .or(`client_id.eq.${user.id}`)
+        .order("scheduled_date", { ascending: true });
+
+      if (error) throw error;
+      setMyBookings(data || []);
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+    }
+  };
 
   const fetchListings = async () => {
     try {
@@ -222,13 +296,20 @@ export default function Marketplace() {
     return matchesSearch && matchesCategory;
   });
 
-  const filteredProviders = mockProviders.filter((provider) => {
+  // Use real service providers from DB, fallback to mock if empty
+  const filteredProviders = (serviceProviders.length > 0 ? serviceProviders : mockProviders).filter((provider) => {
     const matchesSearch = 
       provider.business_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       provider.location?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory =
       selectedServiceCategory === "all" || provider.service_category === selectedServiceCategory;
     return matchesSearch && matchesCategory;
+  });
+
+  // Filter investment opportunities
+  const filteredOpportunities = investmentOpportunities.filter((opp) => {
+    const matchesSearch = opp.title.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch;
   });
 
   const handleContact = (type: "call" | "whatsapp", phone: string) => {
@@ -276,20 +357,56 @@ export default function Marketplace() {
     }
   };
 
+  // Determine which tabs to show based on role
+  const getTabs = () => {
+    if (isInvestisseur && !isAgriculteur && !isAdmin) {
+      return [
+        { value: "acheter", label: "Produits", icon: ShoppingBag },
+        { value: "investir", label: "Opportunités", icon: TrendingUp },
+        { value: "offres", label: "Mes Offres", icon: HandCoins },
+      ];
+    }
+    if (isAcheteur && !isAgriculteur && !isAdmin) {
+      return [
+        { value: "acheter", label: "Acheter", icon: ShoppingBag },
+        { value: "services", label: "Services", icon: Briefcase },
+        { value: "offres", label: "Mes Offres", icon: HandCoins },
+      ];
+    }
+    if (isVeterinaire && !isAgriculteur && !isAdmin) {
+      return [
+        { value: "acheter", label: "Produits", icon: ShoppingBag },
+        { value: "mes-services", label: "Mes Services", icon: Briefcase },
+        { value: "reservations", label: "Réservations", icon: Eye },
+      ];
+    }
+    return [
+      { value: "acheter", label: "Acheter", icon: ShoppingBag },
+      { value: "vendre", label: "Vendre", icon: Store },
+      { value: "services", label: "Services", icon: Briefcase },
+      { value: "offres", label: "Mes Offres", icon: TrendingUp },
+    ];
+  };
+
+  const tabs = getTabs();
+  const gridCols = tabs.length === 3 ? "grid-cols-3" : "grid-cols-4";
+
   return (
     <AppLayout>
       <PageHeader
         title="Marketplace"
-        subtitle="Hub économique agricole"
+        subtitle={isInvestisseur && !isAgriculteur ? "Opportunités d'investissement" : "Hub économique agricole"}
         action={
-          <Button variant="accent" size="icon" onClick={() => setShowListingForm(true)}>
-            <Plus className="w-5 h-5" />
-          </Button>
+          canSell ? (
+            <Button variant="accent" size="icon" onClick={() => setShowListingForm(true)}>
+              <Plus className="w-5 h-5" />
+            </Button>
+          ) : null
         }
       />
 
       {/* Stats for logged in users */}
-      {user && (
+      {user && canSell && (
         <div className="px-4 mb-4">
           <MarketplaceStats stats={stats} />
         </div>
@@ -298,26 +415,17 @@ export default function Marketplace() {
       {/* Main Tabs */}
       <div className="px-4 mb-4">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 h-auto p-1">
-            <TabsTrigger value="acheter" className="flex flex-col gap-1 py-2 text-xs">
-              <ShoppingBag className="w-4 h-4" />
-              <span>Acheter</span>
-            </TabsTrigger>
-            <TabsTrigger value="vendre" className="flex flex-col gap-1 py-2 text-xs">
-              <Store className="w-4 h-4" />
-              <span>Vendre</span>
-            </TabsTrigger>
-            <TabsTrigger value="services" className="flex flex-col gap-1 py-2 text-xs">
-              <Briefcase className="w-4 h-4" />
-              <span>Services</span>
-            </TabsTrigger>
-            <TabsTrigger value="offres" className="flex flex-col gap-1 py-2 text-xs">
-              <TrendingUp className="w-4 h-4" />
-              <span>Mes Offres</span>
-            </TabsTrigger>
+          <TabsList className={`grid w-full ${gridCols} h-auto p-1`}>
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <TabsTrigger key={tab.value} value={tab.value} className="flex flex-col gap-1 py-2 text-xs">
+                  <Icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
-
-          {/* ACHETER TAB */}
           <TabsContent value="acheter" className="mt-4 space-y-4">
             {/* Sub-tabs for Buy section */}
             <div className="flex gap-2">
@@ -511,6 +619,137 @@ export default function Marketplace() {
             />
           </TabsContent>
 
+          {/* INVESTIR TAB (for investors) */}
+          <TabsContent value="investir" className="mt-4 pb-24 space-y-4">
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher des opportunités..."
+                className="pl-11 h-12"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            
+            {filteredOpportunities.length === 0 ? (
+              <div className="text-center py-12">
+                <TrendingUp className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">Aucune opportunité disponible</p>
+                <p className="text-sm text-muted-foreground mt-2">Revenez plus tard pour voir de nouvelles opportunités</p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {filteredOpportunities.map((opp) => (
+                  <Card key={opp.id} className="p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 className="font-semibold">{opp.title}</h3>
+                        {opp.location && (
+                          <p className="text-sm text-muted-foreground flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {opp.location}
+                          </p>
+                        )}
+                      </div>
+                      <Badge variant={opp.risk_level === "faible" ? "default" : opp.risk_level === "moyen" ? "secondary" : "destructive"}>
+                        Risque {opp.risk_level}
+                      </Badge>
+                    </div>
+                    {opp.description && <p className="text-sm text-muted-foreground mb-3">{opp.description}</p>}
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="bg-muted p-2 rounded">
+                        <p className="text-xs text-muted-foreground">Objectif</p>
+                        <p className="font-semibold">{opp.target_amount?.toLocaleString()} FCFA</p>
+                      </div>
+                      <div className="bg-muted p-2 rounded">
+                        <p className="text-xs text-muted-foreground">Collecté</p>
+                        <p className="font-semibold text-primary">{(opp.current_amount || 0).toLocaleString()} FCFA</p>
+                      </div>
+                      <div className="bg-muted p-2 rounded">
+                        <p className="text-xs text-muted-foreground">Rendement attendu</p>
+                        <p className="font-semibold text-green-600">+{opp.expected_return_percent}%</p>
+                      </div>
+                      {opp.expected_harvest_date && (
+                        <div className="bg-muted p-2 rounded">
+                          <p className="text-xs text-muted-foreground">Récolte prévue</p>
+                          <p className="font-semibold">{new Date(opp.expected_harvest_date).toLocaleDateString('fr-FR')}</p>
+                        </div>
+                      )}
+                    </div>
+                    {/* Progress bar */}
+                    <div className="w-full bg-muted rounded-full h-2 mb-4">
+                      <div 
+                        className="bg-primary h-2 rounded-full transition-all" 
+                        style={{ width: `${Math.min(100, ((opp.current_amount || 0) / opp.target_amount) * 100)}%` }}
+                      />
+                    </div>
+                    <Button 
+                      className="w-full" 
+                      onClick={() => {
+                        toast.success("Redirection vers la page d'investissement...");
+                        // Navigate to investor page for this opportunity
+                      }}
+                    >
+                      <DollarSign className="w-4 h-4 mr-2" />
+                      Investir maintenant
+                    </Button>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* MES SERVICES TAB (for vets) */}
+          <TabsContent value="mes-services" className="mt-4 pb-24">
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Stethoscope className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                <h3 className="font-semibold mb-1">Gérer mes services</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Configurez vos services et disponibilités
+                </p>
+                <Button onClick={() => toast.info("Gestion des services bientôt disponible")}>
+                  Configurer mes services
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* RESERVATIONS TAB (for vets) */}
+          <TabsContent value="reservations" className="mt-4 pb-24">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary" />
+              Mes réservations
+            </h3>
+            {myBookings.length === 0 ? (
+              <Card>
+                <CardContent className="p-6 text-center text-muted-foreground text-sm">
+                  Aucune réservation en cours
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {myBookings.map((booking) => (
+                  <Card key={booking.id} className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-medium">{booking.service_type}</h4>
+                        <p className="text-sm text-muted-foreground">{booking.provider?.business_name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(booking.scheduled_date).toLocaleDateString('fr-FR')}
+                          {booking.scheduled_time && ` à ${booking.scheduled_time}`}
+                        </p>
+                      </div>
+                      <Badge variant={booking.status === "confirme" ? "default" : "secondary"}>
+                        {booking.status}
+                      </Badge>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
           {/* SERVICES TAB (for providers) */}
           <TabsContent value="services" className="mt-4 pb-24">
             <Card>
@@ -526,11 +765,22 @@ export default function Marketplace() {
               </CardContent>
             </Card>
 
-            <div className="mt-4">
-              <h3 className="font-semibold mb-3">Mes réservations</h3>
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                Aucune réservation en cours
-              </div>
+            {/* List service providers */}
+            <div className="mt-4 space-y-3">
+              <h3 className="font-semibold">Prestataires disponibles</h3>
+              {filteredProviders.length === 0 ? (
+                <p className="text-center py-8 text-muted-foreground text-sm">Aucun prestataire disponible</p>
+              ) : (
+                filteredProviders.map((provider, index) => (
+                  <ServiceProviderCard
+                    key={provider.id}
+                    provider={provider as any}
+                    onBook={() => toast.success(`Réservation avec ${provider.business_name}`)}
+                    onContact={(type) => handleContact(type, provider.phone || "")}
+                    index={index}
+                  />
+                ))
+              )}
             </div>
           </TabsContent>
 
