@@ -88,23 +88,16 @@ const inputCategories = [
   { name: "Irrigation", value: "irrigation", icon: "💧" },
 ];
 
-// Mock data for inputs (to be replaced with DB data later)
-const mockInputs = [
-  { id: "1", name: "NPK 15-15-15", category: "engrais", price: 25000, unit: "sac 50kg", supplier: "Agriplus Sénégal", location: "Dakar", available: true, image: "🧪" },
-  { id: "2", name: "Semences Mil Souna 3", category: "semences", price: 15000, unit: "kg", supplier: "ISRA Seeds", location: "Thiès", available: true, image: "🌱" },
-  { id: "3", name: "Pompe solaire 2HP", category: "irrigation", price: 450000, unit: "unité", supplier: "Solar Agri", location: "Saint-Louis", available: true, image: "💧" },
-  { id: "4", name: "Pulvérisateur 16L", category: "materiel", price: 35000, unit: "unité", supplier: "Agri Équip", location: "Kaolack", available: false, image: "🔧" },
-  { id: "5", name: "Urée 46%", category: "engrais", price: 22000, unit: "sac 50kg", supplier: "Fertil'Or", location: "Dakar", available: true, image: "🧪" },
-  { id: "6", name: "Semences Arachide 55-437", category: "semences", price: 12000, unit: "kg", supplier: "UNIS Seeds", location: "Kaolack", available: true, image: "🌱" },
-];
+type MarketplaceInput = Database["public"]["Tables"]["marketplace_inputs"]["Row"];
 
-// Mock service providers
-const mockProviders: Partial<ServiceProvider>[] = [
-  { id: "1", business_name: "Dr. Amadou Diallo", service_category: "veterinaire", description: "Spécialiste bovins et ovins, 15 ans d'expérience", location: "Thiès", hourly_rate: 15000, rating: 4.8, reviews_count: 45, is_verified: true, phone: "+221771234567", whatsapp: "+221771234567", specializations: ["Bovins", "Ovins", "Chirurgie"] },
-  { id: "2", business_name: "AgriTech Solutions", service_category: "technicien_iot", description: "Installation capteurs IoT et systèmes d'irrigation intelligente", location: "Dakar", hourly_rate: 25000, rating: 4.9, reviews_count: 32, is_verified: true, phone: "+221772345678", specializations: ["Capteurs sol", "Météo", "Irrigation auto"] },
-  { id: "3", business_name: "Transport Ndiaye", service_category: "transporteur", description: "Transport agricole, camions réfrigérés disponibles", location: "Kaolack", hourly_rate: 50000, rating: 4.5, reviews_count: 28, is_verified: false, phone: "+221773456789", specializations: ["Réfrigéré", "Gros volumes", "Export"] },
-  { id: "4", business_name: "Conseil Agri Pro", service_category: "conseiller", description: "Accompagnement technique et financier des exploitations", location: "Saint-Louis", hourly_rate: 20000, rating: 4.7, reviews_count: 18, is_verified: true, phone: "+221774567890", specializations: ["Business plan", "Subventions", "Formation"] },
-];
+const inputCategoryIcons: Record<string, string> = {
+  engrais: "🧪",
+  semences: "🌱",
+  materiel: "🔧",
+  irrigation: "💧",
+  phytosanitaire: "🧫",
+  autre: "📦",
+};
 
 export default function Marketplace() {
   const { user } = useAuth();
@@ -126,6 +119,7 @@ export default function Marketplace() {
   const [buySubTab, setBuySubTab] = useState<"produits" | "intrants" | "services">("produits");
   
   const [listings, setListings] = useState<Listing[]>([]);
+  const [marketplaceInputs, setMarketplaceInputs] = useState<MarketplaceInput[]>([]);
   const [serviceProviders, setServiceProviders] = useState<ServiceProvider[]>([]);
   const [investmentOpportunities, setInvestmentOpportunities] = useState<InvestmentOpportunity[]>([]);
   const [myOffers, setMyOffers] = useState<Offer[]>([]);
@@ -149,6 +143,7 @@ export default function Marketplace() {
   useEffect(() => {
     fetchListings();
     fetchServiceProviders();
+    fetchMarketplaceInputs();
     if (user) {
       fetchStats();
       fetchOffers();
@@ -171,6 +166,21 @@ export default function Marketplace() {
       setServiceProviders(data || []);
     } catch (error) {
       console.error("Error fetching service providers:", error);
+    }
+  };
+
+  const fetchMarketplaceInputs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("marketplace_inputs")
+        .select("*")
+        .eq("available", true)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setMarketplaceInputs(data || []);
+    } catch (error) {
+      console.error("Error fetching marketplace inputs:", error);
     }
   };
 
@@ -290,14 +300,14 @@ export default function Marketplace() {
     return matchesSearch && matchesCategory;
   });
 
-  const filteredInputs = mockInputs.filter((input) => {
+  const filteredInputs = marketplaceInputs.filter((input) => {
     const matchesSearch = input.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedInputCategory === "all" || input.category === selectedInputCategory;
     return matchesSearch && matchesCategory;
   });
 
-  // Use real service providers from DB, fallback to mock if empty
-  const filteredProviders = (serviceProviders.length > 0 ? serviceProviders : mockProviders).filter((provider) => {
+  // Use real service providers from DB
+  const filteredProviders = serviceProviders.filter((provider) => {
     const matchesSearch = 
       provider.business_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       provider.location?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -563,7 +573,7 @@ export default function Marketplace() {
                 <div className="pb-24">
                   <InputsGrid
                     inputs={filteredInputs}
-                    onContact={(input) => toast.info(`Contact: ${input.supplier}`)}
+                    onContact={(input) => toast.info(`Contact: ${input.supplier_name} - ${input.contact_phone || input.contact_whatsapp || "Non disponible"}`)}
                     onOrder={(input) => toast.success(`Commande de ${input.name} initiée`)}
                   />
                 </div>
@@ -591,15 +601,23 @@ export default function Marketplace() {
                 </div>
 
                 <div className="space-y-3 pb-24">
-                  {filteredProviders.map((provider, index) => (
-                    <ServiceProviderCard
-                      key={provider.id}
-                      provider={provider as any}
-                      onBook={() => toast.success(`Réservation avec ${provider.business_name}`)}
-                      onContact={(type) => handleContact(type, provider.phone || "")}
-                      index={index}
-                    />
-                  ))}
+                  {filteredProviders.length === 0 ? (
+                    <div className="text-center py-12">
+                      <span className="text-4xl mb-3 block">🔧</span>
+                      <p className="text-muted-foreground">Aucun prestataire trouvé</p>
+                      <p className="text-sm text-muted-foreground mt-1">Revenez plus tard pour voir les services disponibles</p>
+                    </div>
+                  ) : (
+                    filteredProviders.map((provider, index) => (
+                      <ServiceProviderCard
+                        key={provider.id}
+                        provider={provider as any}
+                        onBook={() => toast.success(`Réservation avec ${provider.business_name}`)}
+                        onContact={(type) => handleContact(type, provider.phone || "")}
+                        index={index}
+                      />
+                    ))
+                  )}
                 </div>
               </>
             )}

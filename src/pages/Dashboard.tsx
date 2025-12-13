@@ -56,7 +56,7 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="gradient-earth min-h-screen">
+      <div className="bg-background min-h-screen">
         {/* Header */}
         <PageHeader
           title={getRoleGreeting()}

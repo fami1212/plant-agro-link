@@ -145,7 +145,7 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen gradient-earth flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <div className="flex flex-col items-center pt-12 pb-6 px-6 safe-top">
         <div className="w-16 h-16 rounded-2xl gradient-hero flex items-center justify-center mb-4 shadow-glow">
