@@ -24,6 +24,7 @@ import {
   Loader2,
   RefreshCw,
   Banknote,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,6 +33,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
+import { InvestmentIoTMonitor } from "@/components/investor/InvestmentIoTMonitor";
 
 interface InvestmentOpportunity {
   id: string;
@@ -291,9 +293,10 @@ export default function Investisseur() {
       {/* Tabs */}
       <div className="px-4">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="opportunites">Opportunités</TabsTrigger>
-            <TabsTrigger value="portefeuille">Mon portefeuille</TabsTrigger>
+            <TabsTrigger value="portefeuille">Portefeuille</TabsTrigger>
+            <TabsTrigger value="iot">Suivi IoT</TabsTrigger>
           </TabsList>
 
           {/* Opportunities Tab */}
@@ -464,6 +467,11 @@ export default function Investisseur() {
                 );
               })
             )}
+          </TabsContent>
+
+          {/* IoT Monitoring Tab */}
+          <TabsContent value="iot" className="pb-24">
+            <InvestmentIoTMonitor />
           </TabsContent>
         </Tabs>
       </div>
