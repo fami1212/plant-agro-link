@@ -35,7 +35,8 @@ const allNavItems = [
   { icon: Home, label: "Accueil", path: "/dashboard", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
   { icon: MapPin, label: "Parcelles", path: "/parcelles", roles: ['agriculteur', 'admin'] },
   { icon: Wheat, label: "Cultures", path: "/cultures", roles: ['agriculteur', 'admin'] },
-  { icon: PawPrint, label: "Bétail", path: "/betail", roles: ['agriculteur', 'veterinaire', 'admin'] },
+  { icon: PawPrint, label: "Bétail", path: "/betail", roles: ['agriculteur', 'admin'] },
+  { icon: Stethoscope, label: "Cabinet", path: "/veterinaire", roles: ['veterinaire'] },
   { icon: TrendingUp, label: "Investir", path: "/investisseur", roles: ['investisseur', 'admin'] },
   { icon: ShoppingBag, label: "Marché", path: "/marketplace", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
 ];
@@ -44,6 +45,7 @@ const allNavItems = [
 const allMenuItems = [
   { icon: TrendingUp, label: "Mes financements", path: "/farmer-investments", roles: ['agriculteur', 'admin'] },
   { icon: Activity, label: "Capteurs IoT", path: "/iot", roles: ['agriculteur', 'admin'] },
+  { icon: PawPrint, label: "Suivi animaux", path: "/betail", roles: ['veterinaire'] },
   { icon: Shield, label: "Administration", path: "/admin", roles: ['admin'] },
   { icon: Settings, label: "Paramètres", path: "/settings", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
 ];
