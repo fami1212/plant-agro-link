@@ -1,10 +1,9 @@
 // Blockchain Service for Smart Contracts and Traceability
-import { supabase } from "@/integrations/supabase/client";
 
 export interface BlockchainTransaction {
   hash: string;
   timestamp: string;
-  type: 'investment' | 'harvest' | 'traceability' | 'repayment';
+  type: 'investment' | 'harvest' | 'traceability' | 'repayment' | 'VET_INTERVENTION';
   data: Record<string, any>;
   status: 'pending' | 'confirmed' | 'failed';
 }
@@ -161,3 +160,24 @@ export async function getContractStatus(investmentId: string): Promise<{
     transactions: []
   };
 }
+
+// Blockchain Service object for convenient access
+export const blockchainService = {
+  generateHash,
+  createInvestmentContract,
+  recordRepayment,
+  generateTraceabilityCertificate,
+  verifyBlockchainHash,
+  getContractStatus,
+  
+  // Record any transaction type
+  async recordTransaction(transaction: {
+    type: string;
+    data: Record<string, any>;
+    timestamp: string;
+  }): Promise<string> {
+    const hash = generateHash(transaction);
+    console.log(`[Blockchain] Transaction recorded: ${hash}`, transaction);
+    return hash;
+  },
+};
