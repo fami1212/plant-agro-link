@@ -4,6 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Wallet,
   TrendingUp,
   Users,
@@ -11,6 +17,11 @@ import {
   RefreshCw,
   Loader2,
   Banknote,
+  Phone,
+  Mail,
+  MessageCircle,
+  Eye,
+  CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +29,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
+import { toast } from "sonner";
 
 interface ReceivedInvestment {
   id: string;
@@ -27,7 +39,10 @@ interface ReceivedInvestment {
   status: string;
   investment_date: string;
   expected_harvest_date: string | null;
+  investor_id: string;
   investor_name: string;
+  investor_email?: string;
+  investor_phone?: string;
 }
 
 interface InvestmentOpportunity {
@@ -61,7 +76,7 @@ export function ReceivedInvestments() {
         (investmentsData || []).map(async (inv) => {
           const { data: profile } = await supabase
             .from("profiles")
-            .select("full_name")
+            .select("full_name, email, phone")
             .eq("user_id", inv.investor_id)
             .maybeSingle();
 
@@ -73,7 +88,10 @@ export function ReceivedInvestments() {
             status: inv.status,
             investment_date: inv.investment_date,
             expected_harvest_date: inv.expected_harvest_date,
+            investor_id: inv.investor_id,
             investor_name: profile?.full_name || "Investisseur",
+            investor_email: profile?.email || undefined,
+            investor_phone: profile?.phone || undefined,
           };
         })
       );
@@ -218,55 +236,222 @@ export function ReceivedInvestments() {
           ) : (
             <div className="space-y-3">
               {investments.map((inv) => (
-                <div
-                  key={inv.id}
-                  className="p-3 rounded-lg border border-border bg-card"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p className="font-medium text-sm">{inv.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Par {inv.investor_name} • {format(new Date(inv.investment_date), "dd MMM yyyy", { locale: fr })}
-                      </p>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        inv.status === "en_cours" && "bg-warning/10 text-warning border-warning/30",
-                        (inv.status === "complete" || inv.status === "rembourse") && "bg-success/10 text-success border-success/30"
-                      )}
-                    >
-                      {inv.status === "en_cours" ? "En cours" : "Terminé"}
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="p-2 rounded bg-muted">
-                      <p className="text-sm font-bold">{(inv.amount_invested / 1000).toFixed(0)}k</p>
-                      <p className="text-xs text-muted-foreground">Reçu</p>
-                    </div>
-                    <div className="p-2 rounded bg-primary/10">
-                      <p className="text-sm font-bold text-primary">{inv.expected_return_percent}%</p>
-                      <p className="text-xs text-muted-foreground">Rendement</p>
-                    </div>
-                    <div className="p-2 rounded bg-accent/10">
-                      <p className="text-sm font-bold text-accent">
-                        {((inv.amount_invested * (1 + inv.expected_return_percent / 100)) / 1000).toFixed(0)}k
-                      </p>
-                      <p className="text-xs text-muted-foreground">À rembourser</p>
-                    </div>
-                  </div>
-                  {inv.expected_harvest_date && (
-                    <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>Récolte prévue: {format(new Date(inv.expected_harvest_date), "dd MMM yyyy", { locale: fr })}</span>
-                    </div>
-                  )}
-                </div>
+                <InvestmentCard key={inv.id} investment={inv} onRefresh={fetchData} />
               ))}
             </div>
           )}
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function InvestmentCard({ investment: inv, onRefresh }: { investment: ReceivedInvestment; onRefresh: () => void }) {
+  const [showDetails, setShowDetails] = useState(false);
+  const [updating, setUpdating] = useState(false);
+
+  const handleMarkComplete = async () => {
+    setUpdating(true);
+    try {
+      const returnAmount = inv.amount_invested * (1 + inv.expected_return_percent / 100);
+      
+      const { error } = await supabase
+        .from("investments")
+        .update({ 
+          status: "rembourse",
+          actual_return_amount: returnAmount,
+          actual_return_date: new Date().toISOString()
+        })
+        .eq("id", inv.id);
+
+      if (error) throw error;
+      toast.success("Investissement marqué comme remboursé");
+      onRefresh();
+    } catch (error) {
+      console.error("Error updating investment:", error);
+      toast.error("Erreur lors de la mise à jour");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleContact = (type: "call" | "whatsapp" | "email") => {
+    if (type === "call" && inv.investor_phone) {
+      window.open(`tel:${inv.investor_phone}`, "_self");
+    } else if (type === "whatsapp" && inv.investor_phone) {
+      window.open(`https://wa.me/${inv.investor_phone.replace(/\s/g, "")}`, "_blank");
+    } else if (type === "email" && inv.investor_email) {
+      window.open(`mailto:${inv.investor_email}`, "_self");
+    } else {
+      toast.error("Contact non disponible");
+    }
+  };
+
+  return (
+    <>
+      <div className="p-3 rounded-lg border border-border bg-card">
+        <div className="flex items-start justify-between mb-2">
+          <div>
+            <p className="font-medium text-sm">{inv.title}</p>
+            <p className="text-xs text-muted-foreground">
+              Par {inv.investor_name} • {format(new Date(inv.investment_date), "dd MMM yyyy", { locale: fr })}
+            </p>
+          </div>
+          <Badge
+            variant="outline"
+            className={cn(
+              inv.status === "en_cours" && "bg-warning/10 text-warning border-warning/30",
+              (inv.status === "complete" || inv.status === "rembourse") && "bg-success/10 text-success border-success/30"
+            )}
+          >
+            {inv.status === "en_cours" ? "En cours" : "Remboursé"}
+          </Badge>
+        </div>
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="p-2 rounded bg-muted">
+            <p className="text-sm font-bold">{(inv.amount_invested / 1000).toFixed(0)}k</p>
+            <p className="text-xs text-muted-foreground">Reçu</p>
+          </div>
+          <div className="p-2 rounded bg-primary/10">
+            <p className="text-sm font-bold text-primary">{inv.expected_return_percent}%</p>
+            <p className="text-xs text-muted-foreground">Rendement</p>
+          </div>
+          <div className="p-2 rounded bg-accent/10">
+            <p className="text-sm font-bold text-accent">
+              {((inv.amount_invested * (1 + inv.expected_return_percent / 100)) / 1000).toFixed(0)}k
+            </p>
+            <p className="text-xs text-muted-foreground">À rembourser</p>
+          </div>
+        </div>
+        {inv.expected_harvest_date && (
+          <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Récolte prévue: {format(new Date(inv.expected_harvest_date), "dd MMM yyyy", { locale: fr })}</span>
+          </div>
+        )}
+        
+        {/* Action buttons */}
+        <div className="flex gap-2 mt-3">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1"
+            onClick={() => setShowDetails(true)}
+          >
+            <Eye className="w-3.5 h-3.5 mr-1" />
+            Détails
+          </Button>
+          {inv.status === "en_cours" && (
+            <Button 
+              size="sm" 
+              className="flex-1"
+              onClick={handleMarkComplete}
+              disabled={updating}
+            >
+              {updating ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <>
+                  <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                  Marquer remboursé
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Investor Details Dialog */}
+      <Dialog open={showDetails} onOpenChange={setShowDetails}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Détails de l'investissement</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Investment Info */}
+            <div className="p-4 rounded-lg bg-muted/50">
+              <h4 className="font-semibold mb-2">{inv.title}</h4>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Montant investi</p>
+                  <p className="font-medium">{inv.amount_invested.toLocaleString()} FCFA</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Rendement prévu</p>
+                  <p className="font-medium text-primary">+{inv.expected_return_percent}%</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">À rembourser</p>
+                  <p className="font-medium text-accent">
+                    {(inv.amount_invested * (1 + inv.expected_return_percent / 100)).toLocaleString()} FCFA
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Date investissement</p>
+                  <p className="font-medium">{format(new Date(inv.investment_date), "dd MMM yyyy", { locale: fr })}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Investor Info */}
+            <div className="p-4 rounded-lg border border-border">
+              <h4 className="font-semibold mb-3 flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                Investisseur
+              </h4>
+              <div className="space-y-2">
+                <p className="font-medium">{inv.investor_name}</p>
+                {inv.investor_email && (
+                  <p className="text-sm text-muted-foreground">{inv.investor_email}</p>
+                )}
+                {inv.investor_phone && (
+                  <p className="text-sm text-muted-foreground">{inv.investor_phone}</p>
+                )}
+              </div>
+              
+              {/* Contact buttons */}
+              <div className="flex gap-2 mt-3">
+                {inv.investor_phone && (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleContact("call")}
+                    >
+                      <Phone className="w-4 h-4" />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleContact("whatsapp")}
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                    </Button>
+                  </>
+                )}
+                {inv.investor_email && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleContact("email")}
+                  >
+                    <Mail className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Blockchain Notice */}
+            <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+              <p className="text-xs text-muted-foreground">
+                💡 Les informations de cet investissement seront utilisées pour la traçabilité blockchain 
+                lors de la validation de la récolte et du remboursement.
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
