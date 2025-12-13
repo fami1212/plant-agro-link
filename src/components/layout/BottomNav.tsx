@@ -42,6 +42,7 @@ const allNavItems = [
 
 // All possible menu items
 const allMenuItems = [
+  { icon: TrendingUp, label: "Mes financements", path: "/farmer-investments", roles: ['agriculteur', 'admin'] },
   { icon: Activity, label: "Capteurs IoT", path: "/iot", roles: ['agriculteur', 'admin'] },
   { icon: Shield, label: "Administration", path: "/admin", roles: ['admin'] },
   { icon: Settings, label: "Paramètres", path: "/settings", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },

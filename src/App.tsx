@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import Investisseur from "./pages/Investisseur";
 import Settings from "./pages/Settings";
+import FarmerInvestments from "./pages/FarmerInvestments";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -91,6 +92,15 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={['investisseur', 'admin']}>
                     <Investisseur />
+                  </ProtectedRoute>
+                }
+              />
+              {/* Farmer Investments */}
+              <Route
+                path="/farmer-investments"
+                element={
+                  <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
+                    <FarmerInvestments />
                   </ProtectedRoute>
                 }
               />
