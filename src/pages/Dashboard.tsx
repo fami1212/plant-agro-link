@@ -169,14 +169,14 @@ export default function Dashboard() {
                   <StatCard
                     icon={<ShoppingBag className="w-6 h-6" />}
                     label="Mes achats"
-                    value={0}
-                    subtitle="ce mois"
+                    value={stats?.totalPurchases || 0}
+                    subtitle="acceptés"
                     iconBg="primary"
                   />
                   <StatCard
                     icon={<TrendingUp className="w-6 h-6" />}
                     label="Produits disponibles"
-                    value={0}
+                    value={stats?.availableProducts || 0}
                     iconBg="accent"
                   />
                 </div>
@@ -188,14 +188,15 @@ export default function Dashboard() {
                   <StatCard
                     icon={<DollarSign className="w-6 h-6" />}
                     label="Investissements"
-                    value={0}
-                    subtitle="actifs"
+                    value={stats?.activeInvestments || 0}
+                    subtitle={`${((stats?.totalInvested || 0) / 1000).toFixed(0)}k FCFA`}
                     iconBg="primary"
                   />
                   <StatCard
                     icon={<TrendingUp className="w-6 h-6" />}
                     label="Rendement moyen"
-                    value="0%"
+                    value={`${(stats?.averageReturn || 0).toFixed(0)}%`}
+                    subtitle={stats?.totalInvestments ? `${stats.totalInvestments} projets` : undefined}
                     iconBg="success"
                   />
                 </div>

@@ -1,11 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bell, AlertTriangle, AlertCircle, Info } from "lucide-react";
+import { Bell, AlertTriangle, AlertCircle, Info, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Alert {
   id: string;
-  type: "warning" | "error" | "info";
+  type: "warning" | "error" | "info" | "success";
   title: string;
   message: string;
   date: Date;
@@ -22,6 +22,8 @@ export function AlertsList({ alerts }: AlertsListProps) {
         return <AlertCircle className="w-4 h-4" />;
       case "warning":
         return <AlertTriangle className="w-4 h-4" />;
+      case "success":
+        return <CheckCircle className="w-4 h-4" />;
       default:
         return <Info className="w-4 h-4" />;
     }
@@ -33,6 +35,8 @@ export function AlertsList({ alerts }: AlertsListProps) {
         return "bg-destructive/10 text-destructive border-destructive/20";
       case "warning":
         return "bg-warning/10 text-warning border-warning/20";
+      case "success":
+        return "bg-success/10 text-success border-success/20";
       default:
         return "bg-primary/10 text-primary border-primary/20";
     }
