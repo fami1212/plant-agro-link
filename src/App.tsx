@@ -1,5 +1,6 @@
 import { Toaster } from "@/components/ui/toaster";
 import Investisseur from "./pages/Investisseur";
+import Veterinaire from "./pages/Veterinaire";
 import Settings from "./pages/Settings";
 import FarmerInvestments from "./pages/FarmerInvestments";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -92,6 +93,15 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={['investisseur', 'admin']}>
                     <Investisseur />
+                  </ProtectedRoute>
+                }
+              />
+              {/* Veterinaire */}
+              <Route
+                path="/veterinaire"
+                element={
+                  <ProtectedRoute allowedRoles={['veterinaire', 'admin']}>
+                    <Veterinaire />
                   </ProtectedRoute>
                 }
               />

@@ -72,29 +72,32 @@ export function ReceivedInvestments() {
         .eq("farmer_id", user.id)
         .order("investment_date", { ascending: false });
 
-      const investmentsWithNames = await Promise.all(
-        (investmentsData || []).map(async (inv) => {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("full_name, email, phone")
-            .eq("user_id", inv.investor_id)
-            .maybeSingle();
+      // Fetch all investor profiles in one query for efficiency
+      const investorIds = [...new Set((investmentsData || []).map(inv => inv.investor_id))];
+      
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, email, phone")
+        .in("user_id", investorIds);
 
-          return {
-            id: inv.id,
-            title: inv.title,
-            amount_invested: inv.amount_invested,
-            expected_return_percent: inv.expected_return_percent || 15,
-            status: inv.status,
-            investment_date: inv.investment_date,
-            expected_harvest_date: inv.expected_harvest_date,
-            investor_id: inv.investor_id,
-            investor_name: profile?.full_name || "Investisseur",
-            investor_email: profile?.email || undefined,
-            investor_phone: profile?.phone || undefined,
-          };
-        })
-      );
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+
+      const investmentsWithNames = (investmentsData || []).map((inv) => {
+        const profile = profileMap.get(inv.investor_id);
+        return {
+          id: inv.id,
+          title: inv.title,
+          amount_invested: inv.amount_invested,
+          expected_return_percent: inv.expected_return_percent || 15,
+          status: inv.status,
+          investment_date: inv.investment_date,
+          expected_harvest_date: inv.expected_harvest_date,
+          investor_id: inv.investor_id,
+          investor_name: profile?.full_name || "Investisseur",
+          investor_email: profile?.email || undefined,
+          investor_phone: profile?.phone || undefined,
+        };
+      });
 
       setInvestments(investmentsWithNames);
 

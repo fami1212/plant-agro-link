@@ -704,12 +704,11 @@ export default function Marketplace() {
                     <Button 
                       className="w-full" 
                       onClick={() => {
-                        toast.success("Redirection vers la page d'investissement...");
-                        // Navigate to investor page for this opportunity
+                        window.location.href = "/investisseur";
                       }}
                     >
                       <DollarSign className="w-4 h-4 mr-2" />
-                      Investir maintenant
+                      Investir • {((opp.target_amount - (opp.current_amount || 0)) / 1000).toFixed(0)}k restants
                     </Button>
                   </Card>
                 ))}

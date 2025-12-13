@@ -113,31 +113,30 @@ export default function Investisseur() {
 
     if (error) throw error;
 
-    const opportunities = await Promise.all(
-      (data || []).map(async (opp) => {
-        const { data: farmerProfile } = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("user_id", opp.farmer_id)
-          .maybeSingle();
+    // Batch fetch farmer profiles
+    const farmerIds = [...new Set((data || []).map(opp => opp.farmer_id))];
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id, full_name")
+      .in("user_id", farmerIds);
 
-        return {
-          id: opp.id,
-          farmer_id: opp.farmer_id,
-          title: opp.title,
-          description: opp.description,
-          target_amount: opp.target_amount,
-          current_amount: opp.current_amount || 0,
-          expected_return_percent: opp.expected_return_percent || 15,
-          risk_level: opp.risk_level || "moyen",
-          status: opp.status,
-          expected_harvest_date: opp.expected_harvest_date,
-          location: opp.location,
-          farmer_name: farmerProfile?.full_name || "Agriculteur",
-          crop_name: opp.crops?.name || null,
-        };
-      })
-    );
+    const profileMap = new Map(profiles?.map(p => [p.user_id, p.full_name]) || []);
+
+    const opportunities = (data || []).map((opp) => ({
+      id: opp.id,
+      farmer_id: opp.farmer_id,
+      title: opp.title,
+      description: opp.description,
+      target_amount: opp.target_amount,
+      current_amount: opp.current_amount || 0,
+      expected_return_percent: opp.expected_return_percent || 15,
+      risk_level: opp.risk_level || "moyen",
+      status: opp.status,
+      expected_harvest_date: opp.expected_harvest_date,
+      location: opp.location,
+      farmer_name: profileMap.get(opp.farmer_id) || "Agriculteur",
+      crop_name: opp.crops?.name || null,
+    }));
 
     setOpportunities(opportunities);
   };
@@ -153,27 +152,26 @@ export default function Investisseur() {
 
     if (error) throw error;
 
-    const investments = await Promise.all(
-      (data || []).map(async (inv) => {
-        const { data: farmerProfile } = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("user_id", inv.farmer_id)
-          .maybeSingle();
+    // Batch fetch farmer profiles
+    const farmerIds = [...new Set((data || []).map(inv => inv.farmer_id))];
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id, full_name")
+      .in("user_id", farmerIds);
 
-        return {
-          id: inv.id,
-          title: inv.title,
-          amount_invested: inv.amount_invested,
-          expected_return_percent: inv.expected_return_percent || 15,
-          status: inv.status,
-          investment_date: inv.investment_date,
-          expected_harvest_date: inv.expected_harvest_date,
-          actual_return_amount: inv.actual_return_amount,
-          farmer_name: farmerProfile?.full_name || "Agriculteur",
-        };
-      })
-    );
+    const profileMap = new Map(profiles?.map(p => [p.user_id, p.full_name]) || []);
+
+    const investments = (data || []).map((inv) => ({
+      id: inv.id,
+      title: inv.title,
+      amount_invested: inv.amount_invested,
+      expected_return_percent: inv.expected_return_percent || 15,
+      status: inv.status,
+      investment_date: inv.investment_date,
+      expected_harvest_date: inv.expected_harvest_date,
+      actual_return_amount: inv.actual_return_amount,
+      farmer_name: profileMap.get(inv.farmer_id) || "Agriculteur",
+    }));
 
     setInvestments(investments);
   };
