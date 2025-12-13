@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +24,8 @@ import {
   MessageCircle,
   Eye,
   CheckCircle2,
+  Shield,
+  QrCode,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,15 +34,19 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
 import { toast } from "sonner";
+import { recordRepayment } from "@/services/blockchainService";
 
 interface ReceivedInvestment {
   id: string;
   title: string;
+  description: string | null;
   amount_invested: number;
   expected_return_percent: number;
   status: string;
   investment_date: string;
   expected_harvest_date: string | null;
+  actual_return_amount: number | null;
+  actual_return_date: string | null;
   investor_id: string;
   investor_name: string;
   investor_email?: string;
@@ -65,7 +73,7 @@ export function ReceivedInvestments() {
     setLoading(true);
 
     try {
-      // Fetch investments received
+      // Fetch investments received with all details
       const { data: investmentsData } = await supabase
         .from("investments")
         .select("*")
@@ -87,13 +95,16 @@ export function ReceivedInvestments() {
         return {
           id: inv.id,
           title: inv.title,
+          description: inv.description,
           amount_invested: inv.amount_invested,
           expected_return_percent: inv.expected_return_percent || 15,
           status: inv.status,
           investment_date: inv.investment_date,
           expected_harvest_date: inv.expected_harvest_date,
+          actual_return_amount: inv.actual_return_amount,
+          actual_return_date: inv.actual_return_date,
           investor_id: inv.investor_id,
-          investor_name: profile?.full_name || "Investisseur",
+          investor_name: profile?.full_name || "Investisseur anonyme",
           investor_email: profile?.email || undefined,
           investor_phone: profile?.phone || undefined,
         };
@@ -252,23 +263,30 @@ export function ReceivedInvestments() {
 function InvestmentCard({ investment: inv, onRefresh }: { investment: ReceivedInvestment; onRefresh: () => void }) {
   const [showDetails, setShowDetails] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [returnAmount, setReturnAmount] = useState(
+    (inv.amount_invested * (1 + inv.expected_return_percent / 100)).toString()
+  );
 
   const handleMarkComplete = async () => {
     setUpdating(true);
     try {
-      const returnAmount = inv.amount_invested * (1 + inv.expected_return_percent / 100);
+      const amount = parseFloat(returnAmount) || inv.amount_invested * (1 + inv.expected_return_percent / 100);
+      
+      // Record on blockchain
+      const blockchainTx = await recordRepayment(inv.id, amount, inv.investor_id, "");
       
       const { error } = await supabase
         .from("investments")
         .update({ 
           status: "rembourse",
-          actual_return_amount: returnAmount,
+          actual_return_amount: amount,
           actual_return_date: new Date().toISOString()
         })
         .eq("id", inv.id);
 
       if (error) throw error;
-      toast.success("Investissement marqué comme remboursé");
+      toast.success(`Investissement remboursé! Hash: ${blockchainTx.hash.substring(0, 10)}...`);
+      setShowDetails(false);
       onRefresh();
     } catch (error) {
       console.error("Error updating investment:", error);
@@ -397,60 +415,100 @@ function InvestmentCard({ investment: inv, onRefresh }: { investment: ReceivedIn
               </div>
             </div>
 
-            {/* Investor Info */}
-            <div className="p-4 rounded-lg border border-border">
+            {/* Investor Info - Enhanced */}
+            <div className="p-4 rounded-lg border border-primary/20 bg-primary/5">
               <h4 className="font-semibold mb-3 flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Investisseur
+                <Users className="w-4 h-4 text-primary" />
+                Informations Investisseur
               </h4>
-              <div className="space-y-2">
-                <p className="font-medium">{inv.investor_name}</p>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium">{inv.investor_name}</p>
+                    <p className="text-xs text-muted-foreground">Investisseur vérifié</p>
+                  </div>
+                </div>
+                
                 {inv.investor_email && (
-                  <p className="text-sm text-muted-foreground">{inv.investor_email}</p>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Mail className="w-4 h-4 text-muted-foreground" />
+                    <span>{inv.investor_email}</span>
+                  </div>
                 )}
                 {inv.investor_phone && (
-                  <p className="text-sm text-muted-foreground">{inv.investor_phone}</p>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="w-4 h-4 text-muted-foreground" />
+                    <span>{inv.investor_phone}</span>
+                  </div>
                 )}
-              </div>
-              
-              {/* Contact buttons */}
-              <div className="flex gap-2 mt-3">
-                {inv.investor_phone && (
-                  <>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleContact("call")}
-                    >
-                      <Phone className="w-4 h-4" />
+                
+                {/* Contact buttons */}
+                <div className="flex gap-2 pt-2">
+                  {inv.investor_phone && (
+                    <>
+                      <Button variant="outline" size="sm" className="flex-1" onClick={() => handleContact("call")}>
+                        <Phone className="w-4 h-4 mr-1" />
+                        Appeler
+                      </Button>
+                      <Button variant="outline" size="sm" className="flex-1" onClick={() => handleContact("whatsapp")}>
+                        <MessageCircle className="w-4 h-4 mr-1" />
+                        WhatsApp
+                      </Button>
+                    </>
+                  )}
+                  {inv.investor_email && (
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => handleContact("email")}>
+                      <Mail className="w-4 h-4 mr-1" />
+                      Email
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleContact("whatsapp")}
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                    </Button>
-                  </>
-                )}
-                {inv.investor_email && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleContact("email")}
-                  >
-                    <Mail className="w-4 h-4" />
-                  </Button>
-                )}
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Blockchain Notice */}
-            <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
-              <p className="text-xs text-muted-foreground">
-                💡 Les informations de cet investissement seront utilisées pour la traçabilité blockchain 
-                lors de la validation de la récolte et du remboursement.
+            {/* Repayment Section */}
+            {inv.status === "en_cours" && (
+              <div className="p-4 rounded-lg border border-accent/20 bg-accent/5">
+                <h4 className="font-semibold mb-3 flex items-center gap-2">
+                  <Banknote className="w-4 h-4 text-accent" />
+                  Effectuer le remboursement
+                </h4>
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-sm">Montant à rembourser (FCFA)</Label>
+                    <Input
+                      type="number"
+                      value={returnAmount}
+                      onChange={(e) => setReturnAmount(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <Button onClick={handleMarkComplete} disabled={updating} className="w-full">
+                    {updating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
+                    Confirmer le remboursement
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Blockchain Certificate */}
+            <div className="p-4 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
+              <div className="flex items-center gap-2 mb-2">
+                <Shield className="w-5 h-5 text-primary" />
+                <h4 className="font-semibold">Contrat Blockchain</h4>
+              </div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Cet investissement est sécurisé par un smart contract. Le remboursement sera enregistré sur la blockchain pour garantir la traçabilité.
               </p>
+              <div className="flex items-center gap-2">
+                <QrCode className="w-4 h-4 text-muted-foreground" />
+                <code className="text-xs font-mono text-muted-foreground">
+                  0x{inv.id.replace(/-/g, '').substring(0, 20)}...
+                </code>
+              </div>
             </div>
           </div>
         </DialogContent>

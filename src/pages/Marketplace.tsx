@@ -53,10 +53,12 @@ import { useRoleAccess } from "@/hooks/useRoleAccess";
 import { ListingForm } from "@/components/marketplace/ListingForm";
 import { ProductCard } from "@/components/marketplace/ProductCard";
 import { ServiceProviderCard } from "@/components/marketplace/ServiceProviderCard";
+import { ServiceProviderForm } from "@/components/marketplace/ServiceProviderForm";
 import { MyListings } from "@/components/marketplace/MyListings";
 import { MarketplaceStats } from "@/components/marketplace/MarketplaceStats";
 import { OfferCard } from "@/components/marketplace/OfferCard";
 import { InputsGrid } from "@/components/marketplace/InputsGrid";
+import { FarmerOffers } from "@/components/farmer/FarmerOffers";
 import type { Database } from "@/integrations/supabase/types";
 
 type Listing = Database["public"]["Tables"]["marketplace_listings"]["Row"];
@@ -129,6 +131,7 @@ export default function Marketplace() {
   const [showListingForm, setShowListingForm] = useState(false);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [showProviderForm, setShowProviderForm] = useState(false);
   
   const [stats, setStats] = useState({
     totalListings: 0,
@@ -393,8 +396,8 @@ export default function Marketplace() {
     return [
       { value: "acheter", label: "Acheter", icon: ShoppingBag },
       { value: "vendre", label: "Vendre", icon: Store },
+      { value: "offres", label: "Offres reçues", icon: HandCoins },
       { value: "services", label: "Services", icon: Briefcase },
-      { value: "offres", label: "Mes Offres", icon: TrendingUp },
     ];
   };
 
@@ -725,7 +728,7 @@ export default function Marketplace() {
                 <p className="text-sm text-muted-foreground mb-4">
                   Configurez vos services et disponibilités
                 </p>
-                <Button onClick={() => toast.info("Gestion des services bientôt disponible")}>
+                <Button onClick={() => setShowProviderForm(true)}>
                   Configurer mes services
                 </Button>
               </CardContent>
@@ -769,14 +772,14 @@ export default function Marketplace() {
 
           {/* SERVICES TAB (for providers) */}
           <TabsContent value="services" className="mt-4 pb-24">
-            <Card>
+            <Card className="mb-4">
               <CardContent className="p-6 text-center">
                 <Stethoscope className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
                 <h3 className="font-semibold mb-1">Devenir prestataire</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Proposez vos services aux agriculteurs de la région
                 </p>
-                <Button onClick={() => toast.info("Formulaire d'inscription prestataire bientôt disponible")}>
+                <Button onClick={() => setShowProviderForm(true)}>
                   S'inscrire comme prestataire
                 </Button>
               </CardContent>
