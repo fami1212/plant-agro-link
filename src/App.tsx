@@ -3,6 +3,7 @@ import Investisseur from "./pages/Investisseur";
 import Veterinaire from "./pages/Veterinaire";
 import Settings from "./pages/Settings";
 import FarmerInvestments from "./pages/FarmerInvestments";
+import Trace from "./pages/Trace";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -35,6 +36,8 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/auth" element={<Auth />} />
+              {/* Public Traceability Page */}
+              <Route path="/trace/:lotId" element={<Trace />} />
               <Route
                 path="/dashboard"
                 element={
