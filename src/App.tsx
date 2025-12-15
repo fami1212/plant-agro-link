@@ -4,6 +4,7 @@ import Veterinaire from "./pages/Veterinaire";
 import Settings from "./pages/Settings";
 import FarmerInvestments from "./pages/FarmerInvestments";
 import Trace from "./pages/Trace";
+import Admin from "./pages/Admin";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -123,6 +124,15 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Settings />
+                  </ProtectedRoute>
+                }
+              />
+              {/* Admin */}
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <Admin />
                   </ProtectedRoute>
                 }
               />
