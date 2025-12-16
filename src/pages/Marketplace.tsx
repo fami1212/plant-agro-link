@@ -44,6 +44,7 @@ import {
   Stethoscope,
   DollarSign,
   Calendar,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -61,6 +62,7 @@ import { InputsGrid } from "@/components/marketplace/InputsGrid";
 import { FarmerOffers } from "@/components/farmer/FarmerOffers";
 import { VetBookingDialog } from "@/components/veterinaire/VetBookingDialog";
 import { ServiceBookingDialog } from "@/components/marketplace/ServiceBookingDialog";
+import { EscrowManager } from "@/components/escrow/EscrowManager";
 import type { Database } from "@/integrations/supabase/types";
 
 type Listing = Database["public"]["Tables"]["marketplace_listings"]["Row"];
@@ -399,6 +401,7 @@ export default function Marketplace() {
         { value: "acheter", label: "Produits", icon: ShoppingBag },
         { value: "investir", label: "Opportunités", icon: TrendingUp },
         { value: "offres", label: "Mes Offres", icon: HandCoins },
+        { value: "escrow", label: "Escrow", icon: Shield },
       ];
     }
     if (isAcheteur && !isAgriculteur && !isAdmin) {
@@ -406,6 +409,7 @@ export default function Marketplace() {
         { value: "acheter", label: "Acheter", icon: ShoppingBag },
         { value: "services", label: "Services", icon: Briefcase },
         { value: "offres", label: "Mes Offres", icon: HandCoins },
+        { value: "escrow", label: "Escrow", icon: Shield },
       ];
     }
     if (isVeterinaire && !isAgriculteur && !isAdmin) {
@@ -413,18 +417,19 @@ export default function Marketplace() {
         { value: "acheter", label: "Produits", icon: ShoppingBag },
         { value: "mes-services", label: "Mes Services", icon: Briefcase },
         { value: "reservations", label: "Réservations", icon: Eye },
+        { value: "escrow", label: "Escrow", icon: Shield },
       ];
     }
     return [
       { value: "acheter", label: "Acheter", icon: ShoppingBag },
       { value: "vendre", label: "Vendre", icon: Store },
-      { value: "offres", label: "Offres reçues", icon: HandCoins },
-      { value: "services", label: "Services", icon: Briefcase },
+      { value: "offres", label: "Offres", icon: HandCoins },
+      { value: "escrow", label: "Escrow", icon: Shield },
     ];
   };
 
   const tabs = getTabs();
-  const gridCols = tabs.length === 3 ? "grid-cols-3" : "grid-cols-4";
+  const gridCols = tabs.length <= 4 ? `grid-cols-${tabs.length}` : "grid-cols-4";
 
   return (
     <AppLayout>
@@ -919,6 +924,11 @@ export default function Marketplace() {
                 </div>
               )}
             </div>
+          </TabsContent>
+
+          {/* Escrow Tab */}
+          <TabsContent value="escrow" className="mt-4 pb-24">
+            <EscrowManager />
           </TabsContent>
         </Tabs>
       </div>
