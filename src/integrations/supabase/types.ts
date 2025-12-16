@@ -833,6 +833,7 @@ export type Database = {
           listing_id: string
           message: string | null
           payment_method: string | null
+          payment_status: string | null
           proposed_price: number
           proposed_quantity: string | null
           responded_at: string | null
@@ -851,6 +852,7 @@ export type Database = {
           listing_id: string
           message?: string | null
           payment_method?: string | null
+          payment_status?: string | null
           proposed_price: number
           proposed_quantity?: string | null
           responded_at?: string | null
@@ -869,6 +871,7 @@ export type Database = {
           listing_id?: string
           message?: string | null
           payment_method?: string | null
+          payment_status?: string | null
           proposed_price?: number
           proposed_quantity?: string | null
           responded_at?: string | null
@@ -936,6 +939,7 @@ export type Database = {
           duration_hours: number | null
           id: string
           notes: string | null
+          payment_status: string | null
           price: number | null
           provider_id: string
           rating: number | null
@@ -953,6 +957,7 @@ export type Database = {
           duration_hours?: number | null
           id?: string
           notes?: string | null
+          payment_status?: string | null
           price?: number | null
           provider_id: string
           rating?: number | null
@@ -970,6 +975,7 @@ export type Database = {
           duration_hours?: number | null
           id?: string
           notes?: string | null
+          payment_status?: string | null
           price?: number | null
           provider_id?: string
           rating?: number | null
@@ -1144,6 +1150,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      recalculate_opportunity_amount: {
+        Args: { opp_id: string }
+        Returns: undefined
       }
     }
     Enums: {

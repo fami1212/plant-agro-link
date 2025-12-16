@@ -60,6 +60,7 @@ import { OfferCard } from "@/components/marketplace/OfferCard";
 import { InputsGrid } from "@/components/marketplace/InputsGrid";
 import { FarmerOffers } from "@/components/farmer/FarmerOffers";
 import { VetBookingDialog } from "@/components/veterinaire/VetBookingDialog";
+import { ServiceBookingDialog } from "@/components/marketplace/ServiceBookingDialog";
 import type { Database } from "@/integrations/supabase/types";
 
 type Listing = Database["public"]["Tables"]["marketplace_listings"]["Row"];
@@ -1041,8 +1042,8 @@ export default function Marketplace() {
         }}
       />
 
-      {/* Vet Booking Dialog */}
-      {selectedProviderForBooking && (
+      {/* Vet Booking Dialog - for veterinaires only */}
+      {selectedProviderForBooking && selectedProviderForBooking.service_category === "veterinaire" && (
         <VetBookingDialog
           open={!!selectedProviderForBooking}
           onOpenChange={(open) => !open && setSelectedProviderForBooking(null)}
@@ -1051,6 +1052,26 @@ export default function Marketplace() {
             business_name: selectedProviderForBooking.business_name,
             hourly_rate: selectedProviderForBooking.hourly_rate,
             specializations: selectedProviderForBooking.specializations,
+          }}
+          onSuccess={() => {
+            fetchMyBookings();
+            setSelectedProviderForBooking(null);
+          }}
+        />
+      )}
+
+      {/* Service Booking Dialog - for other services */}
+      {selectedProviderForBooking && selectedProviderForBooking.service_category !== "veterinaire" && (
+        <ServiceBookingDialog
+          open={!!selectedProviderForBooking}
+          onOpenChange={(open) => !open && setSelectedProviderForBooking(null)}
+          provider={{
+            id: selectedProviderForBooking.id,
+            user_id: selectedProviderForBooking.user_id,
+            business_name: selectedProviderForBooking.business_name,
+            service_category: selectedProviderForBooking.service_category,
+            hourly_rate: selectedProviderForBooking.hourly_rate,
+            phone: selectedProviderForBooking.phone,
           }}
           onSuccess={() => {
             fetchMyBookings();
