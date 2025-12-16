@@ -273,14 +273,14 @@ export function FarmCalendar() {
                     <div>
                       <Label>Culture associée</Label>
                       <Select
-                        value={newTask.crop_id}
-                        onValueChange={(v) => setNewTask({ ...newTask, crop_id: v })}
+                        value={newTask.crop_id || "none"}
+                        onValueChange={(v) => setNewTask({ ...newTask, crop_id: v === "none" ? "" : v })}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Optionnel" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Aucune</SelectItem>
+                          <SelectItem value="none">Aucune</SelectItem>
                           {crops.map((c) => (
                             <SelectItem key={c.id} value={c.id}>
                               {c.name}
