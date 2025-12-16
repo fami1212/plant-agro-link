@@ -1,1 +1,10 @@
 project_id = "bgrhahojcelswqichcib"
+
+[functions.detect-disease]
+verify_jwt = false
+
+[functions.predict-yield]
+verify_jwt = false
+
+[functions.irrigation-recommendations]
+verify_jwt = false
