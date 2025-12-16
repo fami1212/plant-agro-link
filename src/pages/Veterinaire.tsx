@@ -13,12 +13,14 @@ import {
   Loader2,
   Phone,
   MessageCircle,
-  Plus,
   CheckCircle2,
   Clock,
   X,
   Heart,
   AlertCircle,
+  FileText,
+  Plus,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +29,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
+import { VetConsultationForm } from "@/components/veterinaire/VetConsultationForm";
 
 interface Booking {
   id: string;
@@ -46,8 +49,20 @@ interface AnimalPatient {
   species: string;
   breed: string | null;
   health_status: string;
+  user_id: string;
   owner_name?: string;
   owner_phone?: string;
+  last_visit?: string;
+}
+
+interface VetRecord {
+  id: string;
+  livestock_id: string;
+  record_type: string;
+  description: string | null;
+  treatment: string | null;
+  recorded_at: string;
+  animal_name?: string;
 }
 
 const statusConfig: Record<string, { label: string; color: string }> = {
@@ -74,6 +89,9 @@ export default function Veterinaire() {
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [patients, setPatients] = useState<AnimalPatient[]>([]);
+  const [records, setRecords] = useState<VetRecord[]>([]);
+  const [consultationOpen, setConsultationOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState<AnimalPatient | null>(null);
 
   useEffect(() => {
     if (user) fetchData();
@@ -82,7 +100,7 @@ export default function Veterinaire() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      await Promise.all([fetchBookings(), fetchPatients()]);
+      await Promise.all([fetchBookings(), fetchPatients(), fetchRecords()]);
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -131,10 +149,42 @@ export default function Veterinaire() {
             .select("full_name, phone")
             .eq("user_id", a.user_id)
             .maybeSingle();
-          return { ...a, owner_name: owner?.full_name, owner_phone: owner?.phone };
+          
+          const { data: lastRecord } = await supabase
+            .from("veterinary_records")
+            .select("recorded_at")
+            .eq("livestock_id", a.id)
+            .order("recorded_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          return { 
+            ...a, 
+            owner_name: owner?.full_name, 
+            owner_phone: owner?.phone,
+            last_visit: lastRecord?.recorded_at 
+          };
         })
       );
       setPatients(withOwners);
+    }
+  };
+
+  const fetchRecords = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from("veterinary_records")
+      .select("*, livestock(identifier)")
+      .eq("user_id", user.id)
+      .order("recorded_at", { ascending: false })
+      .limit(20);
+
+    if (data) {
+      setRecords(data.map((r: any) => ({
+        ...r,
+        animal_name: r.livestock?.identifier,
+      })));
     }
   };
 
@@ -142,6 +192,11 @@ export default function Veterinaire() {
     await supabase.from("service_bookings").update({ status }).eq("id", id);
     toast.success("Statut mis à jour");
     fetchBookings();
+  };
+
+  const openConsultation = (patient: AnimalPatient) => {
+    setSelectedPatient(patient);
+    setConsultationOpen(true);
   };
 
   const todayBookings = bookings.filter(b => b.scheduled_date === new Date().toISOString().split("T")[0]).length;
@@ -179,10 +234,10 @@ export default function Veterinaire() {
             { icon: AlertCircle, value: sickPatients, label: "Malades", color: "destructive" },
             { icon: Heart, value: patients.length, label: "Patients", color: "success" },
           ].map(({ icon: Icon, value, label, color }) => (
-            <Card key={label} className={`bg-${color}/5 border-${color}/20`}>
+            <Card key={label} className={cn(`bg-${color}/5 border-${color}/20`)}>
               <CardContent className="p-3 text-center">
-                <Icon className={`w-4 h-4 mx-auto mb-1 text-${color}`} />
-                <p className={`text-lg font-bold text-${color}`}>{value}</p>
+                <Icon className={cn("w-4 h-4 mx-auto mb-1", `text-${color}`)} />
+                <p className={cn("text-lg font-bold", `text-${color}`)}>{value}</p>
                 <p className="text-[10px] text-muted-foreground">{label}</p>
               </CardContent>
             </Card>
@@ -193,14 +248,18 @@ export default function Veterinaire() {
       {/* Tabs */}
       <div className="px-4 pb-28">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 mb-4 h-12">
+          <TabsList className="grid w-full grid-cols-3 mb-4 h-12">
             <TabsTrigger value="rdv" className="gap-2">
               <Calendar className="w-4 h-4" />
-              Rendez-vous
+              RDV
             </TabsTrigger>
             <TabsTrigger value="patients" className="gap-2">
               <Users className="w-4 h-4" />
               Patients
+            </TabsTrigger>
+            <TabsTrigger value="historique" className="gap-2">
+              <FileText className="w-4 h-4" />
+              Historique
             </TabsTrigger>
           </TabsList>
 
@@ -266,15 +325,24 @@ export default function Veterinaire() {
                         <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center text-2xl">
                           {speciesEmoji[p.species] || "🐾"}
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="font-semibold">{p.identifier}</p>
                             <Badge className={health.color}>{health.label}</Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-muted-foreground truncate">
                             {p.breed || p.species} • {p.owner_name}
                           </p>
+                          {p.last_visit && (
+                            <p className="text-xs text-muted-foreground">
+                              Dernière visite: {format(new Date(p.last_visit), "dd MMM yyyy", { locale: fr })}
+                            </p>
+                          )}
                         </div>
+                        <Button size="sm" variant="outline" onClick={() => openConsultation(p)}>
+                          <Plus className="w-4 h-4 mr-1" />
+                          Consulter
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -282,8 +350,48 @@ export default function Veterinaire() {
               })
             )}
           </TabsContent>
+
+          {/* History */}
+          <TabsContent value="historique" className="space-y-3">
+            {records.length === 0 ? (
+              <EmptyState icon={<FileText className="w-8 h-8" />} title="Aucun historique" description="Vos consultations apparaîtront ici" />
+            ) : (
+              records.map((r, i) => (
+                <Card key={r.id} className={cn("animate-fade-in", `stagger-${(i % 5) + 1}`)} style={{ opacity: 0 }}>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <p className="font-semibold">{r.animal_name}</p>
+                        <p className="text-sm text-muted-foreground capitalize">{r.record_type}</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(r.recorded_at), "dd MMM yyyy", { locale: fr })}
+                      </p>
+                    </div>
+                    {r.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">{r.description}</p>
+                    )}
+                    {r.treatment && (
+                      <div className="mt-2 p-2 rounded-lg bg-primary/5">
+                        <p className="text-xs font-medium text-primary">Traitement:</p>
+                        <p className="text-sm">{r.treatment}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </TabsContent>
         </Tabs>
       </div>
+
+      {/* Consultation Form */}
+      <VetConsultationForm
+        open={consultationOpen}
+        onOpenChange={setConsultationOpen}
+        patient={selectedPatient}
+        onSuccess={fetchData}
+      />
     </AppLayout>
   );
 }

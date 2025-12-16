@@ -39,6 +39,7 @@ const allNavItems = [
   { icon: PawPrint, label: "Bétail", path: "/betail", roles: ['agriculteur', 'admin'] },
   { icon: Stethoscope, label: "Cabinet", path: "/veterinaire", roles: ['veterinaire'] },
   { icon: TrendingUp, label: "Investir", path: "/investisseur", roles: ['investisseur', 'admin'] },
+  { icon: ShoppingBag, label: "Achats", path: "/acheteur", roles: ['acheteur'] },
   { icon: ShoppingBag, label: "Marché", path: "/marketplace", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
 ];
 

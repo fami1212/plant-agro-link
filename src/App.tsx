@@ -6,6 +6,7 @@ import FarmerInvestments from "./pages/FarmerInvestments";
 import Trace from "./pages/Trace";
 import Admin from "./pages/Admin";
 import Agriculteur from "./pages/Agriculteur";
+import Acheteur from "./pages/Acheteur";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -118,7 +119,15 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
-              {/* Farmer Investments */}
+              {/* Acheteur */}
+              <Route
+                path="/acheteur"
+                element={
+                  <ProtectedRoute allowedRoles={['acheteur', 'admin']}>
+                    <Acheteur />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/farmer-investments"
                 element={
