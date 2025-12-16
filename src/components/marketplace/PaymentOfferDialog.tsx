@@ -17,10 +17,13 @@ import {
   MapPin,
   Calendar,
   CreditCard,
+  Shield,
+  Lock,
 } from "lucide-react";
 import { MobileMoneyPayment } from "@/components/payment/MobileMoneyPayment";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { createEscrowContract, fundEscrow } from "@/services/escrowService";
 
 interface Listing {
   id: string;
@@ -48,7 +51,7 @@ interface PaymentOfferDialogProps {
   onOpenChange: (open: boolean) => void;
   offer: Offer;
   onSuccess: () => void;
-  mode: "accept" | "pay"; // "accept" for seller accepting, "pay" for buyer paying
+  mode: "accept" | "pay";
 }
 
 export function PaymentOfferDialog({
@@ -60,11 +63,15 @@ export function PaymentOfferDialog({
 }: PaymentOfferDialogProps) {
   const [showPayment, setShowPayment] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [escrowId, setEscrowId] = useState<string | null>(null);
+
+  // Calculate fees (2% transaction fee)
+  const transactionFee = Math.round(offer.proposed_price * 0.02);
+  const totalAmount = offer.proposed_price + transactionFee;
 
   const handleAcceptOffer = async () => {
     setProcessing(true);
     try {
-      // Update offer status
       const { error: offerError } = await supabase
         .from("marketplace_offers")
         .update({ 
@@ -75,13 +82,12 @@ export function PaymentOfferDialog({
 
       if (offerError) throw offerError;
 
-      // Update listing status
       await supabase
         .from("marketplace_listings")
         .update({ status: "reserve" })
         .eq("id", offer.listing_id);
 
-      toast.success("Offre acceptée ! En attente du paiement.");
+      toast.success("Offre acceptée ! En attente du paiement sécurisé.");
       onSuccess();
       onOpenChange(false);
     } catch (error) {
@@ -92,28 +98,56 @@ export function PaymentOfferDialog({
     }
   };
 
+  const handleProceedToPayment = async () => {
+    setProcessing(true);
+    try {
+      // Create escrow contract
+      const escrow = await createEscrowContract(
+        offer.buyer_id,
+        offer.seller_id,
+        offer.listing_id,
+        offer.proposed_price,
+        transactionFee,
+        offer.id
+      );
+      setEscrowId(escrow.id);
+      setShowPayment(true);
+      toast.success("Contrat escrow créé - Transaction sécurisée");
+    } catch (error) {
+      console.error("Escrow creation error:", error);
+      toast.error("Erreur lors de la création du contrat sécurisé");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const handlePaymentSuccess = async (transactionId: string) => {
     try {
-      // Update offer with payment info
+      // Fund the escrow
+      if (escrowId) {
+        await fundEscrow(escrowId, transactionId);
+      }
+
       const { error: offerError } = await supabase
         .from("marketplace_offers")
         .update({ 
           payment_method: "mobile_money",
+          payment_status: "escrow",
           status: "acceptee"
         })
         .eq("id", offer.id);
 
       if (offerError) throw offerError;
 
-      // Update listing as sold
       await supabase
         .from("marketplace_listings")
-        .update({ status: "vendu" })
+        .update({ status: "reserve" })
         .eq("id", offer.listing_id);
 
-      toast.success("Paiement effectué avec succès !");
+      toast.success("Paiement sécurisé par escrow blockchain!");
       onSuccess();
       setShowPayment(false);
+      setEscrowId(null);
       onOpenChange(false);
     } catch (error) {
       console.error("Error processing payment:", error);
@@ -136,20 +170,34 @@ export function PaymentOfferDialog({
                 </>
               ) : (
                 <>
-                  <CreditCard className="w-5 h-5 text-primary" />
-                  Payer l'offre
+                  <Shield className="w-5 h-5 text-primary" />
+                  Paiement sécurisé
                 </>
               )}
             </DialogTitle>
             <DialogDescription>
               {mode === "accept" 
                 ? "Confirmez l'acceptation de cette offre"
-                : "Finalisez votre achat avec le paiement mobile"
+                : "Transaction protégée par smart contract blockchain"
               }
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
+            {/* Escrow info for payment mode */}
+            {mode === "pay" && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                <Lock className="w-5 h-5 text-primary" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Protection Escrow</p>
+                  <p className="text-xs text-muted-foreground">
+                    Fonds libérés après confirmation de livraison
+                  </p>
+                </div>
+                <Shield className="w-5 h-5 text-primary" />
+              </div>
+            )}
+
             {/* Product Info */}
             <div className="p-4 bg-muted/50 rounded-lg space-y-2">
               <div className="flex items-start gap-3">
@@ -175,10 +223,26 @@ export function PaymentOfferDialog({
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Prix proposé</span>
-                <span className="text-xl font-bold text-primary">
+                <span className="font-bold">
                   {offer.proposed_price.toLocaleString()} FCFA
                 </span>
               </div>
+              
+              {mode === "pay" && (
+                <>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">Frais de service (2%)</span>
+                    <span>{transactionFee.toLocaleString()} FCFA</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold">Total sécurisé</span>
+                    <span className="text-xl font-bold text-primary">
+                      {totalAmount.toLocaleString()} FCFA
+                    </span>
+                  </div>
+                </>
+              )}
               
               {offer.proposed_quantity && (
                 <div className="flex justify-between items-center text-sm">
@@ -228,13 +292,25 @@ export function PaymentOfferDialog({
                 </Button>
               </div>
             ) : (
-              <Button 
-                className="w-full"
-                onClick={() => setShowPayment(true)}
-              >
-                <Wallet className="w-4 h-4 mr-2" />
-                Procéder au paiement
-              </Button>
+              <>
+                <Button 
+                  className="w-full"
+                  onClick={handleProceedToPayment}
+                  disabled={processing}
+                >
+                  {processing ? (
+                    "Création du contrat..."
+                  ) : (
+                    <>
+                      <Shield className="w-4 h-4 mr-2" />
+                      Paiement sécurisé par Escrow
+                    </>
+                  )}
+                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  🔒 Fonds bloqués jusqu'à confirmation de réception
+                </p>
+              </>
             )}
           </div>
         </DialogContent>
@@ -244,10 +320,10 @@ export function PaymentOfferDialog({
       <MobileMoneyPayment
         open={showPayment}
         onOpenChange={setShowPayment}
-        amount={offer.proposed_price}
-        description={`Achat: ${listingTitle}`}
+        amount={totalAmount}
+        description={`Escrow: ${listingTitle}`}
         paymentType="marketplace"
-        referenceId={offer.id}
+        referenceId={escrowId || offer.id}
         onSuccess={handlePaymentSuccess}
         onError={(error) => toast.error(error)}
       />

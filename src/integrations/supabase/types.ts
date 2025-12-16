@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      blockchain_transactions: {
+        Row: {
+          created_at: string
+          data: Json
+          escrow_id: string | null
+          hash: string
+          id: string
+          status: string
+          transaction_type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          escrow_id?: string | null
+          hash: string
+          id?: string
+          status?: string
+          transaction_type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          escrow_id?: string | null
+          hash?: string
+          id?: string
+          status?: string
+          transaction_type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blockchain_transactions_escrow_id_fkey"
+            columns: ["escrow_id"]
+            isOneToOne: false
+            referencedRelation: "escrow_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crops: {
         Row: {
           actual_harvest_date: string | null
@@ -113,6 +154,131 @@ export type Database = {
             columns: ["device_id"]
             isOneToOne: false
             referencedRelation: "iot_devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escrow_contracts: {
+        Row: {
+          amount: number
+          auto_release_after_days: number
+          blockchain_hash: string
+          buyer_id: string
+          created_at: string
+          currency: string
+          delivery_confirmed_at: string | null
+          dispute_window_days: number
+          fees: number
+          funded_at: string | null
+          id: string
+          listing_id: string | null
+          metadata: Json | null
+          offer_id: string | null
+          refunded_at: string | null
+          released_at: string | null
+          require_delivery_confirmation: boolean
+          seller_id: string
+          status: string
+          total_amount: number
+          transaction_id: string
+        }
+        Insert: {
+          amount: number
+          auto_release_after_days?: number
+          blockchain_hash: string
+          buyer_id: string
+          created_at?: string
+          currency?: string
+          delivery_confirmed_at?: string | null
+          dispute_window_days?: number
+          fees?: number
+          funded_at?: string | null
+          id?: string
+          listing_id?: string | null
+          metadata?: Json | null
+          offer_id?: string | null
+          refunded_at?: string | null
+          released_at?: string | null
+          require_delivery_confirmation?: boolean
+          seller_id: string
+          status?: string
+          total_amount: number
+          transaction_id: string
+        }
+        Update: {
+          amount?: number
+          auto_release_after_days?: number
+          blockchain_hash?: string
+          buyer_id?: string
+          created_at?: string
+          currency?: string
+          delivery_confirmed_at?: string | null
+          dispute_window_days?: number
+          fees?: number
+          funded_at?: string | null
+          id?: string
+          listing_id?: string | null
+          metadata?: Json | null
+          offer_id?: string | null
+          refunded_at?: string | null
+          released_at?: string | null
+          require_delivery_confirmation?: boolean
+          seller_id?: string
+          status?: string
+          total_amount?: number
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escrow_contracts_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escrow_contracts_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escrow_events: {
+        Row: {
+          actor_id: string
+          created_at: string
+          details: string | null
+          escrow_id: string
+          event_type: string
+          hash: string
+          id: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          details?: string | null
+          escrow_id: string
+          event_type: string
+          hash: string
+          id?: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          details?: string | null
+          escrow_id?: string
+          event_type?: string
+          hash?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escrow_events_escrow_id_fkey"
+            columns: ["escrow_id"]
+            isOneToOne: false
+            referencedRelation: "escrow_contracts"
             referencedColumns: ["id"]
           },
         ]
