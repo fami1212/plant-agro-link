@@ -263,14 +263,14 @@ export function VetConsultationForm({
           <div>
             <Label>Mettre à jour l'état de santé</Label>
             <Select
-              value={formData.update_health_status}
-              onValueChange={(value) => setFormData({ ...formData, update_health_status: value })}
+              value={formData.update_health_status || "none"}
+              onValueChange={(value) => setFormData({ ...formData, update_health_status: value === "none" ? "" : value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Ne pas modifier" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Ne pas modifier</SelectItem>
+                <SelectItem value="none">Ne pas modifier</SelectItem>
                 {healthStatusOptions.map((status) => (
                   <SelectItem key={status.value} value={status.value}>
                     {status.label}
