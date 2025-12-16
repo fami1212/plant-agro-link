@@ -5,6 +5,7 @@ import Settings from "./pages/Settings";
 import FarmerInvestments from "./pages/FarmerInvestments";
 import Trace from "./pages/Trace";
 import Admin from "./pages/Admin";
+import Agriculteur from "./pages/Agriculteur";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -48,6 +49,14 @@ const App = () => (
                 }
               />
               {/* Agriculteur Routes */}
+              <Route
+                path="/agriculteur"
+                element={
+                  <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
+                    <Agriculteur />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/parcelles"
                 element={
