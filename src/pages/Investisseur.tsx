@@ -113,9 +113,23 @@ export default function Investisseur() {
 
     const profileMap = new Map(profiles?.map(p => [p.user_id, p.full_name]) || []);
 
+    // Fetch actual investments for each opportunity to get real current_amount
+    const opportunityTitles = (data || []).map(opp => opp.title);
+    const { data: investments } = await supabase
+      .from("investments")
+      .select("title, amount_invested")
+      .in("title", opportunityTitles);
+
+    // Calculate total invested per opportunity title
+    const investedMap = new Map<string, number>();
+    (investments || []).forEach(inv => {
+      const current = investedMap.get(inv.title) || 0;
+      investedMap.set(inv.title, current + inv.amount_invested);
+    });
+
     setOpportunities((data || []).map((opp) => ({
       ...opp,
-      current_amount: opp.current_amount || 0,
+      current_amount: investedMap.get(opp.title) || opp.current_amount || 0,
       expected_return_percent: opp.expected_return_percent || 15,
       risk_level: opp.risk_level || "moyen",
       farmer_name: profileMap.get(opp.farmer_id) || "Agriculteur",
