@@ -15,6 +15,7 @@ import {
   TrendingUp,
   Shield,
   Tractor,
+  Brain,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -48,6 +49,7 @@ const allMenuItems = [
   { icon: MapPin, label: "Parcelles", path: "/parcelles", roles: ['agriculteur', 'admin'] },
   { icon: TrendingUp, label: "Mes financements", path: "/farmer-investments", roles: ['agriculteur', 'admin'] },
   { icon: Activity, label: "Capteurs IoT", path: "/iot", roles: ['agriculteur', 'admin'] },
+  { icon: Brain, label: "Intelligence IA", path: "/ia", roles: ['agriculteur', 'admin'] },
   { icon: PawPrint, label: "Suivi animaux", path: "/betail", roles: ['veterinaire'] },
   { icon: Shield, label: "Administration", path: "/admin", roles: ['admin'] },
   { icon: Settings, label: "Paramètres", path: "/settings", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },

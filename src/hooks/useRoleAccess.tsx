@@ -11,9 +11,9 @@ interface RoleConfig {
 
 const roleConfigs: Record<AppRole, RoleConfig> = {
   agriculteur: {
-    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/iot', '/farmer-investments', '/settings'],
+    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/iot', '/ia', '/farmer-investments', '/settings'],
     navItems: ['/dashboard', '/agriculteur', '/cultures', '/betail', '/marketplace'],
-    menuItems: ['/parcelles', '/farmer-investments', '/iot', '/settings'],
+    menuItems: ['/parcelles', '/farmer-investments', '/iot', '/ia', '/settings'],
     dashboardType: 'agriculteur',
   },
   veterinaire: {
@@ -35,9 +35,9 @@ const roleConfigs: Record<AppRole, RoleConfig> = {
     dashboardType: 'investisseur',
   },
   admin: {
-    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/iot', '/admin', '/settings', '/farmer-investments'],
+    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/iot', '/ia', '/admin', '/settings', '/farmer-investments'],
     navItems: ['/dashboard', '/agriculteur', '/cultures', '/betail', '/marketplace'],
-    menuItems: ['/parcelles', '/farmer-investments', '/iot', '/admin', '/settings'],
+    menuItems: ['/parcelles', '/farmer-investments', '/iot', '/ia', '/admin', '/settings'],
     dashboardType: 'admin',
   },
 };

@@ -7,6 +7,7 @@ import Trace from "./pages/Trace";
 import Admin from "./pages/Admin";
 import Agriculteur from "./pages/Agriculteur";
 import Acheteur from "./pages/Acheteur";
+import IA from "./pages/IA";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -98,6 +99,15 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
                     <IoT />
+                  </ProtectedRoute>
+                }
+              />
+              {/* IA Module */}
+              <Route
+                path="/ia"
+                element={
+                  <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
+                    <IA />
                   </ProtectedRoute>
                 }
               />
