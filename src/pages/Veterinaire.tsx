@@ -21,6 +21,8 @@ import {
   FileText,
   Plus,
   Activity,
+  Scale,
+  Edit,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,7 +32,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
 import { VetConsultationForm } from "@/components/veterinaire/VetConsultationForm";
-
+import { VetAnimalUpdateDialog } from "@/components/veterinaire/VetAnimalUpdateDialog";
 interface Booking {
   id: string;
   client_id: string;
@@ -49,6 +51,7 @@ interface AnimalPatient {
   species: string;
   breed: string | null;
   health_status: string;
+  weight_kg: number | null;
   user_id: string;
   owner_name?: string;
   owner_phone?: string;
@@ -91,6 +94,7 @@ export default function Veterinaire() {
   const [patients, setPatients] = useState<AnimalPatient[]>([]);
   const [records, setRecords] = useState<VetRecord[]>([]);
   const [consultationOpen, setConsultationOpen] = useState(false);
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<AnimalPatient | null>(null);
 
   useEffect(() => {
@@ -339,10 +343,23 @@ export default function Veterinaire() {
                             </p>
                           )}
                         </div>
-                        <Button size="sm" variant="outline" onClick={() => openConsultation(p)}>
-                          <Plus className="w-4 h-4 mr-1" />
-                          Consulter
-                        </Button>
+                        <div className="flex flex-col gap-1">
+                          <Button size="sm" variant="outline" onClick={() => openConsultation(p)}>
+                            <Plus className="w-4 h-4 mr-1" />
+                            Consulter
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            onClick={() => {
+                              setSelectedPatient(p);
+                              setUpdateDialogOpen(true);
+                            }}
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            Modifier
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -390,6 +407,14 @@ export default function Veterinaire() {
         open={consultationOpen}
         onOpenChange={setConsultationOpen}
         patient={selectedPatient}
+        onSuccess={fetchData}
+      />
+
+      {/* Animal Update Dialog */}
+      <VetAnimalUpdateDialog
+        open={updateDialogOpen}
+        onOpenChange={setUpdateDialogOpen}
+        animal={selectedPatient}
         onSuccess={fetchData}
       />
     </AppLayout>

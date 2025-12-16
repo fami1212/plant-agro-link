@@ -288,8 +288,28 @@ export default function Marketplace() {
         .eq("seller_id", user.id)
         .order("created_at", { ascending: false });
 
-      setMyOffers(sent || []);
-      setIncomingOffers(received || []);
+      // Get profiles for other parties
+      const sellerIds = [...new Set((sent || []).map(o => o.seller_id))];
+      const buyerIds = [...new Set((received || []).map(o => o.buyer_id))];
+      const allIds = [...sellerIds, ...buyerIds];
+
+      let profileMap = new Map<string, string>();
+      if (allIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", allIds);
+        profileMap = new Map(profiles?.map(p => [p.user_id, p.full_name]) || []);
+      }
+
+      setMyOffers((sent || []).map(o => ({
+        ...o,
+        other_party_name: profileMap.get(o.seller_id) || "Vendeur"
+      })));
+      setIncomingOffers((received || []).map(o => ({
+        ...o,
+        other_party_name: profileMap.get(o.buyer_id) || "Acheteur"
+      })));
     } catch (error) {
       console.error("Error fetching offers:", error);
     }
