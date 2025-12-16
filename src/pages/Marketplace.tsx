@@ -59,6 +59,7 @@ import { MarketplaceStats } from "@/components/marketplace/MarketplaceStats";
 import { OfferCard } from "@/components/marketplace/OfferCard";
 import { InputsGrid } from "@/components/marketplace/InputsGrid";
 import { FarmerOffers } from "@/components/farmer/FarmerOffers";
+import { VetBookingDialog } from "@/components/veterinaire/VetBookingDialog";
 import type { Database } from "@/integrations/supabase/types";
 
 type Listing = Database["public"]["Tables"]["marketplace_listings"]["Row"];
@@ -132,7 +133,7 @@ export default function Marketplace() {
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [showProviderForm, setShowProviderForm] = useState(false);
-  
+  const [selectedProviderForBooking, setSelectedProviderForBooking] = useState<ServiceProvider | null>(null);
   const [stats, setStats] = useState({
     totalListings: 0,
     activeListings: 0,
@@ -615,7 +616,7 @@ export default function Marketplace() {
                       <ServiceProviderCard
                         key={provider.id}
                         provider={provider as any}
-                        onBook={() => toast.success(`Réservation avec ${provider.business_name}`)}
+                        onBook={() => setSelectedProviderForBooking(provider)}
                         onContact={(type) => handleContact(type, provider.phone || "")}
                         index={index}
                       />
@@ -795,7 +796,7 @@ export default function Marketplace() {
                   <ServiceProviderCard
                     key={provider.id}
                     provider={provider as any}
-                    onBook={() => toast.success(`Réservation avec ${provider.business_name}`)}
+                    onBook={() => setSelectedProviderForBooking(provider)}
                     onContact={(type) => handleContact(type, provider.phone || "")}
                     index={index}
                   />
@@ -1010,6 +1011,33 @@ export default function Marketplace() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Service Provider Form Dialog */}
+      <ServiceProviderForm
+        open={showProviderForm}
+        onOpenChange={setShowProviderForm}
+        onSuccess={() => {
+          fetchServiceProviders();
+        }}
+      />
+
+      {/* Vet Booking Dialog */}
+      {selectedProviderForBooking && (
+        <VetBookingDialog
+          open={!!selectedProviderForBooking}
+          onOpenChange={(open) => !open && setSelectedProviderForBooking(null)}
+          provider={{
+            id: selectedProviderForBooking.id,
+            business_name: selectedProviderForBooking.business_name,
+            hourly_rate: selectedProviderForBooking.hourly_rate,
+            specializations: selectedProviderForBooking.specializations,
+          }}
+          onSuccess={() => {
+            fetchMyBookings();
+            setSelectedProviderForBooking(null);
+          }}
+        />
+      )}
     </AppLayout>
   );
 }

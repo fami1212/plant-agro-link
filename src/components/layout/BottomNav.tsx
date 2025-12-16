@@ -14,6 +14,7 @@ import {
   Stethoscope,
   TrendingUp,
   Shield,
+  Tractor,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,7 +34,7 @@ import { toast } from "sonner";
 // All possible navigation items
 const allNavItems = [
   { icon: Home, label: "Accueil", path: "/dashboard", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
-  { icon: MapPin, label: "Parcelles", path: "/parcelles", roles: ['agriculteur', 'admin'] },
+  { icon: Tractor, label: "Exploitation", path: "/agriculteur", roles: ['agriculteur', 'admin'] },
   { icon: Wheat, label: "Cultures", path: "/cultures", roles: ['agriculteur', 'admin'] },
   { icon: PawPrint, label: "Bétail", path: "/betail", roles: ['agriculteur', 'admin'] },
   { icon: Stethoscope, label: "Cabinet", path: "/veterinaire", roles: ['veterinaire'] },
@@ -43,6 +44,7 @@ const allNavItems = [
 
 // All possible menu items
 const allMenuItems = [
+  { icon: MapPin, label: "Parcelles", path: "/parcelles", roles: ['agriculteur', 'admin'] },
   { icon: TrendingUp, label: "Mes financements", path: "/farmer-investments", roles: ['agriculteur', 'admin'] },
   { icon: Activity, label: "Capteurs IoT", path: "/iot", roles: ['agriculteur', 'admin'] },
   { icon: PawPrint, label: "Suivi animaux", path: "/betail", roles: ['veterinaire'] },
