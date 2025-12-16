@@ -2,11 +2,22 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, X, MessageSquare, Clock, ArrowRight, CreditCard } from "lucide-react";
+import { 
+  Check, 
+  X, 
+  ArrowLeftRight, 
+  Clock, 
+  ArrowRight, 
+  CreditCard,
+  Package,
+  Truck,
+  MessageSquare
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { PaymentOfferDialog } from "./PaymentOfferDialog";
+import { CounterOfferDialog } from "./CounterOfferDialog";
 
 interface OfferCardProps {
   offer: {
@@ -17,6 +28,7 @@ interface OfferCardProps {
     proposed_price: number;
     proposed_quantity?: string | null;
     message?: string | null;
+    counter_offer_message?: string | null;
     status: string;
     counter_offer_price?: number | null;
     created_at: string;
@@ -38,12 +50,12 @@ interface OfferCardProps {
   index?: number;
 }
 
-const statusConfig: Record<string, { label: string; color: string }> = {
-  en_attente: { label: "En attente", color: "bg-warning/10 text-warning" },
-  acceptee: { label: "Acceptée", color: "bg-primary/10 text-primary" },
-  refusee: { label: "Refusée", color: "bg-destructive/10 text-destructive" },
-  contre_offre: { label: "Contre-offre", color: "bg-blue-500/10 text-blue-600" },
-  expiree: { label: "Expirée", color: "bg-muted text-muted-foreground" },
+const statusConfig: Record<string, { label: string; color: string; bgColor: string }> = {
+  en_attente: { label: "En attente", color: "text-warning", bgColor: "bg-warning/10" },
+  acceptee: { label: "Acceptée", color: "text-success", bgColor: "bg-success/10" },
+  refusee: { label: "Refusée", color: "text-destructive", bgColor: "bg-destructive/10" },
+  contre_offre: { label: "Contre-offre", color: "text-primary", bgColor: "bg-primary/10" },
+  expiree: { label: "Expirée", color: "text-muted-foreground", bgColor: "bg-muted" },
 };
 
 export function OfferCard({ 
@@ -55,6 +67,7 @@ export function OfferCard({
   index = 0 
 }: OfferCardProps) {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [showCounterDialog, setShowCounterDialog] = useState(false);
   const [paymentMode, setPaymentMode] = useState<"accept" | "pay">("accept");
   
   const config = statusConfig[offer.status] || statusConfig.en_attente;
@@ -70,95 +83,156 @@ export function OfferCard({
     setShowPaymentDialog(true);
   };
 
-  // Show pay button for buyer when offer is accepted
   const showPayButton = !offer.is_incoming && offer.status === "acceptee";
+  const showRespondToCounter = !offer.is_incoming && offer.status === "contre_offre";
 
   return (
     <>
       <Card
-        className={cn("animate-fade-in", `stagger-${(index % 5) + 1}`)}
+        className={cn(
+          "animate-fade-in overflow-hidden border-border/50",
+          `stagger-${(index % 5) + 1}`
+        )}
         style={{ opacity: 0 }}
       >
-        <CardContent className="p-4">
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-foreground line-clamp-1">
-                {offer.listing?.title || "Produit"}
-              </h3>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge className={cn("text-xs", config.color)}>
-                  {config.label}
-                </Badge>
+        <CardContent className="p-0">
+          {/* Header with status */}
+          <div className={cn("px-4 py-2 flex items-center justify-between", config.bgColor)}>
+            <span className={cn("text-sm font-medium", config.color)}>
+              {config.label}
+            </span>
+            {offer.expires_at && !isExpired && offer.status === "en_attente" && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Clock className="w-3 h-3" />
+                Expire le {format(new Date(offer.expires_at), "dd/MM", { locale: fr })}
+              </div>
+            )}
+          </div>
+
+          <div className="p-4 space-y-3">
+            {/* Product info */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-foreground line-clamp-1">
+                  {offer.listing?.title || "Produit"}
+                </h3>
                 {offer.listing?.category && (
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="mt-1 text-xs">
                     {offer.listing.category}
                   </Badge>
                 )}
               </div>
             </div>
-            <div className="text-right">
-              <p className="font-bold text-lg text-primary">
-                {offer.proposed_price.toLocaleString()} FCFA
-              </p>
-              {offer.proposed_quantity && (
-                <p className="text-xs text-muted-foreground">{offer.proposed_quantity}</p>
+
+            {/* Price info */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 rounded-xl bg-muted/50">
+                <p className="text-xs text-muted-foreground mb-1">Offre proposée</p>
+                <p className="text-lg font-bold text-foreground">
+                  {offer.proposed_price.toLocaleString()}
+                  <span className="text-sm font-normal text-muted-foreground ml-1">FCFA</span>
+                </p>
+              </div>
+              
+              {offer.counter_offer_price && (
+                <div className="p-3 rounded-xl bg-primary/10">
+                  <p className="text-xs text-primary mb-1">Contre-offre</p>
+                  <p className="text-lg font-bold text-primary">
+                    {offer.counter_offer_price.toLocaleString()}
+                    <span className="text-sm font-normal ml-1">FCFA</span>
+                  </p>
+                </div>
               )}
             </div>
-          </div>
 
-          {offer.message && (
-            <div className="p-2 bg-muted rounded-lg mb-3">
-              <p className="text-sm text-muted-foreground line-clamp-2">
-                "{offer.message}"
-              </p>
+            {/* Details */}
+            <div className="flex flex-wrap gap-2">
+              {offer.proposed_quantity && (
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Package className="w-4 h-4" />
+                  {offer.proposed_quantity}
+                </div>
+              )}
+              {offer.delivery_date && (
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Truck className="w-4 h-4" />
+                  Livraison: {format(new Date(offer.delivery_date), "dd MMM", { locale: fr })}
+                </div>
+              )}
             </div>
-          )}
 
-          {offer.counter_offer_price && (
-            <div className="flex items-center gap-2 p-2 bg-blue-500/10 rounded-lg mb-3">
-              <ArrowRight className="w-4 h-4 text-blue-600" />
-              <span className="text-sm text-blue-600">
-                Contre-offre: <strong>{offer.counter_offer_price.toLocaleString()} FCFA</strong>
-              </span>
-            </div>
-          )}
-
-          <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
-            <span>
-              {format(new Date(offer.created_at), "dd MMM yyyy 'à' HH:mm", { locale: fr })}
-            </span>
-            {offer.expires_at && !isExpired && (
-              <div className="flex items-center gap-1 text-warning">
-                <Clock className="w-3 h-3" />
-                <span>Expire le {format(new Date(offer.expires_at), "dd/MM", { locale: fr })}</span>
+            {/* Messages */}
+            {offer.message && (
+              <div className="p-3 rounded-xl bg-muted/50 border border-border/50">
+                <div className="flex items-start gap-2">
+                  <MessageSquare className="w-4 h-4 text-muted-foreground mt-0.5" />
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {offer.message}
+                  </p>
+                </div>
               </div>
             )}
+
+            {offer.counter_offer_message && (
+              <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
+                <div className="flex items-start gap-2">
+                  <ArrowRight className="w-4 h-4 text-primary mt-0.5" />
+                  <p className="text-sm text-primary">
+                    {offer.counter_offer_message}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Date */}
+            <p className="text-xs text-muted-foreground">
+              {format(new Date(offer.created_at), "dd MMM yyyy 'à' HH:mm", { locale: fr })}
+            </p>
+
+            {/* Actions for seller (incoming offers) */}
+            {offer.is_incoming && offer.status === "en_attente" && (
+              <div className="flex items-center gap-2 pt-2">
+                <Button size="sm" className="flex-1" onClick={handleAcceptWithPayment}>
+                  <Check className="w-4 h-4 mr-1" />
+                  Accepter
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => setShowCounterDialog(true)}
+                >
+                  <ArrowLeftRight className="w-4 h-4 mr-1" />
+                  Contre-offre
+                </Button>
+                <Button size="sm" variant="ghost" onClick={onReject}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+
+            {/* Accept counter-offer (for buyer) */}
+            {showRespondToCounter && (
+              <div className="flex items-center gap-2 pt-2">
+                <Button size="sm" className="flex-1" onClick={handleAcceptWithPayment}>
+                  <Check className="w-4 h-4 mr-1" />
+                  Accepter la contre-offre
+                </Button>
+                <Button size="sm" variant="ghost" onClick={onReject}>
+                  <X className="w-4 h-4 mr-1" />
+                  Refuser
+                </Button>
+              </div>
+            )}
+
+            {/* Pay button for buyer */}
+            {showPayButton && (
+              <Button size="sm" className="w-full" onClick={handlePayOffer}>
+                <CreditCard className="w-4 h-4 mr-2" />
+                Payer maintenant
+              </Button>
+            )}
           </div>
-
-          {/* Seller actions - Accept/Reject */}
-          {offer.is_incoming && offer.status === "en_attente" && (
-            <div className="flex items-center gap-2">
-              <Button size="sm" className="flex-1" onClick={handleAcceptWithPayment}>
-                <Check className="w-4 h-4 mr-1" />
-                Accepter
-              </Button>
-              <Button size="sm" variant="outline" onClick={onCounterOffer}>
-                <MessageSquare className="w-4 h-4 mr-1" />
-                Contre-offre
-              </Button>
-              <Button size="sm" variant="ghost" onClick={onReject}>
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          )}
-
-          {/* Buyer action - Pay after acceptance */}
-          {showPayButton && (
-            <Button size="sm" className="w-full" onClick={handlePayOffer}>
-              <CreditCard className="w-4 h-4 mr-2" />
-              Payer maintenant
-            </Button>
-          )}
         </CardContent>
       </Card>
 
@@ -171,7 +245,7 @@ export function OfferCard({
           listing_id: offer.listing_id,
           buyer_id: offer.buyer_id,
           seller_id: offer.seller_id,
-          proposed_price: offer.proposed_price,
+          proposed_price: offer.counter_offer_price || offer.proposed_price,
           proposed_quantity: offer.proposed_quantity,
           message: offer.message,
           delivery_date: offer.delivery_date,
@@ -189,6 +263,23 @@ export function OfferCard({
           onPaymentSuccess?.();
           onAccept?.();
         }}
+      />
+
+      {/* Counter-offer Dialog */}
+      <CounterOfferDialog
+        open={showCounterDialog}
+        onOpenChange={setShowCounterDialog}
+        offer={{
+          id: offer.id,
+          listing_id: offer.listing_id,
+          buyer_id: offer.buyer_id,
+          seller_id: offer.seller_id,
+          proposed_price: offer.proposed_price,
+          proposed_quantity: offer.proposed_quantity,
+          message: offer.message,
+          listing: offer.listing,
+        }}
+        onSuccess={onCounterOffer}
       />
     </>
   );
