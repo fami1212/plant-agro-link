@@ -9,11 +9,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ShoppingBag, MapPin, User, CreditCard, CheckCircle2 } from "lucide-react";
+import { ShoppingBag, MapPin, User, CreditCard, CheckCircle2, Shield, Lock } from "lucide-react";
 import { MobileMoneyPayment } from "@/components/payment/MobileMoneyPayment";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PaymentType } from "@/services/paymentService";
+import { createEscrowContract, fundEscrow } from "@/services/escrowService";
 
 interface MarketplacePaymentDialogProps {
   open: boolean;
@@ -44,6 +45,8 @@ export function MarketplacePaymentDialog({
 }: MarketplacePaymentDialogProps) {
   const [showPayment, setShowPayment] = useState(false);
   const [paymentComplete, setPaymentComplete] = useState(false);
+  const [escrowId, setEscrowId] = useState<string | null>(null);
+  const [isCreatingEscrow, setIsCreatingEscrow] = useState(false);
 
   if (!offer) return null;
 
@@ -51,30 +54,59 @@ export function MarketplacePaymentDialog({
   const transactionFee = Math.round(offer.proposed_price * 0.02);
   const totalAmount = offer.proposed_price + transactionFee;
 
-  const handlePaymentSuccess = async () => {
+  const handleProceedToPayment = async () => {
+    setIsCreatingEscrow(true);
     try {
+      // Create escrow contract first
+      const escrow = await createEscrowContract(
+        offer.buyer_id,
+        offer.seller_id,
+        offer.listing_id,
+        offer.proposed_price,
+        transactionFee,
+        offer.id
+      );
+      setEscrowId(escrow.id);
+      setShowPayment(true);
+      toast.success("Contrat escrow créé - Fonds sécurisés par blockchain");
+    } catch (error) {
+      console.error("Escrow creation error:", error);
+      toast.error("Erreur lors de la création du contrat sécurisé");
+    } finally {
+      setIsCreatingEscrow(false);
+    }
+  };
+
+  const handlePaymentSuccess = async (transactionId: string) => {
+    try {
+      // Fund the escrow
+      if (escrowId) {
+        await fundEscrow(escrowId, transactionId);
+      }
+
       // Update offer payment status
       await supabase
         .from("marketplace_offers")
         .update({ 
-          payment_status: "paid",
+          payment_status: "escrow",
           status: "acceptee"
         })
         .eq("id", offer.id);
 
-      // Update listing status to sold
+      // Update listing status to reserved (not sold yet until delivery confirmed)
       await supabase
         .from("marketplace_listings")
-        .update({ status: "vendu" })
+        .update({ status: "reserve" })
         .eq("id", offer.listing_id);
 
       setShowPayment(false);
       setPaymentComplete(true);
-      toast.success("Paiement réussi!");
+      toast.success("Paiement sécurisé par escrow blockchain!");
       
       setTimeout(() => {
         onOpenChange(false);
         setPaymentComplete(false);
+        setEscrowId(null);
         onSuccess?.();
       }, 2000);
     } catch (error) {
@@ -91,10 +123,14 @@ export function MarketplacePaymentDialog({
             <div className="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center mb-4">
               <CheckCircle2 className="w-8 h-8 text-success" />
             </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">Paiement réussi!</h3>
+            <h3 className="text-xl font-bold text-foreground mb-2">Paiement sécurisé!</h3>
             <p className="text-sm text-muted-foreground text-center">
-              Votre commande a été confirmée. Le vendeur sera notifié.
+              Vos fonds sont protégés par escrow blockchain jusqu'à confirmation de livraison.
             </p>
+            <Badge variant="outline" className="mt-3 gap-1">
+              <Shield className="w-3 h-3" />
+              Escrow actif
+            </Badge>
           </div>
         </DialogContent>
       </Dialog>
@@ -108,14 +144,26 @@ export function MarketplacePaymentDialog({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CreditCard className="w-5 h-5" />
-              Paiement de la commande
+              Paiement sécurisé
             </DialogTitle>
             <DialogDescription>
-              Finalisez votre achat en toute sécurité
+              Transaction protégée par smart contract blockchain
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
+            {/* Escrow security badge */}
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+              <Lock className="w-5 h-5 text-primary" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Protection Escrow Blockchain</p>
+                <p className="text-xs text-muted-foreground">
+                  Fonds libérés au vendeur après confirmation de livraison
+                </p>
+              </div>
+              <Shield className="w-5 h-5 text-primary" />
+            </div>
+
             {/* Order summary */}
             <div className="p-4 rounded-xl bg-muted/50 space-y-3">
               <div className="flex items-start gap-3">
@@ -168,7 +216,7 @@ export function MarketplacePaymentDialog({
               </div>
               <Separator />
               <div className="flex justify-between">
-                <span className="font-semibold">Total</span>
+                <span className="font-semibold">Total sécurisé</span>
                 <span className="text-xl font-bold text-primary">
                   {totalAmount.toLocaleString()} FCFA
                 </span>
@@ -176,9 +224,24 @@ export function MarketplacePaymentDialog({
             </div>
 
             {/* Payment button */}
-            <Button className="w-full" onClick={() => setShowPayment(true)}>
-              Procéder au paiement
+            <Button 
+              className="w-full" 
+              onClick={handleProceedToPayment}
+              disabled={isCreatingEscrow}
+            >
+              {isCreatingEscrow ? (
+                "Création du contrat sécurisé..."
+              ) : (
+                <>
+                  <Shield className="w-4 h-4 mr-2" />
+                  Paiement sécurisé par Escrow
+                </>
+              )}
             </Button>
+
+            <p className="text-xs text-center text-muted-foreground">
+              🔒 Vos fonds sont bloqués jusqu'à confirmation de réception
+            </p>
           </div>
         </DialogContent>
       </Dialog>
@@ -187,9 +250,9 @@ export function MarketplacePaymentDialog({
         open={showPayment}
         onOpenChange={setShowPayment}
         amount={totalAmount}
-        description={`Achat: ${offer.listing?.title || "Produit"}`}
-        paymentType={"marketplace_purchase" as PaymentType}
-        referenceId={offer.id}
+        description={`Escrow: ${offer.listing?.title || "Produit"}`}
+        paymentType={"marketplace" as PaymentType}
+        referenceId={escrowId || offer.id}
         onSuccess={handlePaymentSuccess}
       />
     </>
