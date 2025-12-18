@@ -31,6 +31,10 @@ serve(async (req) => {
       
       investisseur: `Donne un conseil sur l'investissement agricole: évaluation des risques, diversification, ou suivi des cultures financées. Maximum 2 phrases.`,
       
+      veterinaire: `Donne un conseil vétérinaire professionnel: diagnostic, prévention des maladies, ou gestion d'un cabinet vétérinaire rural. Maximum 2 phrases.`,
+      
+      acheteur: `Donne un conseil pour bien acheter des produits agricoles: qualité, saisonnalité, ou négociation avec les producteurs. Maximum 2 phrases.`,
+      
       iot: `Donne un conseil sur l'utilisation des capteurs IoT en agriculture: interprétation des données, seuils d'alerte, ou optimisation. Maximum 2 phrases.`,
     };
 
