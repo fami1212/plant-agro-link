@@ -5,6 +5,7 @@ import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
 import { HarvestChart } from "@/components/dashboard/HarvestChart";
 import { AlertsList } from "@/components/dashboard/AlertsList";
 import { IoTDashboard } from "@/components/iot/IoTDashboard";
+import { AIContextualTip } from "@/components/ai/AIContextualTip";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -70,6 +71,16 @@ export default function Dashboard() {
         />
 
         <div className="px-4 space-y-6 pb-28">
+          {/* AI Contextual Tip */}
+          <AIContextualTip 
+            context="dashboard" 
+            data={{ 
+              totalFields: stats?.totalFields, 
+              activeCrops: stats?.activeCrops,
+              totalLivestock: stats?.totalLivestock 
+            }} 
+          />
+
           {/* Weather Card - Agriculteurs */}
           {(isAgriculteur || isAdmin) && (
             <Card className="overflow-hidden border-0 shadow-elevated">

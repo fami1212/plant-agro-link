@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
+import { AIContextualTip } from "@/components/ai/AIContextualTip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -221,6 +222,14 @@ export default function Acheteur() {
           </Button>
         }
       />
+
+      {/* AI Contextual Tip */}
+      <div className="px-4 mb-4">
+        <AIContextualTip 
+          context="marketplace" 
+          data={{ productsCount: products.length, favoritesCount: favorites.length }} 
+        />
+      </div>
 
       {/* Stats */}
       <div className="px-4 mb-6">

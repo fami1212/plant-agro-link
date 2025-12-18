@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
+import { AIContextualTip } from "@/components/ai/AIContextualTip";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -256,6 +257,14 @@ export default function Cultures() {
           </Button>
         }
       />
+
+      {/* AI Contextual Tip */}
+      <div className="px-4 mb-4">
+        <AIContextualTip 
+          context="cultures" 
+          data={{ activeCrops: activeCrops.length, totalHarvested: totalHarvested / 1000 }} 
+        />
+      </div>
 
       {/* Quick Stats */}
       {crops.length > 0 && (
