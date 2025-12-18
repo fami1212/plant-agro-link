@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
+import { AIContextualTip } from "@/components/ai/AIContextualTip";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Heart, Syringe, AlertCircle, X, Edit, Trash2, Stethoscope, Scale, ChevronRight } from "lucide-react";
@@ -261,6 +262,14 @@ export default function Betail() {
           ) : null
         }
       />
+
+      {/* AI Contextual Tip */}
+      <div className="px-4 mb-4">
+        <AIContextualTip 
+          context="betail" 
+          data={{ totalLivestock: livestock.length, alertCount, speciesCounts }} 
+        />
+      </div>
 
       {/* Quick Stats */}
       {livestock.length > 0 && (
