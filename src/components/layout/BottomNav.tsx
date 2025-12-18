@@ -16,6 +16,7 @@ import {
   Shield,
   Tractor,
   Brain,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,16 +27,16 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  SheetClose,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
 // All possible navigation items
 const allNavItems = [
   { icon: Home, label: "Accueil", path: "/dashboard", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
-  { icon: Tractor, label: "Exploitation", path: "/agriculteur", roles: ['agriculteur', 'admin'] },
+  { icon: Tractor, label: "Ferme", path: "/agriculteur", roles: ['agriculteur', 'admin'] },
   { icon: Wheat, label: "Cultures", path: "/cultures", roles: ['agriculteur', 'admin'] },
   { icon: PawPrint, label: "Bétail", path: "/betail", roles: ['agriculteur', 'admin'] },
   { icon: Stethoscope, label: "Cabinet", path: "/veterinaire", roles: ['veterinaire'] },
@@ -47,7 +48,7 @@ const allNavItems = [
 // All possible menu items
 const allMenuItems = [
   { icon: MapPin, label: "Parcelles", path: "/parcelles", roles: ['agriculteur', 'admin'] },
-  { icon: TrendingUp, label: "Mes financements", path: "/farmer-investments", roles: ['agriculteur', 'admin'] },
+  { icon: TrendingUp, label: "Financements", path: "/farmer-investments", roles: ['agriculteur', 'admin'] },
   { icon: Activity, label: "Capteurs IoT", path: "/iot", roles: ['agriculteur', 'admin'] },
   { icon: Brain, label: "Intelligence IA", path: "/ia", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
   { icon: PawPrint, label: "Suivi animaux", path: "/betail", roles: ['veterinaire'] },
@@ -88,7 +89,7 @@ export function BottomNav() {
       veterinaire: "Vétérinaire",
       acheteur: "Acheteur",
       investisseur: "Investisseur",
-      admin: "Administrateur",
+      admin: "Admin",
     };
     return labels[role] || role;
   };
@@ -99,9 +100,9 @@ export function BottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border safe-area-bottom">
-      <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
-        {navItems.map((item) => {
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t border-border/50 safe-bottom">
+      <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-1">
+        {navItems.slice(0, 4).map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
           
@@ -110,52 +111,54 @@ export function BottomNav() {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                "flex flex-col items-center justify-center w-16 h-14 rounded-xl transition-all duration-200",
+                "flex flex-col items-center justify-center flex-1 h-14 rounded-2xl transition-all duration-200",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
               <div className={cn(
-                "p-1.5 rounded-lg transition-all",
+                "flex items-center justify-center w-10 h-8 rounded-xl transition-all duration-200",
                 isActive && "bg-primary/10"
               )}>
-                <Icon className="w-5 h-5" />
+                <Icon className={cn("w-5 h-5", isActive && "text-primary")} strokeWidth={isActive ? 2.5 : 2} />
               </div>
-              <span className="text-[10px] font-medium mt-0.5">{item.label}</span>
+              <span className={cn(
+                "text-[10px] mt-0.5 transition-all",
+                isActive ? "font-semibold" : "font-medium"
+              )}>{item.label}</span>
             </button>
           );
         })}
+
         {/* Menu Button */}
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild>
-            <button className="flex flex-col items-center justify-center w-16 h-14 rounded-xl transition-all duration-200 text-muted-foreground hover:text-foreground">
-              <div className="p-1.5 rounded-lg">
-                <Menu className="w-5 h-5" />
+            <button className="flex flex-col items-center justify-center flex-1 h-14 rounded-2xl transition-all duration-200 text-muted-foreground hover:text-foreground">
+              <div className="flex items-center justify-center w-10 h-8 rounded-xl">
+                <Menu className="w-5 h-5" strokeWidth={2} />
               </div>
               <span className="text-[10px] font-medium mt-0.5">Plus</span>
             </button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="h-auto max-h-[70vh] rounded-t-xl">
-            <SheetHeader className="pb-4">
-              <SheetTitle>Menu</SheetTitle>
-            </SheetHeader>
+          <SheetContent side="bottom" className="h-auto max-h-[80vh] rounded-t-3xl border-t border-border/50 px-4 pb-8">
+            <div className="w-12 h-1 bg-border rounded-full mx-auto mt-3 mb-4" />
             
             {/* User Profile Section */}
             {user && (
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 mb-4">
-                <Avatar>
-                  <AvatarFallback className="bg-primary text-primary-foreground">
+              <div className="flex items-center gap-3 p-4 rounded-2xl bg-muted/30 mb-4">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                     {getInitials(profile?.full_name)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{profile?.full_name || "Utilisateur"}</p>
-                  <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                  <p className="font-semibold truncate text-sm">{profile?.full_name || "Utilisateur"}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   {roles.length > 0 && (
-                    <div className="flex gap-1 mt-1">
+                    <div className="flex gap-1 mt-1.5 flex-wrap">
                       {roles.map((role) => (
-                        <span key={role} className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                        <span key={role} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
                           {getRoleLabel(role)}
                         </span>
                       ))}
@@ -165,12 +168,11 @@ export function BottomNav() {
               </div>
             )}
 
-            <Separator className="my-2" />
-
             {/* Menu Items */}
-            <div className="space-y-1">
+            <div className="grid grid-cols-4 gap-2 mb-4">
               {menuItems.map((item) => {
                 const Icon = item.icon;
+                const isActive = location.pathname === item.path;
                 return (
                   <button
                     key={item.path}
@@ -178,38 +180,39 @@ export function BottomNav() {
                       navigate(item.path);
                       setMenuOpen(false);
                     }}
-                    className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-muted transition-colors"
+                    className={cn(
+                      "flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all",
+                      isActive ? "bg-primary/10 text-primary" : "hover:bg-muted/50"
+                    )}
                   >
-                    <Icon className="w-5 h-5 text-muted-foreground" />
-                    <span>{item.label}</span>
+                    <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
+                    <span className="text-[10px] font-medium text-center leading-tight">{item.label}</span>
                   </button>
                 );
               })}
             </div>
 
-            <Separator className="my-2" />
-
             {/* Sign Out */}
             {user && (
               <Button 
                 variant="ghost" 
-                className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="w-full justify-center text-destructive hover:text-destructive hover:bg-destructive/10 h-12 rounded-2xl"
                 onClick={handleSignOut}
               >
-                <LogOut className="w-5 h-5 mr-3" />
+                <LogOut className="w-4 h-4 mr-2" />
                 Déconnexion
               </Button>
             )}
 
             {!user && (
               <Button 
-                className="w-full"
+                className="w-full h-12 rounded-2xl"
                 onClick={() => {
                   navigate("/auth");
                   setMenuOpen(false);
                 }}
               >
-                <User className="w-5 h-5 mr-2" />
+                <User className="w-4 h-4 mr-2" />
                 Se connecter
               </Button>
             )}
