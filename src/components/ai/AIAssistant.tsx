@@ -23,11 +23,15 @@ import {
   TrendingUp,
   Bug,
   Droplets,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoleAccess } from "@/hooks/useRoleAccess";
-import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   role: "user" | "assistant";
@@ -44,11 +48,30 @@ const quickPrompts = [
 export function AIAssistant() {
   const { user } = useAuth();
   const { primaryRole } = useRoleAccess();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Voice hooks
+  const { speak, stopSpeaking, isSpeaking, isLoading: isTTSLoading } = useTextToSpeech({ 
+    language: "fr",
+    autoPlay: voiceEnabled 
+  });
+
+  const { isRecording, isProcessing, toggleRecording } = useVoiceRecorder({
+    language: "fr",
+    onTranscription: (text) => {
+      setInput(text);
+      // Auto-send when voice input is received
+      if (text.trim()) {
+        sendMessage(text);
+      }
+    },
+  });
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -83,10 +106,9 @@ export function AIAssistant() {
 
       if (!response.ok) {
         if (response.status === 429) {
-          setMessages((prev) => [
-            ...prev,
-            { role: "assistant", content: "Trop de requêtes. Veuillez patienter quelques instants." },
-          ]);
+          const errorMsg = "Trop de requêtes. Veuillez patienter quelques instants.";
+          setMessages((prev) => [...prev, { role: "assistant", content: errorMsg }]);
+          if (voiceEnabled) speak(errorMsg);
           return;
         }
         throw new Error("Failed to get response");
@@ -132,13 +154,17 @@ export function AIAssistant() {
             }
           }
         }
+
+        // Speak the complete response
+        if (voiceEnabled && assistantContent) {
+          speak(assistantContent);
+        }
       }
     } catch (error) {
       console.error("AI Assistant error:", error);
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: "Désolé, une erreur s'est produite. Veuillez réessayer." },
-      ]);
+      const errorMsg = "Désolé, une erreur s'est produite. Veuillez réessayer.";
+      setMessages((prev) => [...prev, { role: "assistant", content: errorMsg }]);
+      if (voiceEnabled) speak(errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -147,6 +173,26 @@ export function AIAssistant() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     sendMessage(input);
+  };
+
+  const handleVoiceToggle = async () => {
+    try {
+      await toggleRecording();
+    } catch (error) {
+      toast({
+        title: "Erreur microphone",
+        description: "Veuillez autoriser l'accès au microphone",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const speakMessage = (content: string) => {
+    if (isSpeaking) {
+      stopSpeaking();
+    } else {
+      speak(content);
+    }
   };
 
   return (
@@ -161,16 +207,29 @@ export function AIAssistant() {
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
         <SheetHeader className="p-4 border-b bg-gradient-to-r from-primary/10 to-primary/5">
-          <SheetTitle className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-              <Bot className="w-5 h-5 text-primary" />
+          <SheetTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <Bot className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <span className="block">Assistant IA Plantéra</span>
+                <span className="text-xs font-normal text-muted-foreground">
+                  Parlez ou tapez vos questions
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="block">Assistant IA Plantéra</span>
-              <span className="text-xs font-normal text-muted-foreground">
-                Votre conseiller agricole intelligent
-              </span>
-            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setVoiceEnabled(!voiceEnabled)}
+              className={cn(
+                "h-8 w-8",
+                voiceEnabled ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </Button>
           </SheetTitle>
         </SheetHeader>
 
@@ -179,12 +238,15 @@ export function AIAssistant() {
             <div className="space-y-4">
               <div className="text-center py-6">
                 <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <Lightbulb className="w-8 h-8 text-primary" />
+                  <Mic className="w-8 h-8 text-primary" />
                 </div>
                 <p className="text-lg font-medium">Bonjour ! 👋</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Je suis votre assistant agricole IA. Posez-moi vos questions !
+                  Parlez-moi ou tapez vos questions. Je vous réponds à voix haute !
                 </p>
+                <Badge variant="secondary" className="mt-2">
+                  🎤 Français • Wolof • Multilingue
+                </Badge>
               </div>
 
               <div className="space-y-2">
@@ -222,13 +284,27 @@ export function AIAssistant() {
                   )}
                   <div
                     className={cn(
-                      "max-w-[80%] rounded-2xl px-4 py-2",
+                      "max-w-[80%] rounded-2xl px-4 py-2 group relative",
                       message.role === "user"
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted"
                     )}
                   >
                     <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    {message.role === "assistant" && message.content && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute -right-10 top-0 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => speakMessage(message.content)}
+                      >
+                        {isSpeaking ? (
+                          <VolumeX className="w-4 h-4" />
+                        ) : (
+                          <Volume2 className="w-4 h-4" />
+                        )}
+                      </Button>
+                    )}
                   </div>
                   {message.role === "user" && (
                     <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
@@ -251,13 +327,60 @@ export function AIAssistant() {
           )}
         </ScrollArea>
 
-        <div className="p-4 border-t bg-background">
+        <div className="p-4 border-t bg-background space-y-3">
+          {/* Voice recording indicator */}
+          {(isRecording || isProcessing) && (
+            <div className="flex items-center justify-center gap-2 py-2 px-4 bg-primary/10 rounded-full animate-pulse">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              <span className="text-sm font-medium">
+                {isRecording ? "Je vous écoute..." : "Traitement en cours..."}
+              </span>
+            </div>
+          )}
+
+          {/* TTS indicator */}
+          {(isSpeaking || isTTSLoading) && (
+            <div className="flex items-center justify-center gap-2 py-2 px-4 bg-primary/10 rounded-full">
+              <Volume2 className="w-4 h-4 animate-pulse text-primary" />
+              <span className="text-sm font-medium">
+                {isTTSLoading ? "Préparation audio..." : "Je parle..."}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2"
+                onClick={stopSpeaking}
+              >
+                Stop
+              </Button>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="flex gap-2">
+            <Button
+              type="button"
+              size="icon"
+              variant={isRecording ? "destructive" : "outline"}
+              onClick={handleVoiceToggle}
+              disabled={isLoading || isProcessing}
+              className={cn(
+                "shrink-0 transition-all",
+                isRecording && "animate-pulse"
+              )}
+            >
+              {isProcessing ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : isRecording ? (
+                <MicOff className="w-4 h-4" />
+              ) : (
+                <Mic className="w-4 h-4" />
+              )}
+            </Button>
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Posez votre question..."
-              disabled={isLoading}
+              placeholder="Parlez ou tapez..."
+              disabled={isLoading || isRecording}
               className="flex-1"
             />
             <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
@@ -268,8 +391,8 @@ export function AIAssistant() {
               )}
             </Button>
           </form>
-          <p className="text-[10px] text-muted-foreground text-center mt-2">
-            Propulsé par l'IA Plantéra • Conseils personnalisés pour votre exploitation
+          <p className="text-[10px] text-muted-foreground text-center">
+            🎤 Appuyez sur le micro pour parler • 🔊 L'IA vous répond à voix haute
           </p>
         </div>
       </SheetContent>
