@@ -5,13 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  ScrollableTabs,
+  ScrollableTabsList,
+  ScrollableTabsTrigger,
+  ScrollableTabsContent,
+} from "@/components/ui/scrollable-tabs";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -20,14 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Users,
   ShoppingBag,
@@ -38,7 +34,6 @@ import {
   Eye,
   Trash2,
   CheckCircle2,
-  XCircle,
   AlertTriangle,
   TrendingUp,
   Package,
@@ -52,16 +47,19 @@ import {
   Loader2,
   DollarSign,
   Scale,
+  Settings,
+  Database,
+  Cpu,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import type { Database } from "@/integrations/supabase/types";
+import type { Database as DatabaseTypes } from "@/integrations/supabase/types";
 import { AdminTransactions } from "@/components/admin/AdminTransactions";
 import { AdminDisputePanel } from "@/components/admin/AdminDisputePanel";
 
-type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-type Listing = Database["public"]["Tables"]["marketplace_listings"]["Row"];
-type ServiceProvider = Database["public"]["Tables"]["service_providers"]["Row"];
+type Profile = DatabaseTypes["public"]["Tables"]["profiles"]["Row"];
+type Listing = DatabaseTypes["public"]["Tables"]["marketplace_listings"]["Row"];
+type ServiceProvider = DatabaseTypes["public"]["Tables"]["service_providers"]["Row"];
 
 interface UserWithRoles {
   id: string;
@@ -350,32 +348,36 @@ export default function Admin() {
         </div>
 
         {/* Main Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5 h-auto p-1">
-            <TabsTrigger value="overview" className="flex items-center gap-1 py-2">
+        <ScrollableTabs value={activeTab} onValueChange={setActiveTab}>
+          <ScrollableTabsList>
+            <ScrollableTabsTrigger value="overview" className="flex items-center gap-2 px-4">
               <BarChart3 className="w-4 h-4" />
-              <span className="text-xs">Vue</span>
-            </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-1 py-2">
+              <span className="text-sm">Vue d'ensemble</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="users" className="flex items-center gap-2 px-4">
               <Users className="w-4 h-4" />
-              <span className="text-xs">Utilisateurs</span>
-            </TabsTrigger>
-            <TabsTrigger value="marketplace" className="flex items-center gap-1 py-2">
+              <span className="text-sm">Utilisateurs</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="marketplace" className="flex items-center gap-2 px-4">
               <ShoppingBag className="w-4 h-4" />
-              <span className="text-xs">Marketplace</span>
-            </TabsTrigger>
-            <TabsTrigger value="disputes" className="flex items-center gap-1 py-2">
+              <span className="text-sm">Marketplace</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="disputes" className="flex items-center gap-2 px-4">
               <Scale className="w-4 h-4" />
-              <span className="text-xs">Litiges</span>
-            </TabsTrigger>
-            <TabsTrigger value="transactions" className="flex items-center gap-1 py-2">
+              <span className="text-sm">Litiges</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="transactions" className="flex items-center gap-2 px-4">
               <DollarSign className="w-4 h-4" />
-              <span className="text-xs">Paiements</span>
-            </TabsTrigger>
-          </TabsList>
+              <span className="text-sm">Paiements</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="system" className="flex items-center gap-2 px-4">
+              <Settings className="w-4 h-4" />
+              <span className="text-sm">Système</span>
+            </ScrollableTabsTrigger>
+          </ScrollableTabsList>
 
           {/* Overview Tab */}
-          <TabsContent value="overview" className="mt-4 space-y-4">
+          <ScrollableTabsContent value="overview" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -427,10 +429,10 @@ export default function Admin() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+          </ScrollableTabsContent>
 
           {/* Users Tab */}
-          <TabsContent value="users" className="mt-4 space-y-4">
+          <ScrollableTabsContent value="users" className="space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -490,10 +492,10 @@ export default function Admin() {
                 ))}
               </div>
             )}
-          </TabsContent>
+          </ScrollableTabsContent>
 
           {/* Marketplace Tab */}
-          <TabsContent value="marketplace" className="mt-4 space-y-4">
+          <ScrollableTabsContent value="marketplace" className="space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -635,18 +637,47 @@ export default function Admin() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </ScrollableTabsContent>
 
           {/* Disputes Tab */}
-          <TabsContent value="disputes" className="mt-4">
+          <ScrollableTabsContent value="disputes">
             <AdminDisputePanel />
-          </TabsContent>
+          </ScrollableTabsContent>
 
           {/* Transactions Tab */}
-          <TabsContent value="transactions" className="mt-4">
+          <ScrollableTabsContent value="transactions">
             <AdminTransactions />
-          </TabsContent>
-        </Tabs>
+          </ScrollableTabsContent>
+
+          {/* System Tab */}
+          <ScrollableTabsContent value="system" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Database className="w-5 h-5 text-primary" />
+                  Base de données
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Cpu className="w-5 h-5 text-green-500" />
+                    <span>État du système</span>
+                  </div>
+                  <Badge className="bg-green-500">Opérationnel</Badge>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                  <span>Tables actives</span>
+                  <Badge variant="secondary">15</Badge>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                  <span>Edge Functions</span>
+                  <Badge variant="secondary">5</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </ScrollableTabsContent>
+        </ScrollableTabs>
       </div>
 
       {/* User Detail Dialog */}

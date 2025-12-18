@@ -214,6 +214,15 @@
   .card-hover:hover {
     @apply -translate-y-1 shadow-elevated;
   }
+  /* Hide scrollbar utility */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Scrollbar */
