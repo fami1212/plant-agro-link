@@ -12,9 +12,9 @@ interface QuickActionCardProps {
 }
 
 const variants = {
-  default: "bg-card border-border hover:border-primary/30",
-  primary: "gradient-hero text-primary-foreground border-0",
-  accent: "gradient-sunset text-accent-foreground border-0",
+  default: "bg-card border-border/30 hover:border-border",
+  primary: "gradient-primary text-primary-foreground border-0",
+  accent: "gradient-accent text-accent-foreground border-0",
 };
 
 export function QuickActionCard({
@@ -31,14 +31,14 @@ export function QuickActionCard({
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-4 p-4 rounded-xl border text-left transition-all duration-200 shadow-soft hover:shadow-elevated active:scale-[0.99] w-full",
+        "flex items-center gap-3 p-3 rounded-2xl border text-left transition-all duration-200 shadow-xs hover:shadow-soft active:scale-[0.98] w-full",
         variants[variant],
         className
       )}
     >
       <div
         className={cn(
-          "flex items-center justify-center w-12 h-12 rounded-xl",
+          "flex items-center justify-center w-10 h-10 rounded-xl shrink-0",
           isColored ? "bg-white/20" : "bg-primary/10 text-primary"
         )}
       >
@@ -47,7 +47,7 @@ export function QuickActionCard({
       <div className="flex-1 min-w-0">
         <p
           className={cn(
-            "font-semibold",
+            "font-medium text-sm",
             isColored ? "" : "text-foreground"
           )}
         >
@@ -55,15 +55,15 @@ export function QuickActionCard({
         </p>
         <p
           className={cn(
-            "text-sm truncate",
-            isColored ? "opacity-90" : "text-muted-foreground"
+            "text-xs truncate",
+            isColored ? "opacity-80" : "text-muted-foreground"
           )}
         >
           {description}
         </p>
       </div>
       <ChevronRight
-        className={cn("w-5 h-5", isColored ? "opacity-70" : "text-muted-foreground")}
+        className={cn("w-4 h-4 shrink-0", isColored ? "opacity-60" : "text-muted-foreground")}
       />
     </button>
   );

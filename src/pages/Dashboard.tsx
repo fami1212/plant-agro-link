@@ -61,16 +61,16 @@ export default function Dashboard() {
           title={`${getGreeting()}, ${userName}`}
           subtitle={getRoleSubtitle()}
           action={
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon-sm" className="relative">
               <Bell className="w-5 h-5" />
               {(alerts?.length || 0) > 0 && (
-                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-accent rounded-full animate-pulse" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
               )}
             </Button>
           }
         />
 
-        <div className="px-4 space-y-6 pb-28">
+        <div className="px-4 space-y-5 pb-28">
           {/* AI Contextual Tip */}
           <AIContextualTip 
             context="dashboard" 
@@ -83,27 +83,26 @@ export default function Dashboard() {
 
           {/* Weather Card - Agriculteurs */}
           {(isAgriculteur || isAdmin) && (
-            <Card className="overflow-hidden border-0 shadow-elevated">
-              <div className="gradient-hero p-5 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-50" />
+            <Card variant="feature" className="overflow-hidden">
+              <div className="gradient-primary p-5 relative">
                 <div className="flex items-center justify-between text-primary-foreground relative">
                   <div>
-                    <p className="text-sm opacity-90 font-medium">Météo • Thiès</p>
-                    <div className="flex items-baseline gap-2 mt-1">
-                      <span className="text-5xl font-bold">28°</span>
-                      <span className="text-lg opacity-70">/ 21°</span>
+                    <p className="text-xs opacity-80 font-medium">Météo • Thiès</p>
+                    <div className="flex items-baseline gap-1.5 mt-1">
+                      <span className="text-4xl font-bold">28°</span>
+                      <span className="text-base opacity-60">/ 21°</span>
                     </div>
-                    <p className="text-sm mt-2 opacity-90">Ensoleillé avec nuages</p>
+                    <p className="text-xs mt-2 opacity-80">Ensoleillé avec nuages</p>
                   </div>
                   <div className="text-right">
-                    <CloudSun className="w-20 h-20 opacity-90 animate-float" />
-                    <div className="flex items-center gap-4 mt-3 text-sm">
-                      <span className="flex items-center gap-1">
-                        <Droplets className="w-4 h-4" />
+                    <CloudSun className="w-16 h-16 opacity-80" />
+                    <div className="flex items-center gap-3 mt-2 text-xs">
+                      <span className="flex items-center gap-1 opacity-80">
+                        <Droplets className="w-3.5 h-3.5" />
                         45%
                       </span>
-                      <span className="flex items-center gap-1">
-                        <Wind className="w-4 h-4" />
+                      <span className="flex items-center gap-1 opacity-80">
+                        <Wind className="w-3.5 h-3.5" />
                         12km/h
                       </span>
                     </div>
@@ -117,7 +116,7 @@ export default function Dashboard() {
           {isLoading ? (
             <div className="grid grid-cols-2 gap-3">
               {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-28 rounded-2xl" />
+                <Skeleton key={i} className="h-24 rounded-2xl" />
               ))}
             </div>
           ) : (
@@ -126,28 +125,28 @@ export default function Dashboard() {
               {(isAgriculteur || isAdmin) && (
                 <div className="grid grid-cols-2 gap-3">
                   <StatCard
-                    icon={<MapPin className="w-6 h-6" />}
+                    icon={<MapPin className="w-5 h-5" />}
                     label="Parcelles"
                     value={stats?.totalFields || 0}
                     subtitle={`${stats?.totalArea?.toFixed(1) || 0} hectares`}
                     iconBg="primary"
                   />
                   <StatCard
-                    icon={<Wheat className="w-6 h-6" />}
+                    icon={<Wheat className="w-5 h-5" />}
                     label="Cultures"
                     value={stats?.activeCrops || 0}
                     subtitle="actives"
                     iconBg="accent"
                   />
                   <StatCard
-                    icon={<PawPrint className="w-6 h-6" />}
+                    icon={<PawPrint className="w-5 h-5" />}
                     label="Bétail"
                     value={stats?.totalLivestock || 0}
                     subtitle={stats?.healthAlerts ? `${stats.healthAlerts} alertes` : "en santé"}
                     iconBg="secondary"
                   />
                   <StatCard
-                    icon={<Scale className="w-6 h-6" />}
+                    icon={<Scale className="w-5 h-5" />}
                     label="Récolté"
                     value={`${((stats?.totalHarvested || 0) / 1000).toFixed(1)}t`}
                     subtitle="cette saison"
@@ -160,14 +159,14 @@ export default function Dashboard() {
               {isVeterinaire && !isAgriculteur && (
                 <div className="grid grid-cols-2 gap-3">
                   <StatCard
-                    icon={<Stethoscope className="w-6 h-6" />}
+                    icon={<Stethoscope className="w-5 h-5" />}
                     label="Consultations"
                     value={stats?.upcomingAppointments || 0}
                     subtitle="à venir"
                     iconBg="primary"
                   />
                   <StatCard
-                    icon={<PawPrint className="w-6 h-6" />}
+                    icon={<PawPrint className="w-5 h-5" />}
                     label="Patients"
                     value={stats?.totalLivestock || 0}
                     subtitle="animaux suivis"
@@ -180,14 +179,14 @@ export default function Dashboard() {
               {isAcheteur && !isAgriculteur && (
                 <div className="grid grid-cols-2 gap-3">
                   <StatCard
-                    icon={<ShoppingBag className="w-6 h-6" />}
+                    icon={<ShoppingBag className="w-5 h-5" />}
                     label="Mes achats"
                     value={stats?.totalPurchases || 0}
                     subtitle="acceptés"
                     iconBg="primary"
                   />
                   <StatCard
-                    icon={<TrendingUp className="w-6 h-6" />}
+                    icon={<TrendingUp className="w-5 h-5" />}
                     label="Produits"
                     value={stats?.availableProducts || 0}
                     subtitle="disponibles"
@@ -200,14 +199,14 @@ export default function Dashboard() {
               {isInvestisseur && !isAgriculteur && (
                 <div className="grid grid-cols-2 gap-3">
                   <StatCard
-                    icon={<DollarSign className="w-6 h-6" />}
+                    icon={<DollarSign className="w-5 h-5" />}
                     label="Investis"
                     value={`${((stats?.totalInvested || 0) / 1000).toFixed(0)}k`}
                     subtitle={`${stats?.activeInvestments || 0} projets actifs`}
                     iconBg="primary"
                   />
                   <StatCard
-                    icon={<TrendingUp className="w-6 h-6" />}
+                    icon={<TrendingUp className="w-5 h-5" />}
                     label="Rendement"
                     value={`${(stats?.averageReturn || 15).toFixed(0)}%`}
                     subtitle="moyen attendu"
@@ -231,31 +230,31 @@ export default function Dashboard() {
 
           {/* Quick Actions */}
           <div className="space-y-3">
-            <h2 className="text-lg font-bold text-foreground">Actions rapides</h2>
+            <h2 className="text-sm font-semibold text-foreground">Actions rapides</h2>
             
             {(isAgriculteur || isAdmin) && (
               <div className="grid grid-cols-2 gap-3">
                 <QuickActionCard
-                  icon={<Plus className="w-5 h-5" />}
+                  icon={<Plus className="w-4 h-4" />}
                   title="Nouvelle parcelle"
                   description="Créer"
                   onClick={() => navigate("/parcelles")}
                   variant="primary"
                 />
                 <QuickActionCard
-                  icon={<Wheat className="w-5 h-5" />}
+                  icon={<Wheat className="w-4 h-4" />}
                   title="Enregistrer récolte"
                   description="Saisir"
                   onClick={() => navigate("/cultures")}
                 />
                 <QuickActionCard
-                  icon={<PawPrint className="w-5 h-5" />}
+                  icon={<PawPrint className="w-4 h-4" />}
                   title="Suivi santé"
                   description="Bétail"
                   onClick={() => navigate("/betail")}
                 />
                 <QuickActionCard
-                  icon={<DollarSign className="w-5 h-5" />}
+                  icon={<DollarSign className="w-4 h-4" />}
                   title="Investisseur"
                   description="Chercher"
                   onClick={() => navigate("/cultures")}
@@ -267,15 +266,15 @@ export default function Dashboard() {
             {isVeterinaire && !isAgriculteur && (
               <div className="grid grid-cols-2 gap-3">
                 <QuickActionCard
-                  icon={<PawPrint className="w-5 h-5" />}
+                  icon={<PawPrint className="w-4 h-4" />}
                   title="Mes patients"
                   description="Consulter"
                   onClick={() => navigate("/veterinaire")}
                   variant="primary"
                 />
                 <QuickActionCard
-                  icon={<Stethoscope className="w-5 h-5" />}
-                  title="Nouvelle consultation"
+                  icon={<Stethoscope className="w-4 h-4" />}
+                  title="Consultation"
                   description="Enregistrer"
                   onClick={() => navigate("/veterinaire")}
                 />
@@ -284,7 +283,7 @@ export default function Dashboard() {
 
             {isAcheteur && !isAgriculteur && (
               <QuickActionCard
-                icon={<ShoppingBag className="w-5 h-5" />}
+                icon={<ShoppingBag className="w-4 h-4" />}
                 title="Explorer le marketplace"
                 description="Produits disponibles"
                 onClick={() => navigate("/marketplace")}
@@ -294,8 +293,8 @@ export default function Dashboard() {
 
             {isInvestisseur && !isAgriculteur && (
               <QuickActionCard
-                icon={<TrendingUp className="w-5 h-5" />}
-                title="Opportunités d'investissement"
+                icon={<TrendingUp className="w-4 h-4" />}
+                title="Opportunités"
                 description="Découvrir les projets"
                 onClick={() => navigate("/investisseur")}
                 variant="primary"
@@ -305,23 +304,24 @@ export default function Dashboard() {
 
           {/* Marketplace CTA */}
           <Card 
-            className="overflow-hidden border-0 shadow-soft cursor-pointer card-hover"
+            variant="interactive"
+            className="overflow-hidden"
             onClick={() => navigate("/marketplace")}
           >
             <CardContent className="p-0">
-              <div className="gradient-accent p-5 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
-                    <ShoppingBag className="w-6 h-6 text-white" />
+              <div className="gradient-accent p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                    <ShoppingBag className="w-5 h-5 text-white" />
                   </div>
                   <div className="text-white">
-                    <p className="font-bold text-lg">Marketplace</p>
-                    <p className="text-sm opacity-90">
+                    <p className="font-semibold">Marketplace</p>
+                    <p className="text-xs opacity-80">
                       {isAgriculteur ? "Vendre vos produits" : "Acheter des produits frais"}
                     </p>
                   </div>
                 </div>
-                <ArrowRight className="w-6 h-6 text-white" />
+                <ArrowRight className="w-5 h-5 text-white opacity-80" />
               </div>
             </CardContent>
           </Card>

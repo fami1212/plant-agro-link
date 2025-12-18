@@ -147,25 +147,25 @@ export default function Auth() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <div className="flex flex-col items-center pt-12 pb-6 px-6 safe-top">
-        <div className="w-16 h-16 rounded-2xl gradient-hero flex items-center justify-center mb-4 shadow-glow">
-          <Sprout className="w-8 h-8 text-primary-foreground" />
+      <div className="flex flex-col items-center pt-16 pb-8 px-6 safe-top">
+        <div className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center mb-4 shadow-glow">
+          <Sprout className="w-7 h-7 text-primary-foreground" />
         </div>
-        <h1 className="text-3xl font-bold text-foreground">Plantéra</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-2xl font-bold text-foreground">Plantéra</h1>
+        <p className="text-muted-foreground text-sm mt-1">
           Votre exploitation, simplifiée
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="px-6 mb-4">
-        <div className="flex bg-muted rounded-xl p-1">
+      <div className="px-6 mb-5">
+        <div className="flex bg-muted/50 rounded-2xl p-1">
           <button
             onClick={() => { setMode("login"); setOtpSent(false); }}
             className={cn(
-              "flex-1 py-3 rounded-lg text-sm font-semibold transition-all",
+              "flex-1 py-2.5 rounded-xl text-sm font-medium transition-all",
               mode === "login"
-                ? "bg-card text-foreground shadow-soft"
+                ? "bg-card text-foreground shadow-xs"
                 : "text-muted-foreground"
             )}
           >
@@ -174,9 +174,9 @@ export default function Auth() {
           <button
             onClick={() => { setMode("register"); setOtpSent(false); }}
             className={cn(
-              "flex-1 py-3 rounded-lg text-sm font-semibold transition-all",
+              "flex-1 py-2.5 rounded-xl text-sm font-medium transition-all",
               mode === "register"
-                ? "bg-card text-foreground shadow-soft"
+                ? "bg-card text-foreground shadow-xs"
                 : "text-muted-foreground"
             )}
           >
@@ -187,29 +187,29 @@ export default function Auth() {
 
       {/* Form */}
       <div className="flex-1 px-6 overflow-y-auto">
-        <Card variant="elevated" className="animate-fade-in">
+        <Card variant="default" className="animate-fade-in border-border/30">
           <CardContent className="p-5">
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === "register" && (
                 <>
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nom complet *</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="name" className="text-xs font-medium">Nom complet</Label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         id="name"
                         name="name"
                         placeholder="Amadou Diallo"
                         value={formData.name}
                         onChange={handleInputChange}
-                        className="h-12 pl-11"
+                        className="h-11 pl-10"
                         required
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Je suis *</Label>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Je suis</Label>
                     <RoleSelector
                       value={formData.role}
                       onChange={(role) => setFormData(prev => ({ ...prev, role }))}
@@ -218,10 +218,10 @@ export default function Auth() {
                 </>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-xs font-medium">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="email"
                     name="email"
@@ -229,17 +229,17 @@ export default function Auth() {
                     placeholder="amadou@email.com"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="h-12 pl-11"
+                    className="h-11 pl-10"
                     required
                   />
                 </div>
               </div>
 
               {mode === "register" && (
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Téléphone (optionnel)</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="phone" className="text-xs font-medium">Téléphone (optionnel)</Label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
                       id="phone"
                       name="phone"
@@ -247,16 +247,16 @@ export default function Auth() {
                       placeholder="+221 77 123 45 67"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="h-12 pl-11"
+                      className="h-11 pl-10"
                     />
                   </div>
                 </div>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Mot de passe *</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="text-xs font-medium">Mot de passe</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="password"
                     name="password"
@@ -264,31 +264,31 @@ export default function Auth() {
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="h-12 pl-11 pr-11"
+                    className="h-11 pl-10 pr-10"
                     required
                     minLength={6}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
+                      <EyeOff className="w-4 h-4" />
                     ) : (
-                      <Eye className="w-5 h-5" />
+                      <Eye className="w-4 h-4" />
                     )}
                   </button>
                 </div>
                 {mode === "register" && (
-                  <p className="text-xs text-muted-foreground">Minimum 6 caractères</p>
+                  <p className="text-[10px] text-muted-foreground">Minimum 6 caractères</p>
                 )}
               </div>
 
               {mode === "login" && (
                 <button
                   type="button"
-                  className="text-sm text-primary font-medium hover:underline"
+                  className="text-xs text-primary font-medium hover:underline"
                 >
                   Mot de passe oublié?
                 </button>
@@ -297,16 +297,15 @@ export default function Auth() {
               <Button
                 type="submit"
                 variant="hero"
-                size="lg"
-                className="w-full mt-4"
+                className="w-full h-11 mt-2"
                 disabled={loading}
               >
                 {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <>
                     {mode === "login" ? "Se connecter" : "Créer mon compte"}
-                    <ArrowRight className="w-5 h-5" />
+                    <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </Button>
@@ -315,17 +314,17 @@ export default function Auth() {
         </Card>
 
         {/* SMS/OTP Section */}
-        <div className="mt-6">
+        <div className="mt-5">
           <div className="flex items-center gap-4 mb-4">
-            <div className="flex-1 h-px bg-border" />
-            <span className="text-sm text-muted-foreground">ou</span>
-            <div className="flex-1 h-px bg-border" />
+            <div className="flex-1 h-px bg-border/50" />
+            <span className="text-xs text-muted-foreground">ou</span>
+            <div className="flex-1 h-px bg-border/50" />
           </div>
 
           {!otpSent ? (
-            <Card variant="elevated">
+            <Card className="border-border/30">
               <CardContent className="p-4">
-                <Label className="text-sm mb-2 block">Connexion par SMS</Label>
+                <Label className="text-xs font-medium mb-2 block">Connexion par SMS</Label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -334,7 +333,7 @@ export default function Auth() {
                       placeholder="+221 77 123 45 67"
                       value={formData.phone}
                       onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                      className="pl-10"
+                      className="pl-10 h-10"
                     />
                   </div>
                   <Button
@@ -342,6 +341,7 @@ export default function Auth() {
                     variant="outline"
                     onClick={handlePhoneAuth}
                     disabled={loading}
+                    className="h-10"
                   >
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Envoyer"}
                   </Button>
@@ -349,9 +349,9 @@ export default function Auth() {
               </CardContent>
             </Card>
           ) : (
-            <Card variant="elevated">
+            <Card className="border-border/30">
               <CardContent className="p-4">
-                <Label className="text-sm mb-2 block">Entrez le code OTP</Label>
+                <Label className="text-xs font-medium mb-2 block">Entrez le code OTP</Label>
                 <div className="flex gap-2">
                   <Input
                     type="text"
@@ -359,13 +359,14 @@ export default function Auth() {
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value)}
                     maxLength={6}
-                    className="flex-1 text-center text-lg tracking-widest"
+                    className="flex-1 text-center text-base tracking-widest h-10"
                   />
                   <Button
                     type="button"
                     variant="hero"
                     onClick={handleVerifyOtp}
                     disabled={loading}
+                    className="h-10"
                   >
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Vérifier"}
                   </Button>
@@ -373,7 +374,7 @@ export default function Auth() {
                 <button
                   type="button"
                   onClick={() => setOtpSent(false)}
-                  className="text-xs text-primary mt-2 hover:underline"
+                  className="text-[10px] text-primary mt-2 hover:underline"
                 >
                   Changer de numéro
                 </button>
@@ -385,7 +386,7 @@ export default function Auth() {
 
       {/* Footer */}
       <div className="px-6 py-4 text-center safe-bottom">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-[10px] text-muted-foreground">
           En continuant, vous acceptez nos{" "}
           <button className="text-primary hover:underline">
             Conditions d'utilisation
