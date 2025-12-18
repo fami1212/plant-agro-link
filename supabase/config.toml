@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.irrigation-recommendations]
 verify_jwt = false
+
+[functions.ai-assistant]
+verify_jwt = false
+
+[functions.ai-contextual-tip]
+verify_jwt = false

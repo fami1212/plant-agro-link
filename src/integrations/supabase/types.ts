@@ -158,6 +158,44 @@ export type Database = {
           },
         ]
       }
+      dispute_messages: {
+        Row: {
+          attachments: string[] | null
+          created_at: string
+          dispute_id: string
+          id: string
+          is_admin_message: boolean | null
+          message: string
+          sender_id: string
+        }
+        Insert: {
+          attachments?: string[] | null
+          created_at?: string
+          dispute_id: string
+          id?: string
+          is_admin_message?: boolean | null
+          message: string
+          sender_id: string
+        }
+        Update: {
+          attachments?: string[] | null
+          created_at?: string
+          dispute_id?: string
+          id?: string
+          is_admin_message?: boolean | null
+          message?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_messages_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "escrow_disputes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       escrow_contracts: {
         Row: {
           amount: number
@@ -167,6 +205,9 @@ export type Database = {
           created_at: string
           currency: string
           delivery_confirmed_at: string | null
+          dispute_opened_at: string | null
+          dispute_resolved_at: string | null
+          dispute_status: string | null
           dispute_window_days: number
           fees: number
           funded_at: string | null
@@ -190,6 +231,9 @@ export type Database = {
           created_at?: string
           currency?: string
           delivery_confirmed_at?: string | null
+          dispute_opened_at?: string | null
+          dispute_resolved_at?: string | null
+          dispute_status?: string | null
           dispute_window_days?: number
           fees?: number
           funded_at?: string | null
@@ -213,6 +257,9 @@ export type Database = {
           created_at?: string
           currency?: string
           delivery_confirmed_at?: string | null
+          dispute_opened_at?: string | null
+          dispute_resolved_at?: string | null
+          dispute_status?: string | null
           dispute_window_days?: number
           fees?: number
           funded_at?: string | null
@@ -241,6 +288,71 @@ export type Database = {
             columns: ["offer_id"]
             isOneToOne: false
             referencedRelation: "marketplace_offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escrow_disputes: {
+        Row: {
+          admin_decision: string | null
+          admin_id: string | null
+          admin_notes: string | null
+          buyer_refund_percent: number | null
+          created_at: string
+          description: string | null
+          escrow_id: string
+          evidence_urls: string[] | null
+          id: string
+          opened_by: string
+          reason: string
+          resolution_type: string | null
+          resolved_at: string | null
+          seller_payment_percent: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_decision?: string | null
+          admin_id?: string | null
+          admin_notes?: string | null
+          buyer_refund_percent?: number | null
+          created_at?: string
+          description?: string | null
+          escrow_id: string
+          evidence_urls?: string[] | null
+          id?: string
+          opened_by: string
+          reason: string
+          resolution_type?: string | null
+          resolved_at?: string | null
+          seller_payment_percent?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_decision?: string | null
+          admin_id?: string | null
+          admin_notes?: string | null
+          buyer_refund_percent?: number | null
+          created_at?: string
+          description?: string | null
+          escrow_id?: string
+          evidence_urls?: string[] | null
+          id?: string
+          opened_by?: string
+          reason?: string
+          resolution_type?: string | null
+          resolved_at?: string | null
+          seller_payment_percent?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escrow_disputes_escrow_id_fkey"
+            columns: ["escrow_id"]
+            isOneToOne: false
+            referencedRelation: "escrow_contracts"
             referencedColumns: ["id"]
           },
         ]

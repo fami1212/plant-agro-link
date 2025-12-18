@@ -51,11 +51,13 @@ import {
   MapPin,
   Loader2,
   DollarSign,
+  Scale,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 import { AdminTransactions } from "@/components/admin/AdminTransactions";
+import { AdminDisputePanel } from "@/components/admin/AdminDisputePanel";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type Listing = Database["public"]["Tables"]["marketplace_listings"]["Row"];
@@ -349,7 +351,7 @@ export default function Admin() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 h-auto p-1">
+          <TabsList className="grid w-full grid-cols-5 h-auto p-1">
             <TabsTrigger value="overview" className="flex items-center gap-1 py-2">
               <BarChart3 className="w-4 h-4" />
               <span className="text-xs">Vue</span>
@@ -361,6 +363,10 @@ export default function Admin() {
             <TabsTrigger value="marketplace" className="flex items-center gap-1 py-2">
               <ShoppingBag className="w-4 h-4" />
               <span className="text-xs">Marketplace</span>
+            </TabsTrigger>
+            <TabsTrigger value="disputes" className="flex items-center gap-1 py-2">
+              <Scale className="w-4 h-4" />
+              <span className="text-xs">Litiges</span>
             </TabsTrigger>
             <TabsTrigger value="transactions" className="flex items-center gap-1 py-2">
               <DollarSign className="w-4 h-4" />
@@ -629,6 +635,11 @@ export default function Admin() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Disputes Tab */}
+          <TabsContent value="disputes" className="mt-4">
+            <AdminDisputePanel />
           </TabsContent>
 
           {/* Transactions Tab */}
