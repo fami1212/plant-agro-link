@@ -8,6 +8,7 @@ import Admin from "./pages/Admin";
 import Agriculteur from "./pages/Agriculteur";
 import Acheteur from "./pages/Acheteur";
 import IA from "./pages/IA";
+import VoiceAssistant from "./pages/VoiceAssistant";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -107,8 +108,17 @@ const App = () => (
               <Route
                 path="/ia"
                 element={
-                  <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
+                  <ProtectedRoute>
                     <IA />
+                  </ProtectedRoute>
+                }
+              />
+              {/* Voice Assistant - accessible to all */}
+              <Route
+                path="/voice"
+                element={
+                  <ProtectedRoute>
+                    <VoiceAssistant />
                   </ProtectedRoute>
                 }
               />

@@ -16,6 +16,7 @@ import {
   Shield,
   Tractor,
   Brain,
+  Mic,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -47,6 +48,7 @@ const allNavItems = [
 
 // All possible menu items
 const allMenuItems = [
+  { icon: Mic, label: "Assistant Vocal", path: "/voice", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'], highlight: true },
   { icon: MapPin, label: "Parcelles", path: "/parcelles", roles: ['agriculteur', 'admin'] },
   { icon: TrendingUp, label: "Financements", path: "/farmer-investments", roles: ['agriculteur', 'admin'] },
   { icon: Activity, label: "Capteurs IoT", path: "/iot", roles: ['agriculteur', 'admin'] },
@@ -173,6 +175,7 @@ export function BottomNav() {
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
+                const isHighlight = (item as any).highlight;
                 return (
                   <button
                     key={item.path}
@@ -182,7 +185,8 @@ export function BottomNav() {
                     }}
                     className={cn(
                       "flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all",
-                      isActive ? "bg-primary/10 text-primary" : "hover:bg-muted/50"
+                      isActive ? "bg-primary/10 text-primary" : "hover:bg-muted/50",
+                      isHighlight && !isActive && "bg-primary text-primary-foreground hover:bg-primary/90"
                     )}
                   >
                     <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
