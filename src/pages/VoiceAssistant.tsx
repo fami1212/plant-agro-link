@@ -15,11 +15,30 @@ import {
   Loader2,
   Phone,
   PhoneOff,
-  Sparkles
+  Sparkles,
+  Pause,
+  Play,
+  Square,
+  Settings2,
+  Languages
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 // Voice shortcuts with icons (no text needed for illiterate users)
 const voiceShortcuts = [
@@ -61,6 +80,27 @@ const voiceShortcuts = [
   },
 ];
 
+// Available languages
+const languages = [
+  { code: "fr-FR", label: "Français", flag: "🇫🇷" },
+  { code: "wo", label: "Wolof", flag: "🇸🇳" },
+  { code: "en-US", label: "English", flag: "🇬🇧" },
+];
+
+// Clean text for speech (remove asterisks, markdown, etc.)
+const cleanTextForSpeech = (text: string): string => {
+  return text
+    .replace(/\*\*/g, "") // Remove bold markdown
+    .replace(/\*/g, "") // Remove italic markdown
+    .replace(/_/g, "") // Remove underscores
+    .replace(/#{1,6}\s/g, "") // Remove headers
+    .replace(/`/g, "") // Remove code ticks
+    .replace(/\n{2,}/g, ". ") // Replace multiple newlines with pause
+    .replace(/\n/g, " ") // Replace single newlines with space
+    .replace(/\s+/g, " ") // Normalize spaces
+    .trim();
+};
+
 export default function VoiceAssistant() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -68,23 +108,84 @@ export default function VoiceAssistant() {
   
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRealtimeMode, setIsRealtimeMode] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [pulseAnimation, setPulseAnimation] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState("fr-FR");
+  const [selectedVoice, setSelectedVoice] = useState<string>("");
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [speechRate, setSpeechRate] = useState(1.0);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  // Load available voices
+  useEffect(() => {
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      setAvailableVoices(voices);
+      
+      // Auto-select a voice for the current language
+      const langVoice = voices.find(v => v.lang.startsWith(selectedLanguage.split("-")[0]));
+      if (langVoice && !selectedVoice) {
+        setSelectedVoice(langVoice.name);
+      }
+    };
+
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, [selectedLanguage]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       stopListening();
+      stopSpeaking();
       disconnectRealtime();
     };
   }, []);
+
+  // Get voices filtered by language
+  const getVoicesForLanguage = (langCode: string) => {
+    const langPrefix = langCode === "wo" ? "fr" : langCode.split("-")[0];
+    return availableVoices.filter(v => v.lang.startsWith(langPrefix));
+  };
+
+  // Stop speaking
+  const stopSpeaking = () => {
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+    setIsPaused(false);
+    setStatusMessage("");
+    currentUtteranceRef.current = null;
+  };
+
+  // Pause speaking
+  const pauseSpeaking = () => {
+    if (isSpeaking && !isPaused) {
+      window.speechSynthesis.pause();
+      setIsPaused(true);
+      setStatusMessage("⏸️");
+    }
+  };
+
+  // Resume speaking
+  const resumeSpeaking = () => {
+    if (isPaused) {
+      window.speechSynthesis.resume();
+      setIsPaused(false);
+      setStatusMessage("🔊");
+    }
+  };
 
   // Speak text using Web Speech API (browser native TTS)
   const speakText = async (text: string) => {
@@ -93,31 +194,51 @@ export default function VoiceAssistant() {
       return;
     }
 
+    // Stop any ongoing speech
+    stopSpeaking();
+
+    const cleanedText = cleanTextForSpeech(text);
+    if (!cleanedText) return;
+
     setIsSpeaking(true);
     setStatusMessage("🔊");
 
     return new Promise<void>((resolve) => {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "fr-FR";
-      utterance.rate = 0.9;
+      const utterance = new SpeechSynthesisUtterance(cleanedText);
+      currentUtteranceRef.current = utterance;
+      
+      // Set language (Wolof falls back to French)
+      utterance.lang = selectedLanguage === "wo" ? "fr-FR" : selectedLanguage;
+      utterance.rate = speechRate;
       utterance.pitch = 1;
 
-      // Try to find a French voice
-      const voices = window.speechSynthesis.getVoices();
-      const frenchVoice = voices.find((v) => v.lang.startsWith("fr"));
-      if (frenchVoice) {
-        utterance.voice = frenchVoice;
+      // Set selected voice
+      if (selectedVoice) {
+        const voice = availableVoices.find(v => v.name === selectedVoice);
+        if (voice) {
+          utterance.voice = voice;
+        }
+      } else {
+        // Auto-select a voice for the language
+        const langVoice = getVoicesForLanguage(selectedLanguage)[0];
+        if (langVoice) {
+          utterance.voice = langVoice;
+        }
       }
 
       utterance.onend = () => {
         setIsSpeaking(false);
+        setIsPaused(false);
         setStatusMessage("");
+        currentUtteranceRef.current = null;
         resolve();
       };
 
       utterance.onerror = () => {
         setIsSpeaking(false);
+        setIsPaused(false);
         setStatusMessage("");
+        currentUtteranceRef.current = null;
         resolve();
       };
 
@@ -337,20 +458,111 @@ export default function VoiceAssistant() {
     setPulseAnimation(false);
   };
 
+  // Interrupt speaking to ask new question
+  const interruptAndListen = () => {
+    stopSpeaking();
+    startListening();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex flex-col items-center justify-center p-4 safe-area-inset">
-      {/* Back button - icon only */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-4 left-4"
-        onClick={() => navigate("/dashboard")}
-      >
-        <Home className="w-6 h-6" />
-      </Button>
+      {/* Back button and settings */}
+      <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/dashboard")}
+        >
+          <Home className="w-6 h-6" />
+        </Button>
+
+        {/* Settings Sheet */}
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Settings2 className="w-6 h-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="h-auto max-h-[60vh] rounded-t-3xl">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <Languages className="w-5 h-5" />
+                Paramètres vocaux
+              </SheetTitle>
+            </SheetHeader>
+            
+            <div className="space-y-6 py-6">
+              {/* Language selection */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Langue</label>
+                <div className="flex gap-2">
+                  {languages.map((lang) => (
+                    <Button
+                      key={lang.code}
+                      variant={selectedLanguage === lang.code ? "default" : "outline"}
+                      className="flex-1 gap-2"
+                      onClick={() => {
+                        setSelectedLanguage(lang.code);
+                        setSelectedVoice("");
+                      }}
+                    >
+                      <span className="text-lg">{lang.flag}</span>
+                      <span className="text-xs">{lang.label}</span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Voice selection */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Voix</label>
+                <Select value={selectedVoice} onValueChange={setSelectedVoice}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Voix automatique" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getVoicesForLanguage(selectedLanguage).map((voice) => (
+                      <SelectItem key={voice.name} value={voice.name}>
+                        {voice.name} {voice.localService ? "📱" : "☁️"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Speech rate */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Vitesse: {speechRate.toFixed(1)}x</label>
+                <div className="flex gap-2">
+                  {[0.75, 1.0, 1.25, 1.5].map((rate) => (
+                    <Button
+                      key={rate}
+                      variant={speechRate === rate ? "default" : "outline"}
+                      className="flex-1"
+                      onClick={() => setSpeechRate(rate)}
+                    >
+                      {rate}x
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
 
       {/* Main content */}
-      <div className="flex flex-col items-center gap-8 max-w-md w-full">
+      <div className="flex flex-col items-center gap-6 max-w-md w-full">
+        {/* Language indicator */}
+        <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-full">
+          <span className="text-2xl">
+            {languages.find(l => l.code === selectedLanguage)?.flag}
+          </span>
+          <span className="text-sm font-medium">
+            {languages.find(l => l.code === selectedLanguage)?.label}
+          </span>
+        </div>
+
         {/* Status indicator - large emoji/icon */}
         <div className="text-6xl h-20 flex items-center justify-center">
           {statusMessage || (
@@ -360,20 +572,22 @@ export default function VoiceAssistant() {
 
         {/* Main mic button - LARGE */}
         <button
-          onClick={isRealtimeMode ? disconnectRealtime : toggleListening}
-          disabled={isProcessing || isSpeaking}
+          onClick={isSpeaking ? interruptAndListen : (isRealtimeMode ? disconnectRealtime : toggleListening)}
+          disabled={isProcessing}
           className={cn(
             "relative w-40 h-40 rounded-full flex items-center justify-center transition-all duration-300",
             "shadow-2xl hover:scale-105 active:scale-95",
-            isListening || isRealtimeMode
+            isSpeaking
+              ? "bg-orange-500 hover:bg-orange-600"
+              : isListening || isRealtimeMode
               ? "bg-red-500 hover:bg-red-600"
               : "bg-primary hover:bg-primary/90",
-            (isProcessing || isSpeaking) && "opacity-50 cursor-not-allowed",
+            isProcessing && "opacity-50 cursor-not-allowed",
             pulseAnimation && "animate-pulse"
           )}
         >
           {/* Pulse rings when active */}
-          {(isListening || isRealtimeMode) && (
+          {(isListening || isRealtimeMode) && !isSpeaking && (
             <>
               <span className="absolute inset-0 rounded-full bg-red-400 animate-ping opacity-30" />
               <span className="absolute inset-2 rounded-full bg-red-400 animate-ping opacity-20 animation-delay-150" />
@@ -383,7 +597,7 @@ export default function VoiceAssistant() {
           {isProcessing ? (
             <Loader2 className="w-20 h-20 text-white animate-spin" />
           ) : isSpeaking ? (
-            <Volume2 className="w-20 h-20 text-white animate-pulse" />
+            <Mic className="w-20 h-20 text-white" />
           ) : isListening || isRealtimeMode ? (
             <MicOff className="w-20 h-20 text-white" />
           ) : (
@@ -391,26 +605,50 @@ export default function VoiceAssistant() {
           )}
         </button>
 
+        {/* Playback controls when speaking */}
+        {isSpeaking && (
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="lg"
+              className="rounded-full"
+              onClick={isPaused ? resumeSpeaking : pauseSpeaking}
+            >
+              {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
+            </Button>
+            <Button
+              variant="destructive"
+              size="lg"
+              className="rounded-full"
+              onClick={stopSpeaking}
+            >
+              <Square className="w-5 h-5" />
+            </Button>
+          </div>
+        )}
+
         {/* Realtime mode toggle */}
-        <Button
-          variant={isRealtimeMode ? "destructive" : "outline"}
-          size="lg"
-          className="gap-2 rounded-full px-6"
-          onClick={isRealtimeMode ? disconnectRealtime : connectRealtime}
-          disabled={isProcessing || isSpeaking || isListening}
-        >
-          {isRealtimeMode ? (
-            <>
-              <PhoneOff className="w-5 h-5" />
-              <span className="sr-only">Raccrocher</span>
-            </>
-          ) : (
-            <>
-              <Phone className="w-5 h-5" />
-              <span className="sr-only">Mode conversation</span>
-            </>
-          )}
-        </Button>
+        {!isSpeaking && (
+          <Button
+            variant={isRealtimeMode ? "destructive" : "outline"}
+            size="lg"
+            className="gap-2 rounded-full px-6"
+            onClick={isRealtimeMode ? disconnectRealtime : connectRealtime}
+            disabled={isProcessing || isListening}
+          >
+            {isRealtimeMode ? (
+              <>
+                <PhoneOff className="w-5 h-5" />
+                <span className="sr-only">Raccrocher</span>
+              </>
+            ) : (
+              <>
+                <Phone className="w-5 h-5" />
+                <span className="sr-only">Mode conversation</span>
+              </>
+            )}
+          </Button>
+        )}
 
         {/* Voice shortcuts grid - icons only */}
         <div className="grid grid-cols-3 gap-4 w-full mt-4">
@@ -418,12 +656,13 @@ export default function VoiceAssistant() {
             <button
               key={i}
               onClick={() => handleShortcut(shortcut.command)}
-              disabled={isProcessing || isSpeaking || isListening}
+              disabled={isProcessing || isListening}
               className={cn(
                 "aspect-square rounded-2xl flex items-center justify-center",
                 "transition-all duration-200 hover:scale-105 active:scale-95",
                 "shadow-lg disabled:opacity-50 disabled:cursor-not-allowed",
-                shortcut.color
+                shortcut.color,
+                isSpeaking && "opacity-70"
               )}
             >
               <shortcut.icon className="w-10 h-10 text-white" />
