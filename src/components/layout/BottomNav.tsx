@@ -34,16 +34,16 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 
-// All possible navigation items
+// All possible navigation items - Marketplace is always visible in bottom nav
 const allNavItems = [
   { icon: Home, label: "Accueil", path: "/dashboard", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
-  { icon: Tractor, label: "Ferme", path: "/agriculteur", roles: ['agriculteur', 'admin'] },
+  { icon: ShoppingBag, label: "Marché", path: "/marketplace", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
   { icon: Wheat, label: "Cultures", path: "/cultures", roles: ['agriculteur', 'admin'] },
   { icon: PawPrint, label: "Bétail", path: "/betail", roles: ['agriculteur', 'admin'] },
   { icon: Stethoscope, label: "Cabinet", path: "/veterinaire", roles: ['veterinaire'] },
   { icon: TrendingUp, label: "Investir", path: "/investisseur", roles: ['investisseur', 'admin'] },
   { icon: ShoppingBag, label: "Achats", path: "/acheteur", roles: ['acheteur'] },
-  { icon: ShoppingBag, label: "Marché", path: "/marketplace", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
+  { icon: Tractor, label: "Ferme", path: "/agriculteur", roles: ['agriculteur', 'admin'] },
 ];
 
 // All possible menu items
