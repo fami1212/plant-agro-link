@@ -86,38 +86,43 @@ export default function VoiceAssistant() {
     };
   }, []);
 
-  // Speak text using ElevenLabs TTS
+  // Speak text using Web Speech API (browser native TTS)
   const speakText = async (text: string) => {
+    if (!("speechSynthesis" in window)) {
+      console.error("Speech synthesis not supported");
+      return;
+    }
+
     setIsSpeaking(true);
     setStatusMessage("🔊");
-    
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ text, language: "fr" }),
-        }
-      );
 
-      if (response.ok) {
-        const { audioContent } = await response.json();
-        const audio = new Audio(`data:audio/mpeg;base64,${audioContent}`);
-        audio.onended = () => {
-          setIsSpeaking(false);
-          setStatusMessage("");
-        };
-        await audio.play();
+    return new Promise<void>((resolve) => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "fr-FR";
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+
+      // Try to find a French voice
+      const voices = window.speechSynthesis.getVoices();
+      const frenchVoice = voices.find((v) => v.lang.startsWith("fr"));
+      if (frenchVoice) {
+        utterance.voice = frenchVoice;
       }
-    } catch (error) {
-      console.error("TTS error:", error);
-      setIsSpeaking(false);
-      setStatusMessage("");
-    }
+
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        setStatusMessage("");
+        resolve();
+      };
+
+      utterance.onerror = () => {
+        setIsSpeaking(false);
+        setStatusMessage("");
+        resolve();
+      };
+
+      window.speechSynthesis.speak(utterance);
+    });
   };
 
   // Send message to AI and speak response
