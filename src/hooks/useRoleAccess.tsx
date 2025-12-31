@@ -11,8 +11,8 @@ interface RoleConfig {
 
 const roleConfigs: Record<AppRole, RoleConfig> = {
   agriculteur: {
-    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/iot', '/ia', '/farmer-investments', '/settings', '/voice'],
-    navItems: ['/dashboard', '/agriculteur', '/cultures', '/betail', '/marketplace'],
+    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/iot', '/ia', '/farmer-investments', '/settings', '/voice'],
+    navItems: ['/dashboard', '/agriculteur', '/cultures', '/betail', '/marketplace/farmer'],
     menuItems: ['/parcelles', '/farmer-investments', '/iot', '/ia', '/voice', '/settings'],
     dashboardType: 'agriculteur',
   },
@@ -23,19 +23,19 @@ const roleConfigs: Record<AppRole, RoleConfig> = {
     dashboardType: 'veterinaire',
   },
   acheteur: {
-    allowedRoutes: ['/dashboard', '/marketplace', '/acheteur', '/ia', '/settings', '/voice'],
-    navItems: ['/dashboard', '/acheteur', '/marketplace'],
+    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/buyer', '/acheteur', '/ia', '/settings', '/voice'],
+    navItems: ['/dashboard', '/acheteur', '/marketplace/buyer'],
     menuItems: ['/ia', '/voice', '/settings'],
     dashboardType: 'acheteur',
   },
   investisseur: {
-    allowedRoutes: ['/dashboard', '/marketplace', '/investisseur', '/ia', '/settings', '/voice'],
-    navItems: ['/dashboard', '/investisseur', '/marketplace'],
+    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/investor', '/investisseur', '/ia', '/settings', '/voice'],
+    navItems: ['/dashboard', '/investisseur', '/marketplace/investor'],
     menuItems: ['/ia', '/voice', '/settings'],
     dashboardType: 'investisseur',
   },
   admin: {
-    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/iot', '/ia', '/admin', '/settings', '/farmer-investments', '/voice'],
+    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/marketplace/buyer', '/marketplace/investor', '/iot', '/ia', '/admin', '/settings', '/farmer-investments', '/voice'],
     navItems: ['/dashboard', '/agriculteur', '/cultures', '/betail', '/marketplace'],
     menuItems: ['/parcelles', '/farmer-investments', '/iot', '/ia', '/voice', '/admin', '/settings'],
     dashboardType: 'admin',
