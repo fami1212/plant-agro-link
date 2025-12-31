@@ -25,6 +25,9 @@ import Parcelles from "./pages/Parcelles";
 import Cultures from "./pages/Cultures";
 import Betail from "./pages/Betail";
 import Marketplace from "./pages/Marketplace";
+import MarketplaceFarmer from "./pages/marketplace/MarketplaceFarmer";
+import MarketplaceBuyer from "./pages/marketplace/MarketplaceBuyer";
+import MarketplaceInvestor from "./pages/marketplace/MarketplaceInvestor";
 import IoT from "./pages/IoT";
 import NotFound from "./pages/NotFound";
 
@@ -86,12 +89,36 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
-              {/* All authenticated users */}
+              {/* Marketplace - role-specific pages */}
               <Route
                 path="/marketplace"
                 element={
                   <ProtectedRoute>
                     <Marketplace />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/marketplace/farmer"
+                element={
+                  <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
+                    <MarketplaceFarmer />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/marketplace/buyer"
+                element={
+                  <ProtectedRoute allowedRoles={['acheteur', 'admin']}>
+                    <MarketplaceBuyer />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/marketplace/investor"
+                element={
+                  <ProtectedRoute allowedRoles={['investisseur', 'admin']}>
+                    <MarketplaceInvestor />
                   </ProtectedRoute>
                 }
               />

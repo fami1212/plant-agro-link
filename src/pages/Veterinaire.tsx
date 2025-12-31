@@ -34,6 +34,7 @@ import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
 import { VetConsultationForm } from "@/components/veterinaire/VetConsultationForm";
 import { VetAnimalUpdateDialog } from "@/components/veterinaire/VetAnimalUpdateDialog";
+import { VetAIDiagnosis } from "@/components/veterinaire/VetAIDiagnosis";
 interface Booking {
   id: string;
   client_id: string;
@@ -261,20 +262,38 @@ export default function Veterinaire() {
       {/* Tabs */}
       <div className="px-4 pb-28">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 mb-4 h-12">
-            <TabsTrigger value="rdv" className="gap-2">
+          <TabsList className="grid w-full grid-cols-4 mb-4 h-12">
+            <TabsTrigger value="rdv" className="gap-1 text-xs">
               <Calendar className="w-4 h-4" />
               RDV
             </TabsTrigger>
-            <TabsTrigger value="patients" className="gap-2">
+            <TabsTrigger value="patients" className="gap-1 text-xs">
               <Users className="w-4 h-4" />
               Patients
             </TabsTrigger>
-            <TabsTrigger value="historique" className="gap-2">
+            <TabsTrigger value="diagnostic" className="gap-1 text-xs">
+              <Stethoscope className="w-4 h-4" />
+              Diagnostic IA
+            </TabsTrigger>
+            <TabsTrigger value="historique" className="gap-1 text-xs">
               <FileText className="w-4 h-4" />
               Historique
             </TabsTrigger>
           </TabsList>
+
+          {/* Diagnostic IA Tab */}
+          <TabsContent value="diagnostic" className="space-y-3">
+            <VetAIDiagnosis 
+              animalInfo={selectedPatient ? {
+                species: selectedPatient.species,
+                breed: selectedPatient.breed || undefined,
+                identifier: selectedPatient.identifier
+              } : undefined}
+              onDiagnosisComplete={(diagnosis) => {
+                toast.success(`Diagnostic: ${diagnosis.condition}`);
+              }}
+            />
+          </TabsContent>
 
           {/* Bookings */}
           <TabsContent value="rdv" className="space-y-3">
