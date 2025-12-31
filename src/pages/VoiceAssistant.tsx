@@ -39,6 +39,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { AudioWaveAnimation } from "@/components/voice/AudioWaveAnimation";
 
 // Voice shortcuts with icons (no text needed for illiterate users)
 const voiceShortcuts = [
@@ -563,10 +564,23 @@ export default function VoiceAssistant() {
           </span>
         </div>
 
-        {/* Status indicator - large emoji/icon */}
-        <div className="text-6xl h-20 flex items-center justify-center">
-          {statusMessage || (
-            <Sparkles className="w-16 h-16 text-primary animate-pulse" />
+        {/* Status indicator with audio wave animation */}
+        <div className="h-24 flex flex-col items-center justify-center gap-2">
+          {isListening && !isProcessing && (
+            <AudioWaveAnimation isActive={true} variant="listening" className="h-12" />
+          )}
+          {isSpeaking && (
+            <AudioWaveAnimation isActive={true} variant="speaking" className="h-12" />
+          )}
+          {!isListening && !isSpeaking && (
+            <div className="text-6xl">
+              {statusMessage || (
+                <Sparkles className="w-16 h-16 text-primary animate-pulse" />
+              )}
+            </div>
+          )}
+          {isProcessing && !isSpeaking && (
+            <div className="text-4xl animate-bounce">🤔</div>
           )}
         </div>
 
