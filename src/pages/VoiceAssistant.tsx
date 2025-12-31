@@ -40,6 +40,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { AudioWaveAnimation } from "@/components/voice/AudioWaveAnimation";
+import { VolumeVisualizer } from "@/components/voice/VolumeVisualizer";
 
 // Voice shortcuts with icons (no text needed for illiterate users)
 const voiceShortcuts = [
@@ -118,6 +119,7 @@ export default function VoiceAssistant() {
   const [selectedVoice, setSelectedVoice] = useState<string>("");
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [speechRate, setSpeechRate] = useState(1.0);
+  const [currentStream, setCurrentStream] = useState<MediaStream | null>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -313,6 +315,7 @@ export default function VoiceAssistant() {
   const startListening = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setCurrentStream(stream);
       
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
@@ -328,6 +331,7 @@ export default function VoiceAssistant() {
 
       mediaRecorder.onstop = async () => {
         stream.getTracks().forEach(track => track.stop());
+        setCurrentStream(null);
         const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         
         if (audioBlob.size > 0) {
@@ -386,6 +390,7 @@ export default function VoiceAssistant() {
       mediaRecorderRef.current.stop();
       setIsListening(false);
       setPulseAnimation(false);
+      setCurrentStream(null);
     }
   };
 
@@ -564,15 +569,22 @@ export default function VoiceAssistant() {
           </span>
         </div>
 
+        {/* Real-time volume visualizer when listening */}
+        {isListening && !isProcessing && (
+          <VolumeVisualizer 
+            stream={currentStream} 
+            isActive={isListening} 
+            variant="bars"
+            className="h-20 w-full max-w-xs"
+          />
+        )}
+
         {/* Status indicator with audio wave animation */}
-        <div className="h-24 flex flex-col items-center justify-center gap-2">
-          {isListening && !isProcessing && (
-            <AudioWaveAnimation isActive={true} variant="listening" className="h-12" />
-          )}
+        <div className="h-20 flex flex-col items-center justify-center gap-2">
           {isSpeaking && (
             <AudioWaveAnimation isActive={true} variant="speaking" className="h-12" />
           )}
-          {!isListening && !isSpeaking && (
+          {!isListening && !isSpeaking && !isProcessing && (
             <div className="text-6xl">
               {statusMessage || (
                 <Sparkles className="w-16 h-16 text-primary animate-pulse" />
