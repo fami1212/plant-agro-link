@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
+import { AIContextualTip } from "@/components/ai/AIContextualTip";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -444,6 +445,14 @@ export default function Marketplace() {
           ) : null
         }
       />
+
+      {/* AI Contextual Tip */}
+      <div className="px-4 mb-4">
+        <AIContextualTip 
+          context="marketplace" 
+          data={{ listingsCount: listings.length, offersCount: stats.totalOffers }} 
+        />
+      </div>
 
       {/* Stats for logged in users */}
       {user && canSell && (
