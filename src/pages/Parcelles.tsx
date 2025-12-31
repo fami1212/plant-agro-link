@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { EmptyState } from "@/components/common/EmptyState";
 import { AIContextualTip } from "@/components/ai/AIContextualTip";
+import { SmartCameraButton } from "@/components/ai/SmartCameraButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -168,16 +169,23 @@ export default function Parcelles() {
         title="Mes Parcelles"
         subtitle={`${fields.length} parcelle${fields.length !== 1 ? 's' : ''} • ${totalArea.toFixed(1)} ha total`}
         action={
-          <Button
-            variant="hero"
-            size="icon"
-            onClick={() => {
-              setShowForm(!showForm);
-              setEditingField(null);
-            }}
-          >
-            {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-          </Button>
+          <div className="flex gap-2">
+            <SmartCameraButton 
+              context="parcelles" 
+              variant="icon"
+              onActionComplete={() => fetchFields()}
+            />
+            <Button
+              variant="hero"
+              size="icon"
+              onClick={() => {
+                setShowForm(!showForm);
+                setEditingField(null);
+              }}
+            >
+              {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+            </Button>
+          </div>
         }
       />
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { AIContextualTip } from "@/components/ai/AIContextualTip";
+import { SmartCameraButton } from "@/components/ai/SmartCameraButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -245,16 +246,23 @@ export default function Cultures() {
         title="Cultures"
         subtitle={`${activeCrops.length} active${activeCrops.length > 1 ? "s" : ""} • ${totalArea.toFixed(1)} ha`}
         action={
-          <Button
-            variant="hero"
-            size="icon"
-            onClick={() => {
-              setShowForm(!showForm);
-              setEditingCrop(null);
-            }}
-          >
-            {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-          </Button>
+          <div className="flex gap-2">
+            <SmartCameraButton 
+              context="cultures" 
+              variant="icon"
+              onActionComplete={() => fetchCrops()}
+            />
+            <Button
+              variant="hero"
+              size="icon"
+              onClick={() => {
+                setShowForm(!showForm);
+                setEditingCrop(null);
+              }}
+            >
+              {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+            </Button>
+          </div>
         }
       />
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { AIContextualTip } from "@/components/ai/AIContextualTip";
+import { SmartCameraButton } from "@/components/ai/SmartCameraButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Heart, Syringe, AlertCircle, X, Edit, Trash2, Stethoscope, Scale, ChevronRight } from "lucide-react";
@@ -249,16 +250,23 @@ export default function Betail() {
         subtitle={`${livestock.filter(a => a.health_status !== 'decede').length} tête${livestock.length > 1 ? "s" : ""}`}
         action={
           canAddAnimal ? (
-            <Button
-              variant="hero"
-              size="icon"
-              onClick={() => {
-                setShowForm(!showForm);
-                setEditingAnimal(null);
-              }}
-            >
-              {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-            </Button>
+            <div className="flex gap-2">
+              <SmartCameraButton 
+                context="betail" 
+                variant="icon"
+                onActionComplete={() => fetchLivestock()}
+              />
+              <Button
+                variant="hero"
+                size="icon"
+                onClick={() => {
+                  setShowForm(!showForm);
+                  setEditingAnimal(null);
+                }}
+              >
+                {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+              </Button>
+            </div>
           ) : null
         }
       />
