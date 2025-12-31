@@ -19,10 +19,11 @@ serve(async (req) => {
     }
 
     const systemPrompt = `Tu es un assistant IA agricole expert qui analyse des images pour une application de gestion agricole au Sénégal.
+IMPORTANT: Tu dois TOUJOURS répondre en FRANÇAIS.
 
 Analyse l'image fournie et détermine son contenu principal. Tu dois:
 1. Identifier le TYPE de contenu (culture, animal, terrain, maladie végétale, maturité de récolte)
-2. Extraire les DÉTAILS pertinents
+2. Extraire les DÉTAILS pertinents EN FRANÇAIS
 3. Fournir un niveau de CONFIANCE (0-1)
 
 Contexte actuel de l'utilisateur: ${context || "general"}
@@ -38,12 +39,20 @@ TYPES DE RÉPONSE:
 Cultures locales communes: mil, maïs, arachide, niébé, tomate, oignon, manioc, riz, sorgho, pastèque
 Animaux communs: bovins (Ndama, Zébu Gobra), ovins (Touabire, Peul), caprins, volailles
 
+RÈGLES IMPORTANTES POUR LES VALEURS:
+- species: utilise les valeurs françaises: "bovin", "ovin", "caprin", "volaille", "porcin", "equin", "autre"
+- soilType: utilise les valeurs françaises: "argileux", "sableux", "limoneux", "calcaire", "humifere", "mixte"
+- cropType: utilise les valeurs: "cereale", "legumineuse", "oleagineux", "tubercule", "maraicher", "fruitier", "fourrage", "autre"
+- estimatedWeight: un nombre uniquement (sans unité)
+- estimatedArea: un nombre uniquement (en hectares)
+- Tous les textes descriptifs doivent être EN FRANÇAIS
+
 Réponds UNIQUEMENT en JSON valide avec cette structure exacte:
 {
   "type": "crop_identification|disease_detection|livestock_identification|harvest_maturity|field_analysis|unknown",
   "confidence": 0.85,
   "analysis": {
-    // champs spécifiques au type
+    // champs spécifiques au type, TOUS EN FRANÇAIS
   }
 }`;
 
@@ -62,7 +71,7 @@ Réponds UNIQUEMENT en JSON valide avec cette structure exacte:
             content: [
               {
                 type: "text",
-                text: "Analyse cette image et identifie son contenu pour l'application agricole."
+                text: "Analyse cette image et identifie son contenu pour l'application agricole. Réponds en français."
               },
               {
                 type: "image_url",
@@ -83,25 +92,27 @@ Réponds UNIQUEMENT en JSON valide avec cette structure exacte:
 
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: "Rate limit exceeded" }),
+          JSON.stringify({ error: "Limite de requêtes dépassée. Réessayez plus tard." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "Insufficient credits" }),
+          JSON.stringify({ error: "Crédits insuffisants" }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       return new Response(
-        JSON.stringify({ error: "AI service error" }),
+        JSON.stringify({ error: "Erreur du service IA" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "";
+
+    console.log("AI Response:", content);
 
     // Parse JSON from response
     let result;
@@ -117,7 +128,7 @@ Réponds UNIQUEMENT en JSON valide avec cette structure exacte:
         confidence: 0.3,
         analysis: {
           rawResponse: content,
-          error: "Could not parse AI response"
+          error: "Impossible d'analyser la réponse de l'IA"
         }
       };
     }
@@ -128,7 +139,7 @@ Réponds UNIQUEMENT en JSON valide avec cette structure exacte:
   } catch (error) {
     console.error("Smart Camera error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Erreur inconnue" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
