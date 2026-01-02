@@ -120,6 +120,8 @@ export default function VoiceAssistant() {
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [speechRate, setSpeechRate] = useState(1.0);
   const [currentStream, setCurrentStream] = useState<MediaStream | null>(null);
+  const [liveTranscript, setLiveTranscript] = useState<string>("");
+  const recognitionRef = useRef<any>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -316,6 +318,39 @@ export default function VoiceAssistant() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       setCurrentStream(stream);
+      setLiveTranscript("");
+      
+      // Start Web Speech API for real-time transcription
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = selectedLanguage === "wo" ? "fr-FR" : selectedLanguage;
+
+        recognition.onresult = (event: any) => {
+          let interimTranscript = "";
+          let finalTranscript = "";
+
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript;
+            } else {
+              interimTranscript += transcript;
+            }
+          }
+
+          setLiveTranscript(finalTranscript || interimTranscript);
+        };
+
+        recognition.onerror = (event: Event) => {
+          console.error("Speech recognition error:", event);
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
+      }
       
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
@@ -386,11 +421,16 @@ export default function VoiceAssistant() {
   };
 
   const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
     if (mediaRecorderRef.current && isListening) {
       mediaRecorderRef.current.stop();
       setIsListening(false);
       setPulseAnimation(false);
       setCurrentStream(null);
+      setLiveTranscript("");
     }
   };
 
@@ -571,12 +611,20 @@ export default function VoiceAssistant() {
 
         {/* Real-time volume visualizer when listening */}
         {isListening && !isProcessing && (
-          <VolumeVisualizer 
-            stream={currentStream} 
-            isActive={isListening} 
-            variant="bars"
-            className="h-20 w-full max-w-xs"
-          />
+          <>
+            <VolumeVisualizer 
+              stream={currentStream} 
+              isActive={isListening} 
+              variant="bars"
+              className="h-20 w-full max-w-xs"
+            />
+            {/* Live transcription display */}
+            {liveTranscript && (
+              <div className="bg-muted/80 backdrop-blur rounded-2xl px-4 py-3 max-w-sm text-center animate-fade-in">
+                <p className="text-sm text-foreground italic">"{liveTranscript}"</p>
+              </div>
+            )}
+          </>
         )}
 
         {/* Status indicator with audio wave animation */}
