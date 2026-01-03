@@ -20,7 +20,8 @@ import {
   Play,
   Square,
   Settings2,
-  Languages
+  Languages,
+  History
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -41,6 +42,8 @@ import {
 } from "@/components/ui/sheet";
 import { AudioWaveAnimation } from "@/components/voice/AudioWaveAnimation";
 import { VolumeVisualizer } from "@/components/voice/VolumeVisualizer";
+import { VoiceConversationHistory } from "@/components/voice/VoiceConversationHistory";
+import { useVoiceConversation } from "@/hooks/useVoiceConversation";
 
 // Voice shortcuts with icons (no text needed for illiterate users)
 const voiceShortcuts = [
@@ -107,6 +110,7 @@ export default function VoiceAssistant() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const voiceConversation = useVoiceConversation();
   
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -121,6 +125,7 @@ export default function VoiceAssistant() {
   const [speechRate, setSpeechRate] = useState(1.0);
   const [currentStream, setCurrentStream] = useState<MediaStream | null>(null);
   const [liveTranscript, setLiveTranscript] = useState<string>("");
+  const [showHistory, setShowHistory] = useState(false);
   const recognitionRef = useRef<any>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -256,6 +261,14 @@ export default function VoiceAssistant() {
     setIsProcessing(true);
     setStatusMessage("🤔");
 
+    // Start conversation if not already started
+    if (!voiceConversation.currentConversationId) {
+      await voiceConversation.startNewConversation(selectedLanguage.split("-")[0]);
+    }
+
+    // Save user message
+    await voiceConversation.addMessage("user", message);
+
     try {
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-assistant`,
@@ -304,6 +317,8 @@ export default function VoiceAssistant() {
 
       setIsProcessing(false);
       if (fullResponse) {
+        // Save assistant response
+        await voiceConversation.addMessage("assistant", fullResponse);
         await speakText(fullResponse);
       }
     } catch (error) {
@@ -522,13 +537,34 @@ export default function VoiceAssistant() {
           <Home className="w-6 h-6" />
         </Button>
 
-        {/* Settings Sheet */}
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <Settings2 className="w-6 h-6" />
-            </Button>
-          </SheetTrigger>
+        <div className="flex items-center gap-2">
+          {/* History Sheet */}
+          <Sheet open={showHistory} onOpenChange={setShowHistory}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <History className="w-6 h-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-md">
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
+                  <History className="w-5 h-5" />
+                  Historique
+                </SheetTitle>
+              </SheetHeader>
+              <div className="mt-4">
+                <VoiceConversationHistory />
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {/* Settings Sheet */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Settings2 className="w-6 h-6" />
+              </Button>
+            </SheetTrigger>
           <SheetContent side="bottom" className="h-auto max-h-[60vh] rounded-t-3xl">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
@@ -595,6 +631,7 @@ export default function VoiceAssistant() {
             </div>
           </SheetContent>
         </Sheet>
+        </div>
       </div>
 
       {/* Main content */}
