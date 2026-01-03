@@ -99,6 +99,40 @@ export function IrrigationRecommendationsModule() {
     enabled: !!selectedFieldId,
   });
 
+  // Fetch weather data from Open-Meteo
+  const fetchWeatherData = async (lat: number, lon: number) => {
+    try {
+      const response = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,soil_temperature_0cm,soil_moisture_0_to_1cm&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,et0_fao_evapotranspiration&timezone=auto&forecast_days=7`
+      );
+      
+      if (!response.ok) throw new Error('Weather API error');
+      
+      const data = await response.json();
+      return {
+        current: {
+          temperature: data.current?.temperature_2m,
+          humidity: data.current?.relative_humidity_2m,
+          precipitation: data.current?.precipitation,
+          wind_speed: data.current?.wind_speed_10m,
+          soil_temperature: data.current?.soil_temperature_0cm,
+          soil_moisture: data.current?.soil_moisture_0_to_1cm,
+        },
+        forecast: data.daily ? {
+          dates: data.daily.time,
+          temp_max: data.daily.temperature_2m_max,
+          temp_min: data.daily.temperature_2m_min,
+          precipitation: data.daily.precipitation_sum,
+          precipitation_probability: data.daily.precipitation_probability_max,
+          evapotranspiration: data.daily.et0_fao_evapotranspiration,
+        } : null,
+      };
+    } catch (error) {
+      console.error('Weather fetch error:', error);
+      return null;
+    }
+  };
+
   const handleAnalyze = async () => {
     if (!selectedFieldId) {
       toast.error("Veuillez sélectionner une parcelle");
@@ -112,12 +146,33 @@ export function IrrigationRecommendationsModule() {
     setRecommendations(null);
 
     try {
+      // Fetch weather data - default to Dakar, Senegal coordinates if no GPS
+      let weatherData = null;
+      const defaultLat = 14.6928;
+      const defaultLon = -17.4467;
+      
+      // Try to parse location_gps if available
+      let lat = defaultLat;
+      let lon = defaultLon;
+      
+      if (selectedField.location_gps) {
+        // location_gps is a point type, might be in format "(x,y)"
+        const gpsStr = String(selectedField.location_gps);
+        const match = gpsStr.match(/\(?([-\d.]+),\s*([-\d.]+)\)?/);
+        if (match) {
+          lat = parseFloat(match[1]);
+          lon = parseFloat(match[2]);
+        }
+      }
+
+      weatherData = await fetchWeatherData(lat, lon);
+
       const { data, error } = await supabase.functions.invoke('irrigation-recommendations', {
         body: {
           fieldData: selectedField,
           cropData: currentCrop,
           iotData,
-          weatherData: null // TODO: Integrate weather API
+          weatherData,
         }
       });
 
