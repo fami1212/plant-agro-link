@@ -131,20 +131,20 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
-              {/* IA Module */}
+              {/* IA Module - agriculteur only */}
               <Route
                 path="/ia"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
                     <IA />
                   </ProtectedRoute>
                 }
               />
-              {/* Voice Assistant - accessible to all */}
+              {/* Voice Assistant - agriculteur only */}
               <Route
                 path="/voice"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
                     <VoiceAssistant />
                   </ProtectedRoute>
                 }
