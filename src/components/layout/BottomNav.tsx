@@ -47,13 +47,13 @@ const allNavItems = [
   { icon: Tractor, label: "Ferme", path: "/agriculteur", roles: ['agriculteur', 'admin'] },
 ];
 
-// All possible menu items
+// All possible menu items - IA and Voice only for agriculteur and admin
 const allMenuItems = [
-  { icon: Mic, label: "Assistant Vocal", path: "/voice", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'], highlight: true },
+  { icon: Mic, label: "Assistant Vocal", path: "/voice", roles: ['agriculteur', 'admin'], highlight: true },
   { icon: MapPin, label: "Parcelles", path: "/parcelles", roles: ['agriculteur', 'admin'] },
   { icon: TrendingUp, label: "Financements", path: "/farmer-investments", roles: ['agriculteur', 'admin'] },
   { icon: Activity, label: "Capteurs IoT", path: "/iot", roles: ['agriculteur', 'admin'] },
-  { icon: Brain, label: "Intelligence IA", path: "/ia", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
+  { icon: Brain, label: "Intelligence IA", path: "/ia", roles: ['agriculteur', 'admin'] },
   { icon: PawPrint, label: "Suivi animaux", path: "/betail", roles: ['veterinaire'] },
   { icon: Shield, label: "Administration", path: "/admin", roles: ['admin'] },
   { icon: Settings, label: "Paramètres", path: "/settings", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },

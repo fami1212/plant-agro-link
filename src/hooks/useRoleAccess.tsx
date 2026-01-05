@@ -17,21 +17,21 @@ const roleConfigs: Record<AppRole, RoleConfig> = {
     dashboardType: 'agriculteur',
   },
   veterinaire: {
-    allowedRoutes: ['/dashboard', '/betail', '/marketplace', '/veterinaire', '/ia', '/settings', '/voice'],
+    allowedRoutes: ['/dashboard', '/betail', '/marketplace', '/veterinaire', '/settings'],
     navItems: ['/dashboard', '/veterinaire', '/betail', '/marketplace'],
-    menuItems: ['/ia', '/voice', '/settings'],
+    menuItems: ['/settings'],
     dashboardType: 'veterinaire',
   },
   acheteur: {
-    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/buyer', '/acheteur', '/ia', '/settings', '/voice'],
+    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/buyer', '/acheteur', '/settings'],
     navItems: ['/dashboard', '/acheteur', '/marketplace/buyer'],
-    menuItems: ['/ia', '/voice', '/settings'],
+    menuItems: ['/settings'],
     dashboardType: 'acheteur',
   },
   investisseur: {
-    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/investor', '/investisseur', '/ia', '/settings', '/voice'],
+    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/investor', '/investisseur', '/settings'],
     navItems: ['/dashboard', '/investisseur', '/marketplace/investor'],
-    menuItems: ['/ia', '/voice', '/settings'],
+    menuItems: ['/settings'],
     dashboardType: 'investisseur',
   },
   admin: {

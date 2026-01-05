@@ -47,7 +47,7 @@ const quickPrompts = [
 
 export function AIAssistant() {
   const { user } = useAuth();
-  const { primaryRole } = useRoleAccess();
+  const { primaryRole, isAgriculteur, isAdmin } = useRoleAccess();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -55,6 +55,11 @@ export function AIAssistant() {
   const [isLoading, setIsLoading] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Only show AI Assistant for agriculteurs and admins
+  if (!user || (!isAgriculteur && !isAdmin)) {
+    return null;
+  }
 
   // Voice hooks
   const { speak, stopSpeaking, isSpeaking, isLoading: isTTSLoading } = useTextToSpeech({ 
