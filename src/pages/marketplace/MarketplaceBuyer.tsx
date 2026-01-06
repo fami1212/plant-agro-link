@@ -8,12 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
   Search, ShoppingCart, Package, Heart, 
-  Loader2, MapPin, MessageCircle
+  Loader2, MapPin, Star
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { MobileMoneyPayment } from "@/components/payment/MobileMoneyPayment";
+import { SellerChatButton } from "@/components/marketplace/SellerChatButton";
+import { SellerRating } from "@/components/marketplace/SellerRating";
+import { ReviewDialog } from "@/components/marketplace/ReviewDialog";
+import { useSellerProfile } from "@/hooks/useSellerProfile";
 import type { Database } from "@/integrations/supabase/types";
 
 type Listing = Database["public"]["Tables"]["marketplace_listings"]["Row"];
@@ -39,8 +43,13 @@ export default function MarketplaceBuyer() {
   const [showPayment, setShowPayment] = useState(false);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   
+  // Review state
+  const [showReview, setShowReview] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState<{ id: string; name: string; offerId?: string } | null>(null);
+  
   const [listings, setListings] = useState<Listing[]>([]);
   const [myOrders, setMyOrders] = useState<Offer[]>([]);
+  const [sellerNames, setSellerNames] = useState<Record<string, string>>({});
   const [favorites, setFavorites] = useState<string[]>([]);
 
   useEffect(() => {
@@ -61,6 +70,19 @@ export default function MarketplaceBuyer() {
       .order("created_at", { ascending: false })
       .limit(30);
     setListings(data || []);
+    
+    // Fetch seller names
+    if (data && data.length > 0) {
+      const sellerIds = [...new Set(data.map(l => l.user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, full_name")
+        .in("user_id", sellerIds);
+      
+      const names: Record<string, string> = {};
+      profiles?.forEach(p => { names[p.user_id] = p.full_name; });
+      setSellerNames(names);
+    }
   };
 
   const fetchMyOrders = async () => {
@@ -133,6 +155,15 @@ export default function MarketplaceBuyer() {
   });
 
   const favoriteListings = listings.filter(l => favorites.includes(l.id));
+
+  const handleReview = (order: Offer) => {
+    setReviewTarget({
+      id: order.seller_id,
+      name: "Vendeur",
+      offerId: order.id,
+    });
+    setShowReview(true);
+  };
 
   const getOrderStatus = (status: string) => {
     const config: Record<string, { color: string; label: string }> = {
@@ -229,20 +260,33 @@ export default function MarketplaceBuyer() {
                       </div>
                       <div className="p-2">
                         <h4 className="text-sm font-medium truncate">{listing.title}</h4>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
-                          <MapPin className="w-3 h-3" />
-                          {listing.location || "Sénégal"}
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                            <MapPin className="w-3 h-3" />
+                            {listing.location || "Sénégal"}
+                          </p>
+                          <SellerRating sellerId={listing.user_id} showCount={false} />
+                        </div>
                         <p className="text-sm font-bold text-primary mt-1">
                           {listing.price?.toLocaleString() || "—"} FCFA
                         </p>
-                        <Button 
-                          size="sm" 
-                          className="w-full mt-2 h-8"
-                          onClick={() => handleBuy(listing)}
-                        >
-                          Acheter
-                        </Button>
+                        <div className="flex gap-1 mt-2">
+                          <SellerChatButton
+                            sellerId={listing.user_id}
+                            sellerName={sellerNames[listing.user_id] || "Vendeur"}
+                            listingId={listing.id}
+                            listingTitle={listing.title}
+                            size="sm"
+                            className="flex-1 h-8"
+                          />
+                          <Button 
+                            size="sm" 
+                            className="flex-1 h-8"
+                            onClick={() => handleBuy(listing)}
+                          >
+                            Acheter
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -283,6 +327,17 @@ export default function MarketplaceBuyer() {
                       <p className="text-xs text-muted-foreground">
                         {new Date(order.created_at).toLocaleDateString("fr")}
                       </p>
+                      {order.status === "acceptee" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mt-2 h-7 text-xs"
+                          onClick={() => handleReview(order)}
+                        >
+                          <Star className="w-3 h-3 mr-1" />
+                          Évaluer
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </Card>
@@ -350,6 +405,19 @@ export default function MarketplaceBuyer() {
           paymentType="marketplace"
           referenceId={selectedListing.id}
           onSuccess={handlePaymentSuccess}
+        />
+      )}
+
+      {/* Review Dialog */}
+      {reviewTarget && (
+        <ReviewDialog
+          open={showReview}
+          onOpenChange={setShowReview}
+          targetId={reviewTarget.id}
+          targetType="seller"
+          targetName={reviewTarget.name}
+          offerId={reviewTarget.offerId}
+          onSuccess={() => setReviewTarget(null)}
         />
       )}
     </AppLayout>

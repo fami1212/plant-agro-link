@@ -1167,6 +1167,50 @@ export type Database = {
           },
         ]
       }
+      marketplace_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          offer_id: string | null
+          rating: number
+          target_id: string
+          target_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          offer_id?: string | null
+          rating: number
+          target_id: string
+          target_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          offer_id?: string | null
+          rating?: number
+          target_id?: string
+          target_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_reviews_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           address: string | null
