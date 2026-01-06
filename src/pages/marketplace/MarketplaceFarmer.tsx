@@ -8,13 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
   Plus, Search, ShoppingBag, Store, HandCoins, 
-  Package, Loader2, Check, X, Phone, MessageCircle, Eye
+  Package, Loader2, Check, X, Eye
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { ListingForm } from "@/components/marketplace/ListingForm";
 import { MobileMoneyPayment } from "@/components/payment/MobileMoneyPayment";
+import { SellerChatButton } from "@/components/marketplace/SellerChatButton";
+import { SellerRating } from "@/components/marketplace/SellerRating";
+import { ChatDialog } from "@/components/marketplace/ChatDialog";
 import type { Database } from "@/integrations/supabase/types";
 
 type Listing = Database["public"]["Tables"]["marketplace_listings"]["Row"];
@@ -35,7 +38,12 @@ export default function MarketplaceFarmer() {
   const [showPayment, setShowPayment] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Listing | null>(null);
   
+  // Chat state for offers
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatOffer, setChatOffer] = useState<Offer | null>(null);
+  
   const [listings, setListings] = useState<Listing[]>([]);
+  const [sellerNames, setSellerNames] = useState<Record<string, string>>({});
   const [myListings, setMyListings] = useState<Listing[]>([]);
   const [receivedOffers, setReceivedOffers] = useState<Offer[]>([]);
   const [sentOffers, setSentOffers] = useState<Offer[]>([]);
@@ -63,6 +71,19 @@ export default function MarketplaceFarmer() {
       .order("created_at", { ascending: false })
       .limit(20);
     setListings(data || []);
+    
+    // Fetch seller names
+    if (data && data.length > 0) {
+      const sellerIds = [...new Set(data.map(l => l.user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, full_name")
+        .in("user_id", sellerIds);
+      
+      const names: Record<string, string> = {};
+      profiles?.forEach(p => { names[p.user_id] = p.full_name; });
+      setSellerNames(names);
+    }
   };
 
   const fetchMyListings = async () => {
@@ -143,11 +164,12 @@ export default function MarketplaceFarmer() {
     fetchData();
   };
 
-  const handleContact = (listing: Listing) => {
-    toast.info("Contacter le vendeur via l'application");
+  const handleOpenChat = (offer: Offer) => {
+    setChatOffer(offer);
+    setChatOpen(true);
   };
 
-  const filteredListings = listings.filter(l => 
+  const filteredListings = listings.filter(l =>
     l.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -278,15 +300,14 @@ export default function MarketplaceFarmer() {
                         </div>
                       </div>
                       <div className="flex gap-2 mt-3">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <SellerChatButton
+                          sellerId={listing.user_id}
+                          sellerName={sellerNames[listing.user_id] || "Vendeur"}
+                          listingId={listing.id}
+                          listingTitle={listing.title}
+                          size="sm"
                           className="flex-1"
-                          onClick={() => handleContact(listing)}
-                        >
-                          <MessageCircle className="w-4 h-4 mr-1" />
-                          Contact
-                        </Button>
+                        />
                         <Button 
                           size="sm" 
                           className="flex-1"
@@ -455,6 +476,18 @@ export default function MarketplaceFarmer() {
           paymentType="marketplace"
           referenceId={selectedItem.id}
           onSuccess={handlePaymentSuccess}
+        />
+      )}
+
+      {/* Chat Dialog for offers */}
+      {chatOffer && (
+        <ChatDialog
+          open={chatOpen}
+          onOpenChange={setChatOpen}
+          offerId={chatOffer.id}
+          recipientId={chatOffer.buyer_id}
+          recipientName={chatOffer.buyer_name || "Acheteur"}
+          productTitle={chatOffer.listing?.title || "Produit"}
         />
       )}
     </AppLayout>
