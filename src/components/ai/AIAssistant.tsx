@@ -56,26 +56,19 @@ export function AIAssistant() {
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Only show AI Assistant for agriculteurs and admins
-  if (!user || (!isAgriculteur && !isAdmin)) {
-    return null;
-  }
-
-  // Voice hooks
+  // Voice hooks - must be called unconditionally before any early returns
   const { speak, stopSpeaking, isSpeaking, isLoading: isTTSLoading } = useTextToSpeech({ 
     language: "fr",
     autoPlay: voiceEnabled 
   });
 
+  const handleTranscription = (text: string) => {
+    setInput(text);
+  };
+
   const { isRecording, isProcessing, toggleRecording } = useVoiceRecorder({
     language: "fr",
-    onTranscription: (text) => {
-      setInput(text);
-      // Auto-send when voice input is received
-      if (text.trim()) {
-        sendMessage(text);
-      }
-    },
+    onTranscription: handleTranscription,
   });
 
   useEffect(() => {
@@ -83,6 +76,11 @@ export function AIAssistant() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Only show AI Assistant for agriculteurs and admins
+  if (!user || (!isAgriculteur && !isAdmin)) {
+    return null;
+  }
 
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
