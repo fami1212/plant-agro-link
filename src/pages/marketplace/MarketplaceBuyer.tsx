@@ -14,14 +14,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { MobileMoneyPayment } from "@/components/payment/MobileMoneyPayment";
-import { SellerChatButton } from "@/components/marketplace/SellerChatButton";
+import { MessagingButton } from "@/components/marketplace/MessagingButton";
+import { MessagesIndicator } from "@/components/marketplace/MessagesIndicator";
 import { SellerRating } from "@/components/marketplace/SellerRating";
 import { ReviewDialog } from "@/components/marketplace/ReviewDialog";
-import { useSellerProfile } from "@/hooks/useSellerProfile";
 import type { Database } from "@/integrations/supabase/types";
 
 type Listing = Database["public"]["Tables"]["marketplace_listings"]["Row"];
-type Offer = Database["public"]["Tables"]["marketplace_offers"]["Row"] & {
+type Order = Database["public"]["Tables"]["marketplace_offers"]["Row"] & {
   listing?: { title: string; images: string[] | null; price: number | null };
 };
 
@@ -48,7 +48,7 @@ export default function MarketplaceBuyer() {
   const [reviewTarget, setReviewTarget] = useState<{ id: string; name: string; offerId?: string } | null>(null);
   
   const [listings, setListings] = useState<Listing[]>([]);
-  const [myOrders, setMyOrders] = useState<Offer[]>([]);
+  const [myOrders, setMyOrders] = useState<Order[]>([]);
   const [sellerNames, setSellerNames] = useState<Record<string, string>>({});
   const [favorites, setFavorites] = useState<string[]>([]);
 
@@ -87,10 +87,12 @@ export default function MarketplaceBuyer() {
 
   const fetchMyOrders = async () => {
     if (!user) return;
+    // Only fetch actual orders (with payment), not messaging placeholders
     const { data } = await supabase
       .from("marketplace_offers")
       .select("*, listing:marketplace_listings(title, images, price)")
       .eq("buyer_id", user.id)
+      .neq("proposed_price", 0) // Exclude messaging placeholders
       .order("created_at", { ascending: false });
     setMyOrders(data || []);
   };
@@ -156,7 +158,7 @@ export default function MarketplaceBuyer() {
 
   const favoriteListings = listings.filter(l => favorites.includes(l.id));
 
-  const handleReview = (order: Offer) => {
+  const handleReview = (order: Order) => {
     setReviewTarget({
       id: order.seller_id,
       name: "Vendeur",
@@ -190,6 +192,7 @@ export default function MarketplaceBuyer() {
       <PageHeader
         title="Marketplace"
         subtitle="Achetez les meilleurs produits agricoles"
+        action={<MessagesIndicator />}
       />
 
       <div className="px-4 pb-24">
@@ -271,7 +274,7 @@ export default function MarketplaceBuyer() {
                           {listing.price?.toLocaleString() || "—"} FCFA
                         </p>
                         <div className="flex gap-1 mt-2">
-                          <SellerChatButton
+                          <MessagingButton
                             sellerId={listing.user_id}
                             sellerName={sellerNames[listing.user_id] || "Vendeur"}
                             listingId={listing.id}
@@ -279,7 +282,7 @@ export default function MarketplaceBuyer() {
                             size="sm"
                             className="flex-1 h-8"
                           />
-                          <Button 
+                          <Button
                             size="sm" 
                             className="flex-1 h-8"
                             onClick={() => handleBuy(listing)}

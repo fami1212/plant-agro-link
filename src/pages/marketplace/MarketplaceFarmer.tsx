@@ -15,9 +15,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { ListingForm } from "@/components/marketplace/ListingForm";
 import { MobileMoneyPayment } from "@/components/payment/MobileMoneyPayment";
-import { SellerChatButton } from "@/components/marketplace/SellerChatButton";
-import { SellerRating } from "@/components/marketplace/SellerRating";
-import { ChatDialog } from "@/components/marketplace/ChatDialog";
+import { MessagingButton } from "@/components/marketplace/MessagingButton";
+import { MessagesIndicator } from "@/components/marketplace/MessagesIndicator";
 import type { Database } from "@/integrations/supabase/types";
 
 type Listing = Database["public"]["Tables"]["marketplace_listings"]["Row"];
@@ -37,10 +36,6 @@ export default function MarketplaceFarmer() {
   // Payment state
   const [showPayment, setShowPayment] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Listing | null>(null);
-  
-  // Chat state for offers
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatOffer, setChatOffer] = useState<Offer | null>(null);
   
   const [listings, setListings] = useState<Listing[]>([]);
   const [sellerNames, setSellerNames] = useState<Record<string, string>>({});
@@ -99,18 +94,20 @@ export default function MarketplaceFarmer() {
   const fetchOffers = async () => {
     if (!user) return;
     
-    // Received offers
+    // Received offers - exclude messaging placeholders
     const { data: received } = await supabase
       .from("marketplace_offers")
       .select("*, listing:marketplace_listings(title, price)")
       .eq("seller_id", user.id)
+      .neq("proposed_price", 0)
       .order("created_at", { ascending: false });
     
-    // Sent offers
+    // Sent offers - exclude messaging placeholders
     const { data: sent } = await supabase
       .from("marketplace_offers")
       .select("*, listing:marketplace_listings(title, price)")
       .eq("buyer_id", user.id)
+      .neq("proposed_price", 0)
       .order("created_at", { ascending: false });
 
     // Get names
@@ -164,11 +161,6 @@ export default function MarketplaceFarmer() {
     fetchData();
   };
 
-  const handleOpenChat = (offer: Offer) => {
-    setChatOffer(offer);
-    setChatOpen(true);
-  };
-
   const filteredListings = listings.filter(l =>
     l.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -211,10 +203,13 @@ export default function MarketplaceFarmer() {
         title="Marketplace"
         subtitle="Achetez et vendez vos produits"
         action={
-          <Button size="sm" onClick={() => setShowListingForm(true)}>
-            <Plus className="w-4 h-4 mr-1" />
-            Vendre
-          </Button>
+          <div className="flex items-center gap-2">
+            <MessagesIndicator />
+            <Button size="sm" onClick={() => setShowListingForm(true)}>
+              <Plus className="w-4 h-4 mr-1" />
+              Vendre
+            </Button>
+          </div>
         }
       />
 
@@ -300,7 +295,7 @@ export default function MarketplaceFarmer() {
                         </div>
                       </div>
                       <div className="flex gap-2 mt-3">
-                        <SellerChatButton
+                        <MessagingButton
                           sellerId={listing.user_id}
                           sellerName={sellerNames[listing.user_id] || "Vendeur"}
                           listingId={listing.id}
@@ -479,17 +474,6 @@ export default function MarketplaceFarmer() {
         />
       )}
 
-      {/* Chat Dialog for offers */}
-      {chatOffer && (
-        <ChatDialog
-          open={chatOpen}
-          onOpenChange={setChatOpen}
-          offerId={chatOffer.id}
-          recipientId={chatOffer.buyer_id}
-          recipientName={chatOffer.buyer_name || "Acheteur"}
-          productTitle={chatOffer.listing?.title || "Produit"}
-        />
-      )}
     </AppLayout>
   );
 }
