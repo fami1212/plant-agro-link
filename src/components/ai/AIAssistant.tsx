@@ -56,7 +56,10 @@ export function AIAssistant() {
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Voice hooks - must be called unconditionally before any early returns
+  // Determine if component should be visible
+  const shouldShow = user && (isAgriculteur || isAdmin);
+
+  // Voice hooks - must be called unconditionally (no early returns allowed before hooks)
   const { speak, stopSpeaking, isSpeaking, isLoading: isTTSLoading } = useTextToSpeech({ 
     language: "fr",
     autoPlay: voiceEnabled 
@@ -77,8 +80,8 @@ export function AIAssistant() {
     }
   }, [messages]);
 
-  // Only show AI Assistant for agriculteurs and admins
-  if (!user || (!isAgriculteur && !isAdmin)) {
+  // Only show AI Assistant for agriculteurs and admins - return null AFTER all hooks
+  if (!shouldShow) {
     return null;
   }
 
