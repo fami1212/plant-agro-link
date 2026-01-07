@@ -835,6 +835,41 @@ export type Database = {
         }
         Relationships: []
       }
+      marketplace_conversations: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_message_at: string | null
+          listing_id: string | null
+          participant_1: string
+          participant_2: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_message_at?: string | null
+          listing_id?: string | null
+          participant_1: string
+          participant_2: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_message_at?: string | null
+          listing_id?: string | null
+          participant_1?: string
+          participant_2?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_conversations_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace_favorites: {
         Row: {
           created_at: string
@@ -1064,6 +1099,7 @@ export type Database = {
       marketplace_messages: {
         Row: {
           content: string
+          conversation_id: string | null
           created_at: string | null
           id: string
           is_read: boolean | null
@@ -1073,6 +1109,7 @@ export type Database = {
         }
         Insert: {
           content: string
+          conversation_id?: string | null
           created_at?: string | null
           id?: string
           is_read?: boolean | null
@@ -1082,6 +1119,7 @@ export type Database = {
         }
         Update: {
           content?: string
+          conversation_id?: string | null
           created_at?: string | null
           id?: string
           is_read?: boolean | null
@@ -1090,6 +1128,13 @@ export type Database = {
           sender_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "marketplace_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_conversations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "marketplace_messages_offer_id_fkey"
             columns: ["offer_id"]
