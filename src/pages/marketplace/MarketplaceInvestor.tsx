@@ -149,28 +149,49 @@ export default function MarketplaceInvestor() {
 
       {/* Portfolio Summary */}
       <div className="px-4 mb-4">
-        <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-          <CardContent className="p-4">
+        <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20 overflow-hidden relative">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
+          <CardContent className="p-4 relative">
             <div className="grid grid-cols-3 gap-3 text-center">
-              <div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-center gap-1">
+                  <Wallet className="w-4 h-4 text-primary" />
+                </div>
                 <p className="text-lg font-bold text-primary">
                   {stats.total.toLocaleString()}
                 </p>
                 <p className="text-[10px] text-muted-foreground">FCFA investis</p>
               </div>
-              <div>
+              <div className="space-y-1 border-x border-border/30">
+                <div className="flex items-center justify-center gap-1">
+                  <ArrowUpRight className="w-4 h-4 text-green-600" />
+                </div>
                 <p className="text-lg font-bold text-green-600">
                   +{stats.gains.toLocaleString()}
                 </p>
                 <p className="text-[10px] text-muted-foreground">Gains prévus</p>
               </div>
-              <div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-center gap-1">
+                  <Briefcase className="w-4 h-4 text-primary" />
+                </div>
                 <p className="text-lg font-bold text-primary">
                   {stats.active}
                 </p>
                 <p className="text-[10px] text-muted-foreground">Actifs</p>
               </div>
             </div>
+            {stats.total > 0 && (
+              <div className="mt-3 pt-3 border-t border-border/30">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">ROI moyen</span>
+                  <span className="font-semibold text-green-600">
+                    +{stats.total > 0 ? Math.round((stats.gains / stats.total) * 100) : 0}%
+                  </span>
+                </div>
+                <Progress value={(stats.gains / stats.total) * 100} className="h-1 mt-1.5" />
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

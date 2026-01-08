@@ -30,6 +30,8 @@ const categories = [
   { label: "Céréales", value: "Céréales", icon: "🌾" },
   { label: "Légumes", value: "Légumes", icon: "🥬" },
   { label: "Fruits", value: "Fruits", icon: "🍎" },
+  { label: "Élevage", value: "Élevage", icon: "🐄" },
+  { label: "Autres", value: "Autres", icon: "📦" },
 ];
 
 export default function MarketplaceBuyer() {

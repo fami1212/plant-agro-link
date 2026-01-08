@@ -215,19 +215,19 @@ export default function MarketplaceFarmer() {
 
       {/* Quick Stats */}
       <div className="px-4 mb-4 grid grid-cols-3 gap-2">
-        <Card className="p-3 text-center">
+        <Card className="p-3 text-center bg-card/50 backdrop-blur-sm border-border/50">
           <p className="text-xl font-bold text-primary">{myListings.length}</p>
           <p className="text-[11px] text-muted-foreground">Annonces</p>
         </Card>
-        <Card className="p-3 text-center relative">
-          <p className="text-xl font-bold text-orange-500">{pendingOffers.length}</p>
+        <Card className="p-3 text-center relative bg-accent/30 border-accent/50">
+          <p className="text-xl font-bold text-accent-foreground">{pendingOffers.length}</p>
           <p className="text-[11px] text-muted-foreground">Offres reçues</p>
           {pendingOffers.length > 0 && (
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full animate-pulse" />
           )}
         </Card>
-        <Card className="p-3 text-center">
-          <p className="text-xl font-bold text-green-600">
+        <Card className="p-3 text-center bg-primary/5 border-primary/20">
+          <p className="text-xl font-bold text-primary">
             {myListings.filter(l => l.status === "vendu").length}
           </p>
           <p className="text-[11px] text-muted-foreground">Vendus</p>
