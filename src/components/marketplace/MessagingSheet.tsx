@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { 
   Send, Loader2, MessageCircle, ArrowLeft, 
-  Check, CheckCheck, Phone, MoreVertical 
+  Check, CheckCheck, Phone, Image, Paperclip, X, FileText
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,6 +28,7 @@ interface Message {
   created_at: string;
   is_read: boolean;
   conversation_id: string;
+  attachments?: string[] | null;
 }
 
 interface Conversation {
@@ -72,7 +73,11 @@ export function MessagingSheet({
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [attachments, setAttachments] = useState<{ url: string; type: string; name: string }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Handle initial conversation or new chat
   useEffect(() => {
@@ -280,25 +285,81 @@ export function MessagingSheet({
     }
   }, [messages]);
 
+  const uploadFile = async (file: File): Promise<string | null> => {
+    if (!user) return null;
+    
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    
+    const { error } = await supabase.storage
+      .from("chat-attachments")
+      .upload(fileName, file);
+    
+    if (error) {
+      console.error("Upload error:", error);
+      return null;
+    }
+    
+    const { data: { publicUrl } } = supabase.storage
+      .from("chat-attachments")
+      .getPublicUrl(fileName);
+    
+    return publicUrl;
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, isImage: boolean) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    setUploading(true);
+    
+    for (const file of Array.from(files)) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("Fichier trop volumineux (max 10MB)");
+        continue;
+      }
+      
+      const url = await uploadFile(file);
+      if (url) {
+        setAttachments(prev => [...prev, {
+          url,
+          type: isImage ? "image" : "file",
+          name: file.name
+        }]);
+      }
+    }
+    
+    setUploading(false);
+    e.target.value = "";
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
   const sendMessage = async () => {
-    if (!newMessage.trim() || !user || !activeConversation) return;
+    if ((!newMessage.trim() && attachments.length === 0) || !user || !activeConversation) return;
 
     const recipientId = activeConversation.participant_1 === user.id 
       ? activeConversation.participant_2 
       : activeConversation.participant_1;
 
     setSending(true);
+    const attachmentUrls = attachments.map(a => a.url);
+    
     const { error } = await supabase.from("marketplace_messages").insert({
       conversation_id: activeConversation.id,
       sender_id: user.id,
       recipient_id: recipientId,
-      content: newMessage.trim(),
+      content: newMessage.trim() || (attachments.length > 0 ? "📎 Pièce jointe" : ""),
+      attachments: attachmentUrls.length > 0 ? attachmentUrls : null,
     });
 
     if (error) {
       toast.error("Erreur lors de l'envoi");
     } else {
       setNewMessage("");
+      setAttachments([]);
       // Update last_message_at
       await supabase
         .from("marketplace_conversations")
@@ -489,6 +550,37 @@ export function MessagingSheet({
                             <p className="text-sm whitespace-pre-wrap break-words">
                               {msg.content}
                             </p>
+                            {/* Attachments */}
+                            {msg.attachments && msg.attachments.length > 0 && (
+                              <div className="mt-2 space-y-1">
+                                {msg.attachments.map((url, idx) => {
+                                  const isImage = url.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                                  return isImage ? (
+                                    <img
+                                      key={idx}
+                                      src={url}
+                                      alt="Attachment"
+                                      className="max-w-full rounded-lg cursor-pointer hover:opacity-90"
+                                      onClick={() => window.open(url, "_blank")}
+                                    />
+                                  ) : (
+                                    <a
+                                      key={idx}
+                                      href={url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className={cn(
+                                        "flex items-center gap-2 p-2 rounded-lg text-xs",
+                                        isOwn ? "bg-primary-foreground/20" : "bg-muted"
+                                      )}
+                                    >
+                                      <FileText className="w-4 h-4" />
+                                      <span className="truncate">Fichier joint</span>
+                                    </a>
+                                  );
+                                })}
+                              </div>
+                            )}
                             <div
                               className={cn(
                                 "flex items-center justify-end gap-1 mt-1",
@@ -517,23 +609,81 @@ export function MessagingSheet({
               )}
             </ScrollArea>
 
+            {/* Attachments preview */}
+            {attachments.length > 0 && (
+              <div className="px-3 py-2 border-t bg-muted/30 flex gap-2 flex-wrap">
+                {attachments.map((att, idx) => (
+                  <div key={idx} className="relative group">
+                    {att.type === "image" ? (
+                      <img src={att.url} alt="" className="h-16 w-16 rounded-lg object-cover" />
+                    ) : (
+                      <div className="h-16 w-16 rounded-lg bg-muted flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    <button
+                      onClick={() => removeAttachment(idx)}
+                      className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Message input */}
             <div className="p-3 border-t bg-background flex items-center gap-2">
+              <input
+                type="file"
+                ref={imageInputRef}
+                onChange={(e) => handleFileSelect(e, true)}
+                accept="image/*"
+                multiple
+                className="hidden"
+              />
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={(e) => handleFileSelect(e, false)}
+                multiple
+                className="hidden"
+              />
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0 text-muted-foreground hover:text-foreground"
+                onClick={() => imageInputRef.current?.click()}
+                disabled={uploading}
+              >
+                <Image className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0 text-muted-foreground hover:text-foreground"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+              >
+                <Paperclip className="w-5 h-5" />
+              </Button>
+              
               <Input
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Écrivez un message..."
-                disabled={sending}
+                disabled={sending || uploading}
                 className="flex-1 rounded-full bg-muted border-0"
               />
               <Button
                 size="icon"
                 className="rounded-full shrink-0"
                 onClick={sendMessage}
-                disabled={sending || !newMessage.trim()}
+                disabled={sending || uploading || (!newMessage.trim() && attachments.length === 0)}
               >
-                {sending ? (
+                {sending || uploading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Send className="w-4 h-4" />
