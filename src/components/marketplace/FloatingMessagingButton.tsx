@@ -24,7 +24,7 @@ export function FloatingMessagingButton() {
       return count || 0;
     },
     enabled: !!user,
-    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchInterval: 10000,
   });
 
   if (!user) return null;
@@ -35,14 +35,15 @@ export function FloatingMessagingButton() {
         onClick={() => setOpen(true)}
         size="icon"
         className={cn(
-          "fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full shadow-lg",
+          "fixed bottom-24 right-4 z-40 h-14 w-14 rounded-full shadow-xl",
           "bg-primary hover:bg-primary/90 text-primary-foreground",
-          "transition-all duration-200 hover:scale-105 active:scale-95"
+          "transition-all duration-300 hover:scale-110 active:scale-95",
+          "ring-4 ring-primary/20"
         )}
       >
         <MessageCircle className="h-6 w-6" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[22px] h-[22px] rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center px-1">
+          <span className="absolute -top-1 -right-1 min-w-[24px] h-[24px] rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center px-1.5 shadow-lg animate-pulse">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}

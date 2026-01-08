@@ -40,7 +40,7 @@ const allNavItems = [
   { icon: ShoppingBag, label: "Marché", path: "/marketplace/farmer", roles: ['agriculteur'] },
   { icon: ShoppingBag, label: "Catalogue", path: "/marketplace/buyer", roles: ['acheteur'] },
   { icon: TrendingUp, label: "Investir", path: "/marketplace/investor", roles: ['investisseur'] },
-  { icon: ShoppingBag, label: "Marché", path: "/marketplace", roles: ['veterinaire', 'admin'] },
+  { icon: ShoppingBag, label: "Marché", path: "/marketplace/farmer", roles: ['veterinaire', 'admin'] },
   { icon: Wheat, label: "Cultures", path: "/cultures", roles: ['agriculteur', 'admin'] },
   { icon: PawPrint, label: "Bétail", path: "/betail", roles: ['agriculteur', 'admin'] },
   { icon: Stethoscope, label: "Cabinet", path: "/veterinaire", roles: ['veterinaire'] },
