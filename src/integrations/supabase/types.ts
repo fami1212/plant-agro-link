@@ -1098,6 +1098,7 @@ export type Database = {
       }
       marketplace_messages: {
         Row: {
+          attachments: string[] | null
           content: string
           conversation_id: string | null
           created_at: string | null
@@ -1108,6 +1109,7 @@ export type Database = {
           sender_id: string
         }
         Insert: {
+          attachments?: string[] | null
           content: string
           conversation_id?: string | null
           created_at?: string | null
@@ -1118,6 +1120,7 @@ export type Database = {
           sender_id: string
         }
         Update: {
+          attachments?: string[] | null
           content?: string
           conversation_id?: string | null
           created_at?: string | null
