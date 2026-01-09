@@ -29,6 +29,7 @@ interface Message {
   is_read: boolean;
   conversation_id: string;
   attachments?: string[] | null;
+  sender_name?: string;
 }
 
 interface Conversation {
@@ -234,7 +235,21 @@ export function MessagingSheet({
     if (error) {
       console.error("Error fetching messages:", error);
     } else {
-      setMessages(data || []);
+      // Enrich messages with sender names
+      const senderIds = [...new Set((data || []).map(m => m.sender_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, full_name")
+        .in("user_id", senderIds);
+      
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p.full_name]) || []);
+      
+      const enrichedMessages = (data || []).map(msg => ({
+        ...msg,
+        sender_name: profileMap.get(msg.sender_id) || "Utilisateur"
+      }));
+      
+      setMessages(enrichedMessages);
       markMessagesAsRead(convId);
     }
   };
@@ -547,6 +562,11 @@ export function MessagingSheet({
                                 : "bg-background rounded-bl-md"
                             )}
                           >
+                            {!isOwn && (
+                              <p className="text-xs font-semibold text-primary mb-1">
+                                {msg.sender_name}
+                              </p>
+                            )}
                             <p className="text-sm whitespace-pre-wrap break-words">
                               {msg.content}
                             </p>
