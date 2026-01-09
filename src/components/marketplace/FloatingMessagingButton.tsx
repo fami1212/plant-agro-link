@@ -35,7 +35,7 @@ export function FloatingMessagingButton() {
         onClick={() => setOpen(true)}
         size="icon"
         className={cn(
-          "fixed bottom-24 right-4 z-40 h-14 w-14 rounded-full shadow-xl",
+          "fixed bottom-24 left-4 z-40 h-14 w-14 rounded-full shadow-xl",
           "bg-primary hover:bg-primary/90 text-primary-foreground",
           "transition-all duration-300 hover:scale-110 active:scale-95",
           "ring-4 ring-primary/20"
