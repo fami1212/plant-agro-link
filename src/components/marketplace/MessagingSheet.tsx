@@ -11,7 +11,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Send, Loader2, MessageCircle, ArrowLeft, 
-  Check, CheckCheck, Phone, Image, Paperclip, X, FileText, Search
+  Check, CheckCheck, Phone, Image, Paperclip, X, FileText, Search,
+  Mic, Square, Trash2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,6 +20,8 @@ import { toast } from "sonner";
 import { format, isToday, isYesterday } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { useChatVoiceRecorder } from "@/hooks/useChatVoiceRecorder";
+import { VoiceMessagePlayer } from "./VoiceMessagePlayer";
 
 interface Message {
   id: string;
@@ -81,6 +84,17 @@ export function MessagingSheet({
   const imageInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Voice recording hook
+  const {
+    isRecording,
+    recordingDuration,
+    isUploading: isUploadingVoice,
+    startRecording,
+    stopRecording,
+    cancelRecording,
+    formatDuration,
+  } = useChatVoiceRecorder();
+
   // Handle initial conversation or new chat
   useEffect(() => {
     if (open && user) {
@@ -122,7 +136,7 @@ export function MessagingSheet({
           .from("profiles")
           .select("full_name, avatar_url")
           .eq("user_id", otherUserId)
-          .single();
+          .maybeSingle();
 
         const { data: lastMsgData } = await supabase
           .from("marketplace_messages")
@@ -167,7 +181,7 @@ export function MessagingSheet({
         .from("profiles")
         .select("full_name, avatar_url")
         .eq("user_id", otherUserId)
-        .single();
+        .maybeSingle();
 
       setActiveConversation({
         ...convData,
@@ -279,7 +293,7 @@ export function MessagingSheet({
             .from("profiles")
             .select("full_name")
             .eq("user_id", newMsg.sender_id)
-            .single();
+            .maybeSingle();
           
           setMessages((prev) => [...prev, {
             ...newMsg,
@@ -453,6 +467,38 @@ export function MessagingSheet({
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  // Send voice message
+  const handleSendVoiceMessage = async () => {
+    if (!user || !activeConversation) return;
+    
+    const result = await stopRecording(user.id);
+    if (!result) return;
+    
+    const recipientId = activeConversation.participant_1 === user.id 
+      ? activeConversation.participant_2 
+      : activeConversation.participant_1;
+    
+    setSending(true);
+    
+    const { error } = await supabase.from("marketplace_messages").insert({
+      conversation_id: activeConversation.id,
+      sender_id: user.id,
+      recipient_id: recipientId,
+      content: `🎤 Message vocal (${formatDuration(result.duration)})`,
+      attachments: [result.url],
+    });
+
+    if (error) {
+      toast.error("Erreur lors de l'envoi du message vocal");
+    } else {
+      await supabase
+        .from("marketplace_conversations")
+        .update({ last_message_at: new Date().toISOString() })
+        .eq("id", activeConversation.id);
+    }
+    setSending(false);
   };
 
   const openConversation = (conv: Conversation) => {
@@ -721,7 +767,9 @@ export function MessagingSheet({
                               )}
                               
                               {/* Message content */}
-                              {msg.content && msg.content !== "📎 Pièce jointe" && (
+                              {msg.content && 
+                               msg.content !== "📎 Pièce jointe" && 
+                               !msg.content.startsWith("🎤") && (
                                 <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
                                   {msg.content}
                                 </p>
@@ -732,6 +780,18 @@ export function MessagingSheet({
                                 <div className="mt-1 space-y-1">
                                   {msg.attachments.map((url, idx) => {
                                     const isImage = url.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                                    const isVoice = url.match(/\.(webm|mp3|wav|ogg|m4a)$/i) || msg.content.startsWith("🎤");
+                                    
+                                    if (isVoice) {
+                                      return (
+                                        <VoiceMessagePlayer 
+                                          key={idx} 
+                                          audioUrl={url} 
+                                          isOwn={isOwn}
+                                        />
+                                      );
+                                    }
+                                    
                                     return isImage ? (
                                       <img
                                         key={idx}
@@ -848,48 +908,108 @@ export function MessagingSheet({
                 className="hidden"
               />
               
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-              >
-                <Paperclip className="w-5 h-5" />
-              </Button>
-              
-              <div className="flex-1 relative">
-                <Input
-                  value={newMessage}
-                  onChange={handleInputChange}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Écrivez un message..."
-                  disabled={sending || uploading}
-                  className="rounded-full bg-muted border-0 pr-12 focus-visible:ring-1 focus-visible:ring-primary"
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-primary hover:bg-transparent"
-                  onClick={() => imageInputRef.current?.click()}
-                  disabled={uploading}
-                >
-                  <Image className="w-5 h-5" />
-                </Button>
-              </div>
-              
-              <Button
-                size="icon"
-                className="rounded-full shrink-0 h-10 w-10 bg-primary hover:bg-primary/90 shadow-md"
-                onClick={sendMessage}
-                disabled={sending || uploading || (!newMessage.trim() && attachments.length === 0)}
-              >
-                {sending || uploading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <Send className="w-5 h-5" />
-                )}
-              </Button>
+              {isRecording ? (
+                // Recording mode UI
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full"
+                    onClick={cancelRecording}
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
+                  
+                  <div className="flex-1 flex items-center justify-center gap-3 bg-destructive/10 rounded-full px-4 py-2">
+                    <div className="w-3 h-3 bg-destructive rounded-full animate-pulse" />
+                    <span className="text-destructive font-medium tabular-nums">
+                      {formatDuration(recordingDuration)}
+                    </span>
+                    <div className="flex gap-0.5">
+                      {Array.from({ length: 8 }).map((_, i) => (
+                        <div 
+                          key={i}
+                          className="w-1 bg-destructive/60 rounded-full animate-pulse"
+                          style={{ 
+                            height: `${Math.random() * 16 + 8}px`,
+                            animationDelay: `${i * 100}ms`
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <Button
+                    size="icon"
+                    className="rounded-full shrink-0 h-10 w-10 bg-primary hover:bg-primary/90 shadow-md"
+                    onClick={handleSendVoiceMessage}
+                    disabled={isUploadingVoice || sending}
+                  >
+                    {isUploadingVoice || sending ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Send className="w-5 h-5" />
+                    )}
+                  </Button>
+                </>
+              ) : (
+                // Normal text input mode
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    <Paperclip className="w-5 h-5" />
+                  </Button>
+                  
+                  <div className="flex-1 relative">
+                    <Input
+                      value={newMessage}
+                      onChange={handleInputChange}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Écrivez un message..."
+                      disabled={sending || uploading}
+                      className="rounded-full bg-muted border-0 pr-12 focus-visible:ring-1 focus-visible:ring-primary"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-primary hover:bg-transparent"
+                      onClick={() => imageInputRef.current?.click()}
+                      disabled={uploading}
+                    >
+                      <Image className="w-5 h-5" />
+                    </Button>
+                  </div>
+                  
+                  {/* Show mic or send button based on message content */}
+                  {newMessage.trim() || attachments.length > 0 ? (
+                    <Button
+                      size="icon"
+                      className="rounded-full shrink-0 h-10 w-10 bg-primary hover:bg-primary/90 shadow-md"
+                      onClick={sendMessage}
+                      disabled={sending || uploading}
+                    >
+                      {sending || uploading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Send className="w-5 h-5" />
+                      )}
+                    </Button>
+                  ) : (
+                    <Button
+                      size="icon"
+                      className="rounded-full shrink-0 h-10 w-10 bg-primary hover:bg-primary/90 shadow-md"
+                      onClick={startRecording}
+                    >
+                      <Mic className="w-5 h-5" />
+                    </Button>
+                  )}
+                </>
+              )}
             </div>
           </>
         )}
