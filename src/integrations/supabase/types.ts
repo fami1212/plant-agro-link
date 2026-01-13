@@ -1106,6 +1106,7 @@ export type Database = {
           is_read: boolean | null
           offer_id: string | null
           recipient_id: string
+          reply_to_id: string | null
           sender_id: string
         }
         Insert: {
@@ -1117,6 +1118,7 @@ export type Database = {
           is_read?: boolean | null
           offer_id?: string | null
           recipient_id: string
+          reply_to_id?: string | null
           sender_id: string
         }
         Update: {
@@ -1128,6 +1130,7 @@ export type Database = {
           is_read?: boolean | null
           offer_id?: string | null
           recipient_id?: string
+          reply_to_id?: string | null
           sender_id?: string
         }
         Relationships: [
@@ -1143,6 +1146,13 @@ export type Database = {
             columns: ["offer_id"]
             isOneToOne: false
             referencedRelation: "marketplace_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_messages"
             referencedColumns: ["id"]
           },
         ]
