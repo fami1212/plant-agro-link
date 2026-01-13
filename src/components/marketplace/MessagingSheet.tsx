@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Send, Loader2, MessageCircle, ArrowLeft, 
   Check, CheckCheck, Phone, Image, Paperclip, X, FileText, Search,
-  Mic, Square, Trash2
+  Mic, Square, Trash2, Reply, CornerUpRight
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,6 +33,8 @@ interface Message {
   conversation_id: string;
   attachments?: string[] | null;
   sender_name?: string;
+  reply_to_id?: string | null;
+  reply_to?: Message | null;
 }
 
 interface Conversation {
@@ -79,10 +81,12 @@ export function MessagingSheet({
   const [attachments, setAttachments] = useState<{ url: string; type: string; name: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isOtherTyping, setIsOtherTyping] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Voice recording hook
   const {
@@ -252,10 +256,20 @@ export function MessagingSheet({
       
       const profileMap = new Map(profiles?.map(p => [p.user_id, p.full_name]) || []);
       
-      const enrichedMessages = (data || []).map(msg => ({
-        ...msg,
-        sender_name: profileMap.get(msg.sender_id) || "Utilisateur"
-      }));
+      // Build a map of all messages for reply lookups
+      const messageMap = new Map((data || []).map(m => [m.id, m]));
+      
+      const enrichedMessages = (data || []).map(msg => {
+        const replyToMsg = msg.reply_to_id ? messageMap.get(msg.reply_to_id) : null;
+        return {
+          ...msg,
+          sender_name: profileMap.get(msg.sender_id) || "Utilisateur",
+          reply_to: replyToMsg ? {
+            ...replyToMsg,
+            sender_name: profileMap.get(replyToMsg.sender_id) || "Utilisateur"
+          } : null
+        };
+      });
       
       setMessages(enrichedMessages);
       markMessagesAsRead(convId);
@@ -447,6 +461,7 @@ export function MessagingSheet({
       recipient_id: recipientId,
       content: newMessage.trim() || (attachments.length > 0 ? "📎 Pièce jointe" : ""),
       attachments: attachmentUrls.length > 0 ? attachmentUrls : null,
+      reply_to_id: replyingTo?.id || null,
     });
 
     if (error) {
@@ -454,6 +469,7 @@ export function MessagingSheet({
     } else {
       setNewMessage("");
       setAttachments([]);
+      setReplyingTo(null);
       await supabase
         .from("marketplace_conversations")
         .update({ last_message_at: new Date().toISOString() })
@@ -512,7 +528,22 @@ export function MessagingSheet({
     setActiveConversation(null);
     setMessages([]);
     setIsOtherTyping(false);
+    setReplyingTo(null);
     fetchConversations();
+  };
+
+  const handleReply = (message: Message) => {
+    setReplyingTo(message);
+    inputRef.current?.focus();
+  };
+
+  const cancelReply = () => {
+    setReplyingTo(null);
+  };
+
+  const truncateContent = (content: string, maxLength: number = 50) => {
+    if (content.length <= maxLength) return content;
+    return content.substring(0, maxLength) + "...";
   };
 
   const formatMessageTime = (date: string) => {
@@ -735,11 +766,22 @@ export function MessagingSheet({
                         return (
                           <div
                             key={msg.id}
+                            id={`msg-${msg.id}`}
                             className={cn(
-                              "flex gap-2 mb-1",
+                              "flex gap-2 mb-1 group transition-all duration-300",
                               isOwn ? "justify-end" : "justify-start"
                             )}
                           >
+                            {/* Reply button for received messages (left side) */}
+                            {!isOwn && (
+                              <button
+                                onClick={() => handleReply(msg)}
+                                className="self-center opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-muted"
+                              >
+                                <CornerUpRight className="w-4 h-4 text-muted-foreground" />
+                              </button>
+                            )}
+                            
                             {!isOwn && (
                               <div className="w-8 shrink-0">
                                 {showAvatar && (
@@ -759,8 +801,38 @@ export function MessagingSheet({
                                   : "bg-background rounded-bl-sm"
                               )}
                             >
+                              {/* Quoted/Reply message */}
+                              {msg.reply_to && (
+                                <div 
+                                  className={cn(
+                                    "mb-2 p-2 rounded-lg border-l-4 cursor-pointer",
+                                    isOwn 
+                                      ? "bg-black/5 border-primary/50" 
+                                      : "bg-muted/50 border-primary"
+                                  )}
+                                  onClick={() => {
+                                    const replyElement = document.getElementById(`msg-${msg.reply_to?.id}`);
+                                    replyElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+                                    replyElement?.classList.add("ring-2", "ring-primary");
+                                    setTimeout(() => replyElement?.classList.remove("ring-2", "ring-primary"), 2000);
+                                  }}
+                                >
+                                  <p className="text-xs font-semibold text-primary mb-0.5">
+                                    {msg.reply_to.sender_id === user?.id ? "Vous" : msg.reply_to.sender_name}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground line-clamp-2">
+                                    {msg.reply_to.content.startsWith("🎤") 
+                                      ? "🎤 Message vocal"
+                                      : msg.reply_to.content === "📎 Pièce jointe"
+                                        ? "📎 Pièce jointe"
+                                        : truncateContent(msg.reply_to.content)
+                                    }
+                                  </p>
+                                </div>
+                              )}
+                              
                               {/* Sender name for received messages */}
-                              {!isOwn && showAvatar && (
+                              {!isOwn && showAvatar && !msg.reply_to && (
                                 <p className="text-xs font-semibold text-primary mb-1">
                                   {msg.sender_name}
                                 </p>
@@ -778,14 +850,14 @@ export function MessagingSheet({
                               {/* Attachments */}
                               {msg.attachments && msg.attachments.length > 0 && (
                                 <div className="mt-1 space-y-1">
-                                  {msg.attachments.map((url, idx) => {
+                                  {msg.attachments.map((url, attIdx) => {
                                     const isImage = url.match(/\.(jpg|jpeg|png|gif|webp)$/i);
                                     const isVoice = url.match(/\.(webm|mp3|wav|ogg|m4a)$/i) || msg.content.startsWith("🎤");
                                     
                                     if (isVoice) {
                                       return (
                                         <VoiceMessagePlayer 
-                                          key={idx} 
+                                          key={attIdx} 
                                           audioUrl={url} 
                                           isOwn={isOwn}
                                         />
@@ -794,7 +866,7 @@ export function MessagingSheet({
                                     
                                     return isImage ? (
                                       <img
-                                        key={idx}
+                                        key={attIdx}
                                         src={url}
                                         alt="Image"
                                         className="max-w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
@@ -802,7 +874,7 @@ export function MessagingSheet({
                                       />
                                     ) : (
                                       <a
-                                        key={idx}
+                                        key={attIdx}
                                         href={url}
                                         target="_blank"
                                         rel="noopener noreferrer"
@@ -838,6 +910,16 @@ export function MessagingSheet({
                                 )}
                               </div>
                             </div>
+                            
+                            {/* Reply button for own messages (right side) */}
+                            {isOwn && (
+                              <button
+                                onClick={() => handleReply(msg)}
+                                className="self-center opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-muted"
+                              >
+                                <Reply className="w-4 h-4 text-muted-foreground" />
+                              </button>
+                            )}
                           </div>
                         );
                       })}
@@ -866,6 +948,33 @@ export function MessagingSheet({
                 </div>
               )}
             </ScrollArea>
+
+            {/* Reply preview */}
+            {replyingTo && (
+              <div className="px-3 py-2 border-t bg-primary/5 flex items-center gap-3">
+                <div className="flex-1 border-l-4 border-primary pl-3 py-1">
+                  <p className="text-xs font-semibold text-primary">
+                    Répondre à {replyingTo.sender_id === user?.id ? "vous-même" : replyingTo.sender_name}
+                  </p>
+                  <p className="text-xs text-muted-foreground line-clamp-1">
+                    {replyingTo.content.startsWith("🎤") 
+                      ? "🎤 Message vocal"
+                      : replyingTo.content === "📎 Pièce jointe"
+                        ? "📎 Pièce jointe"
+                        : truncateContent(replyingTo.content, 60)
+                    }
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
+                  onClick={cancelReply}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
 
             {/* Attachments preview */}
             {attachments.length > 0 && (
@@ -967,10 +1076,11 @@ export function MessagingSheet({
                   
                   <div className="flex-1 relative">
                     <Input
+                      ref={inputRef}
                       value={newMessage}
                       onChange={handleInputChange}
                       onKeyPress={handleKeyPress}
-                      placeholder="Écrivez un message..."
+                      placeholder={replyingTo ? "Répondez..." : "Écrivez un message..."}
                       disabled={sending || uploading}
                       className="rounded-full bg-muted border-0 pr-12 focus-visible:ring-1 focus-visible:ring-primary"
                     />
@@ -986,7 +1096,7 @@ export function MessagingSheet({
                   </div>
                   
                   {/* Show mic or send button based on message content */}
-                  {newMessage.trim() || attachments.length > 0 ? (
+                  {newMessage.trim() || attachments.length > 0 || replyingTo ? (
                     <Button
                       size="icon"
                       className="rounded-full shrink-0 h-10 w-10 bg-primary hover:bg-primary/90 shadow-md"
