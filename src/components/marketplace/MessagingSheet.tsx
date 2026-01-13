@@ -159,7 +159,7 @@ export function MessagingSheet({
 
         return {
           ...conv,
-          other_user: profileData || { full_name: "Utilisateur inconnu" },
+          other_user: profileData?.full_name ? profileData : { full_name: "Utilisateur", avatar_url: null },
           last_message: lastMsgData?.content || "",
           unread_count: unreadCount || 0,
         };
@@ -189,7 +189,7 @@ export function MessagingSheet({
 
       setActiveConversation({
         ...convData,
-        other_user: profileData || { full_name: "Utilisateur inconnu" },
+        other_user: profileData?.full_name ? profileData : { full_name: "Utilisateur", avatar_url: null },
       });
       setView("chat");
       await fetchMessages(convId);
@@ -261,12 +261,14 @@ export function MessagingSheet({
       
       const enrichedMessages = (data || []).map(msg => {
         const replyToMsg = msg.reply_to_id ? messageMap.get(msg.reply_to_id) : null;
+        const senderName = profileMap.get(msg.sender_id);
+        const replySenderName = replyToMsg ? profileMap.get(replyToMsg.sender_id) : null;
         return {
           ...msg,
-          sender_name: profileMap.get(msg.sender_id) || "Utilisateur",
+          sender_name: senderName && senderName.trim() ? senderName : "Utilisateur",
           reply_to: replyToMsg ? {
             ...replyToMsg,
-            sender_name: profileMap.get(replyToMsg.sender_id) || "Utilisateur"
+            sender_name: replySenderName && replySenderName.trim() ? replySenderName : "Utilisateur"
           } : null
         };
       });
@@ -311,7 +313,7 @@ export function MessagingSheet({
           
           setMessages((prev) => [...prev, {
             ...newMsg,
-            sender_name: senderProfile?.full_name || "Utilisateur"
+            sender_name: senderProfile?.full_name && senderProfile.full_name.trim() ? senderProfile.full_name : "Utilisateur"
           }]);
           
           if (newMsg.recipient_id === user.id) {
@@ -636,7 +638,7 @@ export function MessagingSheet({
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="font-semibold truncate text-base">
-                {activeConversation?.other_user?.full_name}
+                {activeConversation?.other_user?.full_name || "Utilisateur"}
               </p>
               {isOtherTyping ? (
                 <p className="text-xs text-primary-foreground/80 animate-pulse">
@@ -695,7 +697,7 @@ export function MessagingSheet({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-0.5">
                         <p className="font-semibold truncate text-foreground">
-                          {conv.other_user?.full_name}
+                          {conv.other_user?.full_name || "Utilisateur"}
                         </p>
                         <span className={cn(
                           "text-xs",
