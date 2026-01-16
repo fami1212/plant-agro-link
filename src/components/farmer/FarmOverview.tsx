@@ -17,7 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ParcelMap } from "./ParcelMap";
-import { AIContextualTip } from "@/components/ai/AIContextualTip";
+import { SmartAlerts } from "./SmartAlerts";
 
 interface Field {
   id: string;
@@ -125,11 +125,8 @@ export function FarmOverview() {
 
   return (
     <div className="space-y-4">
-      {/* AI Contextual Tip */}
-      <AIContextualTip 
-        context="dashboard" 
-        data={{ totalArea: stats.totalArea, activeCrops: stats.totalCrops }} 
-      />
+      {/* Smart AI Alerts */}
+      <SmartAlerts />
 
       {/* Summary Stats */}
       <div className="grid grid-cols-2 gap-3">

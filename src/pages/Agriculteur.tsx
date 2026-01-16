@@ -9,11 +9,13 @@ import {
   TrendingUp,
   Settings,
   Wallet,
+  LineChart,
 } from "lucide-react";
 import { FarmOverview } from "@/components/farmer/FarmOverview";
 import { FarmCalendar } from "@/components/farmer/FarmCalendar";
 import { SalesStats } from "@/components/farmer/SalesStats";
 import { FinancialDashboard } from "@/components/farmer/FinancialDashboard";
+import { MarketPrices } from "@/components/farmer/MarketPrices";
 import { useNavigate } from "react-router-dom";
 
 export default function Agriculteur() {
@@ -34,7 +36,7 @@ export default function Agriculteur() {
 
       <div className="px-4 pb-28">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 h-auto p-1 mb-4">
+          <TabsList className="grid w-full grid-cols-5 h-auto p-1 mb-4">
             <TabsTrigger value="overview" className="flex flex-col gap-1 py-2">
               <LayoutDashboard className="w-4 h-4" />
               <span className="text-xs">Aperçu</span>
@@ -42,6 +44,10 @@ export default function Agriculteur() {
             <TabsTrigger value="calendar" className="flex flex-col gap-1 py-2">
               <Calendar className="w-4 h-4" />
               <span className="text-xs">Calendrier</span>
+            </TabsTrigger>
+            <TabsTrigger value="market" className="flex flex-col gap-1 py-2">
+              <LineChart className="w-4 h-4" />
+              <span className="text-xs">Prix</span>
             </TabsTrigger>
             <TabsTrigger value="sales" className="flex flex-col gap-1 py-2">
               <TrendingUp className="w-4 h-4" />
@@ -59,6 +65,10 @@ export default function Agriculteur() {
 
           <TabsContent value="calendar" className="mt-0">
             <FarmCalendar />
+          </TabsContent>
+
+          <TabsContent value="market" className="mt-0">
+            <MarketPrices />
           </TabsContent>
 
           <TabsContent value="sales" className="mt-0">
