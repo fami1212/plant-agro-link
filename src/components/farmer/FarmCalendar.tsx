@@ -29,6 +29,7 @@ import {
   AlertTriangle,
   Loader2,
   Trash2,
+  Sparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -36,6 +37,7 @@ import { toast } from "sonner";
 import { format, isSameDay, startOfMonth, endOfMonth, addMonths } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { SmartTaskSuggestions } from "@/components/farmer/SmartTaskSuggestions";
 
 interface Task {
   id: string;
@@ -47,6 +49,7 @@ interface Task {
   crop_id?: string;
   field_id?: string;
   created_at: string;
+  ai_generated?: boolean;
 }
 
 interface Crop {
@@ -152,6 +155,22 @@ export function FarmCalendar() {
     setShowAddTask(false);
     setSaving(false);
     toast.success("Tâche ajoutée");
+  };
+
+  // Handler for AI-suggested tasks
+  const handleAddAITask = (task: { title: string; description: string; dueDate: string; priority: string }) => {
+    const newAITask: Task = {
+      id: crypto.randomUUID(),
+      title: task.title,
+      description: task.description || undefined,
+      due_date: task.dueDate,
+      priority: (task.priority as "haute" | "moyenne" | "basse") || "moyenne",
+      status: "a_faire",
+      created_at: new Date().toISOString(),
+      ai_generated: true,
+    };
+
+    saveTasks([...tasks, newAITask]);
   };
 
   const toggleTaskStatus = (taskId: string) => {
@@ -339,7 +358,8 @@ export function FarmCalendar() {
               key={task.id}
               className={cn(
                 "flex items-start gap-3 p-3 rounded-lg border transition-all",
-                task.status === "terminee" ? "bg-muted/50" : "bg-card"
+                task.status === "terminee" ? "bg-muted/50" : "bg-card",
+                task.ai_generated && "border-primary/30"
               )}
             >
               <Checkbox
@@ -347,9 +367,14 @@ export function FarmCalendar() {
                 onCheckedChange={() => toggleTaskStatus(task.id)}
               />
               <div className="flex-1 min-w-0">
-                <p className={cn("font-medium text-sm", statusConfig[task.status].color)}>
-                  {task.title}
-                </p>
+                <div className="flex items-center gap-1.5">
+                  <p className={cn("font-medium text-sm", statusConfig[task.status].color)}>
+                    {task.title}
+                  </p>
+                  {task.ai_generated && (
+                    <Sparkles className="w-3 h-3 text-primary" />
+                  )}
+                </div>
                 {task.description && (
                   <p className="text-xs text-muted-foreground mt-0.5">{task.description}</p>
                 )}
@@ -404,6 +429,9 @@ export function FarmCalendar() {
           )}
         </CardContent>
       </Card>
+
+      {/* AI Task Suggestions */}
+      <SmartTaskSuggestions onAddTask={handleAddAITask} />
     </div>
   );
 }

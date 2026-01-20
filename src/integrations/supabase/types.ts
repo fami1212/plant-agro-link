@@ -1311,6 +1311,82 @@ export type Database = {
         }
         Relationships: []
       }
+      scan_history: {
+        Row: {
+          analysis_data: Json
+          confidence: number | null
+          created_at: string
+          disease_name: string | null
+          id: string
+          image_url: string | null
+          notes: string | null
+          related_crop_id: string | null
+          related_field_id: string | null
+          related_livestock_id: string | null
+          scan_type: string
+          severity: string | null
+          treatment: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis_data?: Json
+          confidence?: number | null
+          created_at?: string
+          disease_name?: string | null
+          id?: string
+          image_url?: string | null
+          notes?: string | null
+          related_crop_id?: string | null
+          related_field_id?: string | null
+          related_livestock_id?: string | null
+          scan_type: string
+          severity?: string | null
+          treatment?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis_data?: Json
+          confidence?: number | null
+          created_at?: string
+          disease_name?: string | null
+          id?: string
+          image_url?: string | null
+          notes?: string | null
+          related_crop_id?: string | null
+          related_field_id?: string | null
+          related_livestock_id?: string | null
+          scan_type?: string
+          severity?: string | null
+          treatment?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scan_history_related_crop_id_fkey"
+            columns: ["related_crop_id"]
+            isOneToOne: false
+            referencedRelation: "crops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scan_history_related_field_id_fkey"
+            columns: ["related_field_id"]
+            isOneToOne: false
+            referencedRelation: "fields"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scan_history_related_livestock_id_fkey"
+            columns: ["related_livestock_id"]
+            isOneToOne: false
+            referencedRelation: "livestock"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_bookings: {
         Row: {
           client_id: string

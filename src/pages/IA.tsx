@@ -5,10 +5,11 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bug, Sprout, Droplets, Mic, Sparkles, MessageCircle } from "lucide-react";
+import { Bug, Sprout, Droplets, Mic, Sparkles, MessageCircle, History } from "lucide-react";
 import { PlantDiseaseDetector } from "@/components/ai/PlantDiseaseDetector";
 import { YieldPredictionModule } from "@/components/ai/YieldPredictionModule";
 import { IrrigationRecommendationsModule } from "@/components/ai/IrrigationRecommendationsModule";
+import { ScanHistory } from "@/components/ai/ScanHistory";
 
 export default function IA() {
   const navigate = useNavigate();
@@ -80,7 +81,7 @@ export default function IA() {
 
         {/* AI Tools Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 h-auto p-1">
+          <TabsList className="grid w-full grid-cols-4 h-auto p-1">
             <TabsTrigger value="disease" className="flex flex-col gap-1 py-2">
               <Bug className="w-4 h-4" />
               <span className="text-xs">Maladies</span>
@@ -92,6 +93,10 @@ export default function IA() {
             <TabsTrigger value="irrigation" className="flex flex-col gap-1 py-2">
               <Droplets className="w-4 h-4" />
               <span className="text-xs">Irrigation</span>
+            </TabsTrigger>
+            <TabsTrigger value="history" className="flex flex-col gap-1 py-2">
+              <History className="w-4 h-4" />
+              <span className="text-xs">Historique</span>
             </TabsTrigger>
           </TabsList>
 
@@ -105,6 +110,10 @@ export default function IA() {
 
           <TabsContent value="irrigation" className="mt-4">
             <IrrigationRecommendationsModule />
+          </TabsContent>
+
+          <TabsContent value="history" className="mt-4">
+            <ScanHistory />
           </TabsContent>
         </Tabs>
       </div>
