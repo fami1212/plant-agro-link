@@ -152,11 +152,55 @@ export function SmartCamera({ open, onOpenChange, context = "general", onActionC
       };
 
       setAnalysisResult(result);
+
+      // Save scan to history
+      await saveScanToHistory(base64Image, result);
     } catch (error) {
       console.error("Analysis error:", error);
       toast.error("Erreur lors de l'analyse de l'image");
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const saveScanToHistory = async (imageBase64: string, result: AnalysisResult) => {
+    if (!user?.id) return;
+
+    try {
+      // Upload image to storage
+      let imageUrl: string | null = null;
+      try {
+        const base64Data = imageBase64.split(",")[1];
+        const blob = await fetch(`data:image/jpeg;base64,${base64Data}`).then(r => r.blob());
+        const fileName = `${user.id}/${Date.now()}.jpg`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("scan-images")
+          .upload(fileName, blob, { contentType: "image/jpeg" });
+        
+        if (!uploadError && uploadData) {
+          const { data: urlData } = supabase.storage
+            .from("scan-images")
+            .getPublicUrl(uploadData.path);
+          imageUrl = urlData.publicUrl;
+        }
+      } catch (uploadErr) {
+        console.log("Image upload skipped:", uploadErr);
+      }
+
+      // Save to scan_history
+      await supabase.from("scan_history").insert({
+        user_id: user.id,
+        scan_type: result.type,
+        image_url: imageUrl,
+        analysis_data: result.data,
+        confidence: result.confidence,
+        disease_name: result.data.diseaseName || result.data.healthIssue || null,
+        severity: result.data.severity || null,
+        treatment: result.data.treatment || null,
+      });
+    } catch (error) {
+      console.error("Error saving scan to history:", error);
     }
   };
 
