@@ -34,28 +34,26 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 
-// All possible navigation items - Marketplace routes by role
+// All possible navigation items - Simplified and role-focused
 const allNavItems = [
   { icon: Home, label: "Accueil", path: "/dashboard", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
+  { icon: Tractor, label: "Ferme", path: "/agriculteur", roles: ['agriculteur'] },
   { icon: ShoppingBag, label: "Marché", path: "/marketplace/farmer", roles: ['agriculteur'] },
+  { icon: Stethoscope, label: "Cabinet", path: "/veterinaire", roles: ['veterinaire'] },
   { icon: ShoppingBag, label: "Catalogue", path: "/marketplace/buyer", roles: ['acheteur'] },
   { icon: TrendingUp, label: "Investir", path: "/marketplace/investor", roles: ['investisseur'] },
-  { icon: ShoppingBag, label: "Marché", path: "/marketplace/farmer", roles: ['veterinaire', 'admin'] },
-  { icon: Wheat, label: "Cultures", path: "/cultures", roles: ['agriculteur', 'admin'] },
-  { icon: PawPrint, label: "Bétail", path: "/betail", roles: ['agriculteur', 'admin'] },
-  { icon: Stethoscope, label: "Cabinet", path: "/veterinaire", roles: ['veterinaire'] },
-  { icon: Tractor, label: "Ferme", path: "/agriculteur", roles: ['agriculteur', 'admin'] },
+  { icon: ShoppingBag, label: "Marché", path: "/marketplace/farmer", roles: ['admin'] },
 ];
 
-// All possible menu items - IA and Voice only for agriculteur and admin
+// All possible menu items - Simplified for each role
 const allMenuItems = [
-  { icon: Mic, label: "Assistant Vocal", path: "/voice", roles: ['agriculteur', 'admin'], highlight: true },
+  { icon: Brain, label: "IA", path: "/ia", roles: ['agriculteur', 'admin'], highlight: true },
+  { icon: Wheat, label: "Cultures", path: "/cultures", roles: ['agriculteur', 'admin'] },
+  { icon: PawPrint, label: "Bétail", path: "/betail", roles: ['agriculteur', 'admin'] },
   { icon: MapPin, label: "Parcelles", path: "/parcelles", roles: ['agriculteur', 'admin'] },
-  { icon: TrendingUp, label: "Financements", path: "/farmer-investments", roles: ['agriculteur', 'admin'] },
-  { icon: Activity, label: "Capteurs IoT", path: "/iot", roles: ['agriculteur', 'admin'] },
-  { icon: Brain, label: "Intelligence IA", path: "/ia", roles: ['agriculteur', 'admin'] },
-  { icon: PawPrint, label: "Suivi animaux", path: "/betail", roles: ['veterinaire'] },
-  { icon: Shield, label: "Administration", path: "/admin", roles: ['admin'] },
+  { icon: Activity, label: "IoT", path: "/iot", roles: ['agriculteur', 'admin'] },
+  { icon: PawPrint, label: "Animaux", path: "/betail", roles: ['veterinaire'] },
+  { icon: Shield, label: "Admin", path: "/admin", roles: ['admin'] },
   { icon: Settings, label: "Paramètres", path: "/settings", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
 ];
 
