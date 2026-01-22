@@ -42,14 +42,13 @@ import {
   BarChart3,
   Clock,
   Save,
-  Trash2,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIoTData } from "@/hooks/useIoTData";
 import {
   LineChart,
   Line,
@@ -61,45 +60,6 @@ import {
   Area,
   AreaChart,
 } from "recharts";
-
-interface Device {
-  id: string;
-  name: string | null;
-  device_type: string;
-  device_token: string;
-  is_active: boolean | null;
-  last_seen_at: string | null;
-  field_id: string | null;
-  field?: { name: string } | null;
-}
-
-interface SensorData {
-  id: string;
-  device_id: string;
-  metric: string;
-  value: number;
-  unit: string | null;
-  recorded_at: string;
-}
-
-interface AlertConfig {
-  id: string;
-  metric: string;
-  min_value: number | null;
-  max_value: number | null;
-  is_enabled: boolean;
-  notification_sms: boolean;
-  notification_push: boolean;
-}
-
-interface Alert {
-  id: string;
-  metric: string;
-  message: string;
-  severity: string;
-  is_resolved: boolean;
-  created_at: string;
-}
 
 const sensorTypes = [
   { metric: "temperature", label: "Température", unit: "°C", icon: Thermometer, color: "text-orange-500", defaultMin: 15, defaultMax: 35 },
@@ -136,34 +96,26 @@ const generateHistoricalData = (metric: string, hours: number = 24) => {
   return data;
 };
 
-// Generate simulated real-time data
-const generateCurrentData = (): SensorData[] => {
-  const now = new Date();
-  return sensorTypes.map((type, index) => ({
-    id: `sim-${index}`,
-    device_id: "demo-device",
-    metric: type.metric,
-    value: type.defaultMin + Math.random() * (type.defaultMax - type.defaultMin),
-    unit: type.unit,
-    recorded_at: now.toISOString(),
-  }));
-};
-
 export default function IoT() {
-  const { user } = useAuth();
+  const {
+    devices,
+    sensorData,
+    alerts,
+    alertConfigs,
+    loading,
+    isRefreshing,
+    lastUpdate,
+    fetchData,
+    addDevice,
+    updateAlertConfig,
+    resolveAlert,
+  } = useIoTData();
+
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [devices, setDevices] = useState<Device[]>([]);
-  const [sensorData, setSensorData] = useState<SensorData[]>([]);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [alertConfigs, setAlertConfigs] = useState<AlertConfig[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedMetric, setSelectedMetric] = useState("temperature");
   const [historicalData, setHistoricalData] = useState<any[]>([]);
   const [showAddDevice, setShowAddDevice] = useState(false);
   const [showConfigAlert, setShowConfigAlert] = useState(false);
-  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
-  const [lastUpdate, setLastUpdate] = useState(new Date());
 
   const [newDevice, setNewDevice] = useState({
     name: "",
@@ -171,14 +123,7 @@ export default function IoT() {
     device_token: "",
   });
 
-  const [editingConfig, setEditingConfig] = useState<{
-    metric: string;
-    min: string;
-    max: string;
-    enabled: boolean;
-    sms: boolean;
-    push: boolean;
-  }>({
+  const [editingConfig, setEditingConfig] = useState({
     metric: "temperature",
     min: "15",
     max: "35",
@@ -188,101 +133,50 @@ export default function IoT() {
   });
 
   useEffect(() => {
-    fetchData();
-    setHistoricalData(generateHistoricalData(selectedMetric));
-    
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(() => {
-      fetchData();
-    }, 30000);
-    
-    return () => clearInterval(interval);
-  }, [user]);
-
-  useEffect(() => {
     setHistoricalData(generateHistoricalData(selectedMetric));
   }, [selectedMetric]);
 
-  const fetchData = async () => {
-    setIsRefreshing(true);
-    
-    if (user) {
-      // Fetch real devices
-      const { data: realDevices } = await supabase
-        .from("iot_devices")
-        .select("*, field:fields(name)")
-        .eq("owner_id", user.id);
-
-      if (realDevices && realDevices.length > 0) {
-        setDevices(realDevices as Device[]);
-        
-        // Fetch real sensor data
-        const deviceIds = realDevices.map((d) => d.id);
-        const { data: realData } = await supabase
-          .from("device_data")
-          .select("*")
-          .in("device_id", deviceIds)
-          .order("recorded_at", { ascending: false })
-          .limit(50);
-
-        if (realData && realData.length > 0) {
-          setSensorData(realData);
-        } else {
-          setSensorData(generateCurrentData());
-        }
-      } else {
-        // Use demo data
-        setDevices([
-          { id: "demo-1", name: "Station Météo Parcelle A", device_type: "weather_station", device_token: "demo-token-1", is_active: true, last_seen_at: new Date().toISOString(), field_id: null },
-          { id: "demo-2", name: "Capteur Sol Parcelle B", device_type: "soil_sensor", device_token: "demo-token-2", is_active: true, last_seen_at: new Date().toISOString(), field_id: null },
-          { id: "demo-3", name: "Capteur Serre", device_type: "greenhouse_sensor", device_token: "demo-token-3", is_active: false, last_seen_at: new Date(Date.now() - 3600000).toISOString(), field_id: null },
-        ]);
-        setSensorData(generateCurrentData());
-      }
-
-      // Simulate alerts
-      setAlerts([
-        { id: "1", metric: "soil_moisture", message: "Humidité sol basse: 18%", severity: "warning", is_resolved: false, created_at: new Date().toISOString() },
-        { id: "2", metric: "temperature", message: "Température élevée: 38°C", severity: "critical", is_resolved: false, created_at: new Date(Date.now() - 1800000).toISOString() },
-      ]);
-    }
-    
-    setLastUpdate(new Date());
-    setLoading(false);
-    setIsRefreshing(false);
-  };
-
   const handleAddDevice = async () => {
-    if (!user) return;
-    
     if (!newDevice.name || !newDevice.device_token) {
       toast.error("Veuillez remplir tous les champs");
       return;
     }
 
-    try {
-      const { error } = await supabase.from("iot_devices").insert({
-        owner_id: user.id,
-        name: newDevice.name,
-        device_type: newDevice.device_type,
-        device_token: newDevice.device_token,
-        is_active: true,
-      });
-
-      if (error) throw error;
-      
+    const success = await addDevice(newDevice);
+    if (success) {
       toast.success("Appareil ajouté avec succès");
       setShowAddDevice(false);
       setNewDevice({ name: "", device_type: "soil_sensor", device_token: "" });
-      fetchData();
-    } catch (error: any) {
-      toast.error(error.message || "Erreur lors de l'ajout");
+    } else {
+      toast.error("Erreur lors de l'ajout de l'appareil");
     }
   };
 
-  const handleSaveAlertConfig = () => {
-    toast.success("Configuration d'alerte sauvegardée");
-    setShowConfigAlert(false);
+  const handleSaveAlertConfig = async () => {
+    const success = await updateAlertConfig({
+      metric: editingConfig.metric,
+      min_value: parseFloat(editingConfig.min),
+      max_value: parseFloat(editingConfig.max),
+      is_enabled: editingConfig.enabled,
+      notification_sms: editingConfig.sms,
+      notification_push: editingConfig.push,
+    });
+
+    if (success) {
+      toast.success("Configuration d'alerte sauvegardée");
+      setShowConfigAlert(false);
+    } else {
+      toast.error("Erreur lors de la sauvegarde");
+    }
+  };
+
+  const handleResolveAlert = async (alertId: string) => {
+    const success = await resolveAlert(alertId);
+    if (success) {
+      toast.success("Alerte résolue");
+    } else {
+      toast.error("Erreur lors de la résolution");
+    }
   };
 
   const getSensorReading = (metric: string) => {
@@ -335,24 +229,30 @@ export default function IoT() {
 
       {/* Quick Stats */}
       <div className="px-4 mb-4">
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
-          <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20">
-            <p className="text-xs text-muted-foreground">Appareils</p>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+          <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 dark:bg-primary/20 dark:border-primary/30">
+            <p className="text-xs text-muted-foreground font-medium">Appareils</p>
             <p className="text-lg font-bold text-foreground">{devices.length}</p>
           </div>
-          <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-success/10 border border-success/20">
-            <p className="text-xs text-muted-foreground">En ligne</p>
+          <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-success/10 border border-success/20 dark:bg-success/20 dark:border-success/30">
+            <p className="text-xs text-muted-foreground font-medium">En ligne</p>
             <p className="text-lg font-bold text-success">{activeDevices.length}</p>
           </div>
           <div className={cn(
             "flex-shrink-0 px-4 py-3 rounded-xl",
             unresolvedAlerts.length > 0 
-              ? "bg-destructive/10 border border-destructive/20" 
+              ? "bg-destructive/10 border border-destructive/20 dark:bg-destructive/20 dark:border-destructive/40" 
               : "bg-muted border border-border"
           )}>
-            <p className="text-xs text-muted-foreground">Alertes</p>
+            <p className="text-xs text-muted-foreground font-medium">Alertes</p>
             <p className={cn("text-lg font-bold", unresolvedAlerts.length > 0 ? "text-destructive" : "text-foreground")}>
               {unresolvedAlerts.length}
+            </p>
+          </div>
+          <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-muted border border-border">
+            <p className="text-xs text-muted-foreground font-medium">Mise à jour</p>
+            <p className="text-sm font-semibold text-foreground">
+              {lastUpdate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
             </p>
           </div>
         </div>
@@ -381,10 +281,6 @@ export default function IoT() {
 
           {/* LIVE DASHBOARD */}
           <TabsContent value="dashboard" className="space-y-4">
-            <p className="text-xs text-muted-foreground">
-              Dernière mise à jour: {lastUpdate.toLocaleTimeString("fr-FR")}
-            </p>
-
             {loading ? (
               <div className="grid grid-cols-2 gap-3">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -406,7 +302,7 @@ export default function IoT() {
                       key={type.metric} 
                       className={cn(
                         "cursor-pointer transition-all hover:shadow-md",
-                        status === "danger" && "border-destructive/50"
+                        status === "danger" && "border-destructive/50 dark:border-destructive/70"
                       )}
                       onClick={() => {
                         setSelectedMetric(type.metric);
@@ -415,7 +311,7 @@ export default function IoT() {
                     >
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <div className={cn("p-2 rounded-lg bg-muted", type.color)}>
+                          <div className={cn("p-2 rounded-lg bg-muted dark:bg-muted/50", type.color)}>
                             <Icon className="w-5 h-5" />
                           </div>
                           {status === "danger" && (
@@ -424,7 +320,7 @@ export default function IoT() {
                         </div>
                         <p className="text-sm text-muted-foreground">{type.label}</p>
                         <p className={cn("text-2xl font-bold", type.color)}>
-                          {value.toFixed(1)}
+                          {reading ? value.toFixed(1) : "--"}
                           <span className="text-sm font-normal text-muted-foreground ml-1">
                             {type.unit}
                           </span>
@@ -443,7 +339,7 @@ export default function IoT() {
 
           {/* HISTORY */}
           <TabsContent value="history" className="space-y-4">
-            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
               {sensorTypes.map((type) => (
                 <button
                   key={type.metric}
@@ -479,12 +375,12 @@ export default function IoT() {
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis 
                         dataKey="time" 
-                        tick={{ fontSize: 10 }} 
+                        tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} 
                         stroke="hsl(var(--muted-foreground))"
                         interval="preserveStartEnd"
                       />
                       <YAxis 
-                        tick={{ fontSize: 10 }} 
+                        tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} 
                         stroke="hsl(var(--muted-foreground))"
                         domain={['auto', 'auto']}
                       />
@@ -493,6 +389,7 @@ export default function IoT() {
                           backgroundColor: "hsl(var(--card))",
                           border: "1px solid hsl(var(--border))",
                           borderRadius: "8px",
+                          color: "hsl(var(--foreground))",
                         }}
                       />
                       <Area
@@ -562,7 +459,7 @@ export default function IoT() {
                         <div className="flex items-center gap-3">
                           <div className={cn(
                             "p-2 rounded-lg",
-                            device.is_active ? "bg-success/15" : "bg-muted"
+                            device.is_active ? "bg-success/15 dark:bg-success/25" : "bg-muted"
                           )}>
                             {device.is_active ? (
                               <Wifi className="w-5 h-5 text-success" />
@@ -577,7 +474,10 @@ export default function IoT() {
                             </p>
                           </div>
                         </div>
-                        <Badge variant={device.is_active ? "default" : "secondary"}>
+                        <Badge 
+                          variant={device.is_active ? "default" : "secondary"}
+                          className="outdoor-badge"
+                        >
                           {device.is_active ? "En ligne" : "Hors ligne"}
                         </Badge>
                       </div>
@@ -591,9 +491,11 @@ export default function IoT() {
                               : "Jamais vu"}
                           </span>
                         </div>
-                        <Button variant="ghost" size="sm" onClick={() => setSelectedDevice(device)}>
-                          <Settings className="w-4 h-4" />
-                        </Button>
+                        {device.field && (
+                          <span className="text-xs bg-muted px-2 py-1 rounded-full">
+                            {device.field.name}
+                          </span>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -615,8 +517,10 @@ export default function IoT() {
             {unresolvedAlerts.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <Bell className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground">Aucune alerte active</p>
+                  <div className="w-12 h-12 rounded-full bg-success/15 flex items-center justify-center mx-auto mb-3">
+                    <Check className="w-6 h-6 text-success" />
+                  </div>
+                  <p className="font-medium text-foreground">Aucune alerte active</p>
                   <p className="text-sm text-muted-foreground mt-1">
                     Tous vos capteurs fonctionnent normalement
                   </p>
@@ -634,7 +538,7 @@ export default function IoT() {
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3">
                           <AlertTriangle className={cn(
-                            "w-5 h-5 mt-0.5",
+                            "w-5 h-5 mt-0.5 flex-shrink-0",
                             alert.severity === "critical" ? "text-destructive" : "text-amber-500"
                           )} />
                           <div>
@@ -644,9 +548,15 @@ export default function IoT() {
                             </p>
                           </div>
                         </div>
-                        <Button variant="ghost" size="sm">
-                          Résoudre
-                        </Button>
+                        {!alert.is_resolved && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleResolveAlert(alert.id)}
+                          >
+                            Résoudre
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -689,6 +599,7 @@ export default function IoT() {
                   <SelectItem value="weather_station">Station Météo</SelectItem>
                   <SelectItem value="greenhouse_sensor">Capteur Serre</SelectItem>
                   <SelectItem value="water_sensor">Capteur Eau</SelectItem>
+                  <SelectItem value="light_sensor">Capteur Lumière</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -724,11 +635,14 @@ export default function IoT() {
                 value={editingConfig.metric}
                 onValueChange={(value) => {
                   const type = sensorTypes.find((t) => t.metric === value);
+                  const existingConfig = alertConfigs.find((c) => c.metric === value);
                   setEditingConfig({
-                    ...editingConfig,
                     metric: value,
-                    min: String(type?.defaultMin || 0),
-                    max: String(type?.defaultMax || 100),
+                    min: existingConfig?.min_value?.toString() || String(type?.defaultMin || 0),
+                    max: existingConfig?.max_value?.toString() || String(type?.defaultMax || 100),
+                    enabled: existingConfig?.is_enabled ?? true,
+                    sms: existingConfig?.notification_sms ?? false,
+                    push: existingConfig?.notification_push ?? true,
                   });
                 }}
               >

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Card } from "@/components/ui/card";
@@ -5,14 +6,38 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { useAuth } from "@/hooks/useAuth";
-import { Moon, Sun, User, Bell, Shield, Globe } from "lucide-react";
+import { Moon, Sun, User, Bell, Shield, Globe, Sunrise } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
   const { profile, roles } = useAuth();
+  const [outdoorMode, setOutdoorMode] = useState(false);
 
   const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+  // Appliquer le mode outdoor
+  useEffect(() => {
+    const root = document.documentElement;
+    if (outdoorMode && isDark) {
+      root.classList.add("outdoor");
+    } else {
+      root.classList.remove("outdoor");
+    }
+  }, [outdoorMode, isDark]);
+
+  // Charger la préférence depuis localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("plantera-outdoor-mode");
+    if (saved === "true") {
+      setOutdoorMode(true);
+    }
+  }, []);
+
+  const handleOutdoorModeChange = (enabled: boolean) => {
+    setOutdoorMode(enabled);
+    localStorage.setItem("plantera-outdoor-mode", String(enabled));
+  };
 
   const getRoleLabel = (role: string) => {
     const labels: Record<string, string> = {
@@ -83,18 +108,39 @@ export default function Settings() {
             </div>
           </div>
           <Separator className="mb-4" />
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="dark-mode">Mode sombre</Label>
-              <p className="text-sm text-muted-foreground">
-                Activez le thème sombre pour réduire la fatigue visuelle
-              </p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="dark-mode">Mode sombre</Label>
+                <p className="text-sm text-muted-foreground">
+                  Activez le thème sombre pour réduire la fatigue visuelle
+                </p>
+              </div>
+              <Switch
+                id="dark-mode"
+                checked={isDark}
+                onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+              />
             </div>
-            <Switch
-              id="dark-mode"
-              checked={isDark}
-              onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
-            />
+            
+            {isDark && (
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <Sunrise className="w-4 h-4 text-warning" />
+                    <Label htmlFor="outdoor-mode">Mode terrain</Label>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Contraste élevé pour utilisation en plein soleil
+                  </p>
+                </div>
+                <Switch
+                  id="outdoor-mode"
+                  checked={outdoorMode}
+                  onCheckedChange={handleOutdoorModeChange}
+                />
+              </div>
+            )}
           </div>
         </Card>
 
@@ -132,7 +178,7 @@ export default function Settings() {
         <Card className="p-4">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
-              <Globe className="w-5 h-5 text-secondary" />
+              <Globe className="w-5 h-5 text-secondary-foreground" />
             </div>
             <div>
               <h3 className="font-semibold">Langue</h3>
