@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRoleAccess } from "@/hooks/useRoleAccess";
 import { LivestockForm } from "@/components/livestock/LivestockForm";
 import { VetRecordForm } from "@/components/livestock/VetRecordForm";
+import { VetAppointmentRequest } from "@/components/livestock/VetAppointmentRequest";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
