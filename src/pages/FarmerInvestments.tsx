@@ -1,9 +1,9 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
-import { ReceivedInvestments } from "@/components/farmer/ReceivedInvestments";
+import { FarmerInvestmentDashboard } from "@/components/farmer/FarmerInvestmentDashboard";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 
 export default function FarmerInvestments() {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ export default function FarmerInvestments() {
     <AppLayout>
       <PageHeader
         title="Mes financements"
-        subtitle="Gérez les investissements reçus"
+        subtitle="Gérez vos investissements et opportunités"
         action={
           <Button
             variant="hero"
@@ -26,7 +26,7 @@ export default function FarmerInvestments() {
       />
 
       <div className="px-4 pb-6">
-        <ReceivedInvestments />
+        <FarmerInvestmentDashboard />
       </div>
     </AppLayout>
   );

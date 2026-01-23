@@ -8,7 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FieldForm } from "@/components/fields/FieldForm";
-import { Plus, MapPin, Droplets, Leaf, X, Edit, Trash2, Wheat, BarChart3 } from "lucide-react";
+import { InteractiveFieldMap } from "@/components/fields/InteractiveFieldMap";
+import { Plus, MapPin, Droplets, Leaf, X, Edit, Trash2, Wheat, BarChart3, Map } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -196,6 +197,17 @@ export default function Parcelles() {
           data={{ totalFields: fields.length, totalArea, activeFields }} 
         />
       </div>
+
+      {/* Interactive Map */}
+      {fields.length > 0 && (
+        <div className="px-4 mb-4">
+          <InteractiveFieldMap
+            fields={fields.map(f => ({ ...f, crops_count: (fieldCrops[f.id] || []).length }))}
+            onFieldClick={(field) => setViewingField(field as any)}
+            selectedFieldId={viewingField?.id}
+          />
+        </div>
+      )}
 
       {/* Quick Stats */}
       {fields.length > 0 && (
