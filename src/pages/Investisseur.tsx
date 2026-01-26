@@ -5,9 +5,9 @@ import { AIContextualTip } from "@/components/ai/AIContextualTip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -20,23 +20,23 @@ import {
   Wallet,
   ArrowUpRight,
   Sprout,
-  MapPin,
-  Calendar,
   Loader2,
   RefreshCw,
   Banknote,
   Activity,
   Target,
   PieChart,
+  Search,
+  BarChart3,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
 import { InvestmentIoTMonitor } from "@/components/investor/InvestmentIoTMonitor";
+import { InvestorReturns } from "@/components/investor/InvestorReturns";
+import { OpportunityCard } from "@/components/investor/OpportunityCard";
+import { PortfolioCard } from "@/components/investor/PortfolioCard";
 
 interface InvestmentOpportunity {
   id: string;
@@ -62,21 +62,17 @@ interface Investment {
   investment_date: string;
   expected_harvest_date: string | null;
   actual_return_amount: number | null;
+  farmer_id: string;
   farmer_name?: string;
 }
 
-const riskConfig: Record<string, { label: string; color: string }> = {
-  faible: { label: "Faible", color: "bg-success/10 text-success" },
-  moyen: { label: "Moyen", color: "bg-warning/10 text-warning" },
-  eleve: { label: "Élevé", color: "bg-destructive/10 text-destructive" },
-};
-
 export default function Investisseur() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("opportunites");
   const [loading, setLoading] = useState(true);
   const [opportunities, setOpportunities] = useState<InvestmentOpportunity[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [investDialogOpen, setInvestDialogOpen] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState<InvestmentOpportunity | null>(null);
   const [investAmount, setInvestAmount] = useState("");
@@ -116,14 +112,14 @@ export default function Investisseur() {
 
     // Fetch actual investments for each opportunity to get real current_amount
     const opportunityTitles = (data || []).map(opp => opp.title);
-    const { data: investments } = await supabase
+    const { data: investmentsData } = await supabase
       .from("investments")
       .select("title, amount_invested")
       .in("title", opportunityTitles);
 
     // Calculate total invested per opportunity title
     const investedMap = new Map<string, number>();
-    (investments || []).forEach(inv => {
+    (investmentsData || []).forEach(inv => {
       const current = investedMap.get(inv.title) || 0;
       investedMap.set(inv.title, current + inv.amount_invested);
     });
@@ -169,9 +165,15 @@ export default function Investisseur() {
     0
   );
   const potentialGain = expectedReturns - totalInvested;
-  const activeCount = investments.filter(i => i.status === "en_cours").length;
+  const activeCount = investments.filter(i => i.status === "en_cours" || i.status === "actif").length;
 
-  const handleInvest = async () => {
+  const handleInvest = (opportunity: InvestmentOpportunity) => {
+    setSelectedOpportunity(opportunity);
+    setInvestAmount("");
+    setInvestDialogOpen(true);
+  };
+
+  const confirmInvest = async () => {
     if (!selectedOpportunity || !user || !investAmount) return;
 
     const amount = parseFloat(investAmount);
@@ -195,6 +197,7 @@ export default function Investisseur() {
         amount_invested: amount,
         expected_return_percent: selectedOpportunity.expected_return_percent,
         expected_harvest_date: selectedOpportunity.expected_harvest_date,
+        status: "en_cours",
       });
 
       const newAmount = selectedOpportunity.current_amount + amount;
@@ -215,6 +218,12 @@ export default function Investisseur() {
       setSubmitting(false);
     }
   };
+
+  const filteredOpportunities = opportunities.filter((opp) =>
+    opp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    opp.farmer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    opp.location?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -246,7 +255,7 @@ export default function Investisseur() {
         />
       </div>
 
-      {/* Portfolio Summary */}
+      {/* Portfolio Summary Card */}
       <div className="px-4 mb-6">
         <Card className="overflow-hidden border-0 shadow-elevated">
           <div className="gradient-hero p-5 relative">
@@ -255,22 +264,28 @@ export default function Investisseur() {
               <div className="flex items-center gap-2 text-primary-foreground mb-4">
                 <Wallet className="w-5 h-5" />
                 <span className="font-semibold">Mon Portefeuille</span>
+                <Badge variant="secondary" className="bg-white/20 text-white border-0 ml-auto">
+                  {activeCount} actif{activeCount > 1 ? "s" : ""}
+                </Badge>
               </div>
               <div className="grid grid-cols-3 gap-4 text-primary-foreground">
                 <div>
-                  <p className="text-sm opacity-80">Investi</p>
+                  <p className="text-sm opacity-80">Total investi</p>
                   <p className="text-2xl font-bold">{(totalInvested / 1000).toFixed(0)}k</p>
+                  <p className="text-xs opacity-60">FCFA</p>
                 </div>
                 <div>
-                  <p className="text-sm opacity-80">Attendu</p>
+                  <p className="text-sm opacity-80">Retour attendu</p>
                   <p className="text-2xl font-bold">{(expectedReturns / 1000).toFixed(0)}k</p>
+                  <p className="text-xs opacity-60">FCFA</p>
                 </div>
                 <div>
-                  <p className="text-sm opacity-80">Gain</p>
+                  <p className="text-sm opacity-80">Gain potentiel</p>
                   <div className="flex items-center gap-1">
                     <ArrowUpRight className="w-4 h-4" />
-                    <p className="text-2xl font-bold">+{(potentialGain / 1000).toFixed(0)}k</p>
+                    <p className="text-2xl font-bold text-white">+{(potentialGain / 1000).toFixed(0)}k</p>
                   </div>
+                  <p className="text-xs opacity-60">FCFA</p>
                 </div>
               </div>
             </div>
@@ -278,114 +293,64 @@ export default function Investisseur() {
         </Card>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs Navigation */}
       <div className="px-4 pb-28">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 mb-4 h-12">
-            <TabsTrigger value="opportunites" className="gap-2">
+          <TabsList className="grid w-full grid-cols-4 mb-4 h-12 p-1">
+            <TabsTrigger value="opportunites" className="gap-1.5 text-xs">
               <Target className="w-4 h-4" />
               <span className="hidden sm:inline">Opportunités</span>
             </TabsTrigger>
-            <TabsTrigger value="portefeuille" className="gap-2">
+            <TabsTrigger value="portefeuille" className="gap-1.5 text-xs">
               <PieChart className="w-4 h-4" />
               <span className="hidden sm:inline">Portefeuille</span>
             </TabsTrigger>
-            <TabsTrigger value="iot" className="gap-2">
+            <TabsTrigger value="rendements" className="gap-1.5 text-xs">
+              <BarChart3 className="w-4 h-4" />
+              <span className="hidden sm:inline">Rendements</span>
+            </TabsTrigger>
+            <TabsTrigger value="iot" className="gap-1.5 text-xs">
               <Activity className="w-4 h-4" />
               <span className="hidden sm:inline">Suivi IoT</span>
             </TabsTrigger>
           </TabsList>
 
-          {/* Opportunities */}
+          {/* Opportunities Tab */}
           <TabsContent value="opportunites" className="space-y-4">
-            {opportunities.length === 0 ? (
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher une opportunité..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {filteredOpportunities.length === 0 ? (
               <EmptyState
                 icon={<Sprout className="w-8 h-8" />}
                 title="Aucune opportunité"
-                description="Revenez bientôt pour découvrir des projets"
+                description={searchQuery ? "Aucun résultat trouvé" : "Revenez bientôt pour découvrir des projets"}
               />
             ) : (
-              opportunities.map((opp, index) => {
-                const progress = (opp.current_amount / opp.target_amount) * 100;
-                const remaining = opp.target_amount - opp.current_amount;
-                const risk = riskConfig[opp.risk_level] || riskConfig.moyen;
-
-                return (
-                  <Card
+              <div className="space-y-4">
+                {filteredOpportunities.map((opp, index) => (
+                  <OpportunityCard
                     key={opp.id}
-                    className={cn("animate-fade-in border-border/50", `stagger-${(index % 5) + 1}`)}
-                    style={{ opacity: 0 }}
-                  >
-                    <CardContent className="p-4 space-y-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-foreground">{opp.title}</h3>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                            <Sprout className="w-3.5 h-3.5" />
-                            <span>{opp.farmer_name}</span>
-                            {opp.location && (
-                              <>
-                                <span>•</span>
-                                <MapPin className="w-3.5 h-3.5" />
-                                <span className="truncate">{opp.location}</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                        <Badge className={cn("shrink-0", risk.color)}>
-                          {risk.label}
-                        </Badge>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="text-center p-3 rounded-xl bg-primary/10">
-                          <p className="text-xl font-bold text-primary">{opp.expected_return_percent}%</p>
-                          <p className="text-xs text-muted-foreground">ROI</p>
-                        </div>
-                        <div className="text-center p-3 rounded-xl bg-muted">
-                          <p className="text-xl font-bold text-foreground">
-                            {(opp.target_amount / 1000000).toFixed(1)}M
-                          </p>
-                          <p className="text-xs text-muted-foreground">Objectif</p>
-                        </div>
-                        <div className="text-center p-3 rounded-xl bg-muted">
-                          <p className="text-xl font-bold text-foreground">
-                            {opp.expected_harvest_date
-                              ? format(new Date(opp.expected_harvest_date), "MMM", { locale: fr })
-                              : "-"}
-                          </p>
-                          <p className="text-xs text-muted-foreground">Récolte</p>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-sm mb-2">
-                          <span className="text-muted-foreground">Financement</span>
-                          <span className="font-medium">{Math.round(progress)}%</span>
-                        </div>
-                        <Progress value={progress} className="h-2" />
-                      </div>
-
-                      <Button 
-                        className="w-full" 
-                        onClick={() => {
-                          setSelectedOpportunity(opp);
-                          setInvestAmount("");
-                          setInvestDialogOpen(true);
-                        }}
-                      >
-                        <Banknote className="w-4 h-4 mr-2" />
-                        Investir • {(remaining / 1000).toFixed(0)}k restants
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })
+                    opportunity={opp}
+                    onInvest={handleInvest}
+                    index={index}
+                  />
+                ))}
+              </div>
             )}
           </TabsContent>
 
-          {/* Portfolio */}
+          {/* Portfolio Tab */}
           <TabsContent value="portefeuille" className="space-y-4">
+            {/* Quick Stats */}
             <div className="grid grid-cols-2 gap-3">
               <Card className="bg-primary/5 border-primary/20">
                 <CardContent className="p-4 text-center">
@@ -407,57 +372,31 @@ export default function Investisseur() {
               <EmptyState
                 icon={<TrendingUp className="w-8 h-8" />}
                 title="Aucun investissement"
-                description="Explorez les opportunités"
+                description="Explorez les opportunités pour commencer"
                 action={{
                   label: "Voir opportunités",
                   onClick: () => setActiveTab("opportunites"),
                 }}
               />
             ) : (
-              investments.map((inv, index) => {
-                const expectedReturn = inv.amount_invested * (1 + inv.expected_return_percent / 100);
-                return (
-                  <Card
+              <div className="space-y-3">
+                {investments.map((inv, index) => (
+                  <PortfolioCard
                     key={inv.id}
-                    className={cn("animate-fade-in border-border/50", `stagger-${(index % 5) + 1}`)}
-                    style={{ opacity: 0 }}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h3 className="font-semibold text-foreground">{inv.title}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {inv.farmer_name} • {format(new Date(inv.investment_date), "dd MMM yyyy", { locale: fr })}
-                          </p>
-                        </div>
-                        <Badge className={cn(
-                          inv.status === "en_cours" ? "bg-warning/10 text-warning" : "bg-success/10 text-success"
-                        )}>
-                          {inv.status === "en_cours" ? "En cours" : "Terminé"}
-                        </Badge>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="p-2 rounded-lg bg-muted text-center">
-                          <p className="font-bold text-foreground">{(inv.amount_invested / 1000).toFixed(0)}k</p>
-                          <p className="text-xs text-muted-foreground">Investi</p>
-                        </div>
-                        <div className="p-2 rounded-lg bg-primary/10 text-center">
-                          <p className="font-bold text-primary">{(expectedReturn / 1000).toFixed(0)}k</p>
-                          <p className="text-xs text-muted-foreground">Attendu</p>
-                        </div>
-                        <div className="p-2 rounded-lg bg-success/10 text-center">
-                          <p className="font-bold text-success">+{inv.expected_return_percent}%</p>
-                          <p className="text-xs text-muted-foreground">ROI</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })
+                    investment={inv}
+                    index={index}
+                  />
+                ))}
+              </div>
             )}
           </TabsContent>
 
-          {/* IoT */}
+          {/* Returns Tab */}
+          <TabsContent value="rendements">
+            <InvestorReturns />
+          </TabsContent>
+
+          {/* IoT Tab */}
           <TabsContent value="iot">
             <InvestmentIoTMonitor />
           </TabsContent>
@@ -470,51 +409,66 @@ export default function Investisseur() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Banknote className="w-5 h-5 text-primary" />
-              Investir
+              Investir dans ce projet
             </DialogTitle>
           </DialogHeader>
           {selectedOpportunity && (
             <div className="space-y-4 py-4">
-              <div className="p-3 rounded-xl bg-muted/50">
-                <p className="font-medium">{selectedOpportunity.title}</p>
-                <p className="text-sm text-muted-foreground">{selectedOpportunity.farmer_name}</p>
+              <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
+                <p className="font-semibold text-foreground">{selectedOpportunity.title}</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Par {selectedOpportunity.farmer_name}
+                </p>
               </div>
-              <div className="grid grid-cols-2 gap-3 text-center">
-                <div className="p-3 rounded-xl bg-primary/10">
-                  <p className="text-xl font-bold text-primary">{selectedOpportunity.expected_return_percent}%</p>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-4 rounded-xl bg-primary/10 text-center">
+                  <p className="text-2xl font-bold text-primary">
+                    {selectedOpportunity.expected_return_percent}%
+                  </p>
                   <p className="text-xs text-muted-foreground">ROI attendu</p>
                 </div>
-                <div className="p-3 rounded-xl bg-muted">
-                  <p className="text-xl font-bold">
+                <div className="p-4 rounded-xl bg-muted text-center">
+                  <p className="text-2xl font-bold text-foreground">
                     {((selectedOpportunity.target_amount - selectedOpportunity.current_amount) / 1000).toFixed(0)}k
                   </p>
                   <p className="text-xs text-muted-foreground">Restant</p>
                 </div>
               </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">Montant à investir</label>
-                <div className="relative mt-2">
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">
+                  Montant à investir (FCFA)
+                </label>
+                <div className="relative">
                   <Input
                     type="number"
                     value={investAmount}
                     onChange={(e) => setInvestAmount(e.target.value)}
-                    placeholder="0"
+                    placeholder="Ex: 50000"
                     className="pr-16 h-12 text-lg font-bold"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                     FCFA
                   </span>
                 </div>
+                {investAmount && !isNaN(parseFloat(investAmount)) && (
+                  <p className="text-xs text-muted-foreground">
+                    Retour estimé: <span className="font-semibold text-success">
+                      {(parseFloat(investAmount) * (1 + selectedOpportunity.expected_return_percent / 100) / 1000).toFixed(0)}k FCFA
+                    </span>
+                  </p>
+                )}
               </div>
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setInvestDialogOpen(false)}>
               Annuler
             </Button>
-            <Button onClick={handleInvest} disabled={submitting}>
+            <Button onClick={confirmInvest} disabled={submitting || !investAmount}>
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Confirmer
+              Confirmer l'investissement
             </Button>
           </DialogFooter>
         </DialogContent>
