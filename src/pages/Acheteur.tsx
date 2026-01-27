@@ -15,10 +15,6 @@ import {
   RefreshCw,
   Loader2,
   MapPin,
-  Phone,
-  MessageCircle,
-  Star,
-  Filter,
   ShoppingCart,
   Clock,
   CheckCircle2,
@@ -31,6 +27,8 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
+import { BuyerCart } from "@/components/buyer/BuyerCart";
+import { BuyerOrderTracking } from "@/components/buyer/BuyerOrderTracking";
 
 interface Product {
   id: string;
@@ -267,20 +265,37 @@ export default function Acheteur() {
       {/* Tabs */}
       <div className="px-4 pb-28">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 mb-4 h-12">
-            <TabsTrigger value="produits" className="gap-2">
+          <TabsList className="grid w-full grid-cols-4 mb-4 h-12">
+            <TabsTrigger value="produits" className="gap-1 text-xs">
               <ShoppingBag className="w-4 h-4" />
               Produits
             </TabsTrigger>
-            <TabsTrigger value="favoris" className="gap-2">
+            <TabsTrigger value="panier" className="gap-1 text-xs">
+              <ShoppingCart className="w-4 h-4" />
+              Panier
+            </TabsTrigger>
+            <TabsTrigger value="commandes" className="gap-1 text-xs">
+              <Package className="w-4 h-4" />
+              Suivi
+            </TabsTrigger>
+            <TabsTrigger value="favoris" className="gap-1 text-xs">
               <Heart className="w-4 h-4" />
               Favoris
             </TabsTrigger>
-            <TabsTrigger value="commandes" className="gap-2">
-              <Package className="w-4 h-4" />
-              Commandes
-            </TabsTrigger>
           </TabsList>
+
+          {/* Cart Tab */}
+          <TabsContent value="panier">
+            <BuyerCart onCheckout={() => {
+              fetchData();
+              setActiveTab("commandes");
+            }} />
+          </TabsContent>
+
+          {/* Order Tracking Tab */}
+          <TabsContent value="commandes">
+            <BuyerOrderTracking />
+          </TabsContent>
 
           {/* Products */}
           <TabsContent value="produits" className="space-y-3">
@@ -409,55 +424,6 @@ export default function Acheteur() {
             )}
           </TabsContent>
 
-          {/* Orders */}
-          <TabsContent value="commandes" className="space-y-3">
-            {orders.length === 0 ? (
-              <EmptyState
-                icon={<Package className="w-8 h-8" />}
-                title="Aucune commande"
-                description="Vos commandes apparaîtront ici"
-              />
-            ) : (
-              orders.map((order, index) => {
-                const status = statusConfig[order.status] || statusConfig.en_attente;
-                const StatusIcon = status.icon;
-                return (
-                  <Card
-                    key={order.id}
-                    className={cn("animate-fade-in", `stagger-${(index % 5) + 1}`)}
-                    style={{ opacity: 0 }}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h3 className="font-semibold">{order.product_title}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {order.seller_name} • {format(new Date(order.created_at), "dd MMM yyyy", { locale: fr })}
-                          </p>
-                        </div>
-                        <Badge className={status.color}>
-                          <StatusIcon className="w-3 h-3 mr-1" />
-                          {status.label}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-lg font-bold text-primary">
-                            {order.proposed_price.toLocaleString()} FCFA
-                          </p>
-                          {order.proposed_quantity && (
-                            <p className="text-xs text-muted-foreground">
-                              Quantité: {order.proposed_quantity}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })
-            )}
-          </TabsContent>
         </Tabs>
       </div>
     </AppLayout>
