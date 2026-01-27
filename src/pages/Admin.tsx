@@ -56,6 +56,8 @@ import { toast } from "sonner";
 import type { Database as DatabaseTypes } from "@/integrations/supabase/types";
 import { AdminTransactions } from "@/components/admin/AdminTransactions";
 import { AdminDisputePanel } from "@/components/admin/AdminDisputePanel";
+import { AdminUserModeration } from "@/components/admin/AdminUserModeration";
+import { AdminListingModeration } from "@/components/admin/AdminListingModeration";
 
 type Profile = DatabaseTypes["public"]["Tables"]["profiles"]["Row"];
 type Listing = DatabaseTypes["public"]["Tables"]["marketplace_listings"]["Row"];
@@ -432,211 +434,13 @@ export default function Admin() {
           </ScrollableTabsContent>
 
           {/* Users Tab */}
-          <ScrollableTabsContent value="users" className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher un utilisateur..."
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-
-            {loading ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin" />
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {filteredUsers.map((user) => (
-                  <Card key={user.id} className="p-3">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium">{user.full_name || "Sans nom"}</p>
-                          {user.roles.map((role) => (
-                            <span key={role} className={`text-xs px-2 py-0.5 rounded-full ${getRoleColor(role)}`}>
-                              {role}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                          {user.email && (
-                            <span className="flex items-center gap-1">
-                              <Mail className="w-3 h-3" />
-                              {user.email}
-                            </span>
-                          )}
-                          {user.phone && (
-                            <span className="flex items-center gap-1">
-                              <Phone className="w-3 h-3" />
-                              {user.phone}
-                            </span>
-                          )}
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {new Date(user.created_at).toLocaleDateString('fr-FR')}
-                          </span>
-                        </div>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        onClick={() => setSelectedUser(user)}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
+          <ScrollableTabsContent value="users">
+            <AdminUserModeration />
           </ScrollableTabsContent>
 
           {/* Marketplace Tab */}
-          <ScrollableTabsContent value="marketplace" className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher une annonce..."
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-
-            {/* Listings moderation */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Package className="w-5 h-5" />
-                  Annonces ({filteredListings.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                {loading ? (
-                  <div className="flex justify-center py-12">
-                    <Loader2 className="w-8 h-8 animate-spin" />
-                  </div>
-                ) : (
-                  <div className="divide-y">
-                    {filteredListings.slice(0, 20).map((listing) => (
-                      <div key={listing.id} className="p-3 hover:bg-muted/50">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="font-medium">{listing.title}</p>
-                              {getStatusBadge(listing.status)}
-                              {listing.is_verified && (
-                                <Badge className="bg-green-500">Vérifié</Badge>
-                              )}
-                            </div>
-                            <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                              {listing.category && (
-                                <Badge variant="outline">{listing.category}</Badge>
-                              )}
-                              {listing.price && (
-                                <span>{listing.price.toLocaleString()} FCFA</span>
-                              )}
-                              {listing.location && (
-                                <span className="flex items-center gap-1">
-                                  <MapPin className="w-3 h-3" />
-                                  {listing.location}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex gap-1">
-                            {!listing.is_verified && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-green-600 hover:bg-green-500/10"
-                                onClick={() => handleVerifyListing(listing.id, true)}
-                              >
-                                <CheckCircle2 className="w-4 h-4" />
-                              </Button>
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:bg-destructive/10"
-                              onClick={() => handleDeleteListing(listing.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Service Providers */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Shield className="w-5 h-5" />
-                  Prestataires ({providers.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y">
-                  {providers.map((provider) => (
-                    <div key={provider.id} className="p-3 hover:bg-muted/50">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="font-medium">{provider.business_name}</p>
-                            {provider.is_verified ? (
-                              <Badge className="bg-green-500">Vérifié</Badge>
-                            ) : (
-                              <Badge variant="secondary">En attente</Badge>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                            <Badge variant="outline">{provider.service_category}</Badge>
-                            {provider.location && (
-                              <span className="flex items-center gap-1">
-                                <MapPin className="w-3 h-3" />
-                                {provider.location}
-                              </span>
-                            )}
-                            {provider.rating && (
-                              <span>⭐ {provider.rating}</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-1">
-                          {!provider.is_verified ? (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-green-600 hover:bg-green-500/10"
-                              onClick={() => handleVerifyProvider(provider.id, true)}
-                            >
-                              <UserCheck className="w-4 h-4" />
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-orange-600 hover:bg-orange-500/10"
-                              onClick={() => handleVerifyProvider(provider.id, false)}
-                            >
-                              <UserX className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          <ScrollableTabsContent value="marketplace">
+            <AdminListingModeration />
           </ScrollableTabsContent>
 
           {/* Disputes Tab */}
