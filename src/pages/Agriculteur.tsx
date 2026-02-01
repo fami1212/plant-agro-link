@@ -33,30 +33,39 @@ export default function Agriculteur() {
 
       <div className="px-4 pb-28">
         <ScrollableTabs value={activeTab} onValueChange={setActiveTab}>
-          <ScrollableTabsList className="mb-4">
-            <ScrollableTabsTrigger value="overview" className="flex items-center gap-2">
+          <ScrollableTabsList className="mb-5 bg-muted/50 p-1 rounded-xl">
+            <ScrollableTabsTrigger 
+              value="overview" 
+              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg"
+            >
               <LayoutDashboard className="w-4 h-4" />
               <span>Aperçu</span>
             </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="calendar" className="flex items-center gap-2">
+            <ScrollableTabsTrigger 
+              value="calendar" 
+              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg"
+            >
               <Calendar className="w-4 h-4" />
               <span>Calendrier</span>
             </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="finances" className="flex items-center gap-2">
+            <ScrollableTabsTrigger 
+              value="finances" 
+              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg"
+            >
               <Wallet className="w-4 h-4" />
               <span>Finances</span>
             </ScrollableTabsTrigger>
           </ScrollableTabsList>
 
-          <TabsContent value="overview" className="mt-0">
+          <TabsContent value="overview" className="mt-0 animate-fade-in">
             <FarmOverview />
           </TabsContent>
 
-          <TabsContent value="calendar" className="mt-0">
+          <TabsContent value="calendar" className="mt-0 animate-fade-in">
             <FarmCalendar />
           </TabsContent>
 
-          <TabsContent value="finances" className="mt-0">
+          <TabsContent value="finances" className="mt-0 animate-fade-in">
             <FarmerFinanceSimple />
           </TabsContent>
         </ScrollableTabs>

@@ -3,8 +3,6 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
 import { HarvestChart } from "@/components/dashboard/HarvestChart";
-import { AlertsList } from "@/components/dashboard/AlertsList";
-import { IoTDashboard } from "@/components/iot/IoTDashboard";
 import { AIContextualTip } from "@/components/ai/AIContextualTip";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,11 +12,8 @@ import {
   Wheat,
   PawPrint,
   Plus,
-  CloudSun,
   TrendingUp,
   Bell,
-  Droplets,
-  Wind,
   Scale,
   ShoppingBag,
   Stethoscope,
@@ -61,7 +56,7 @@ export default function Dashboard() {
           title={`${getGreeting()}, ${userName}`}
           subtitle={getRoleSubtitle()}
           action={
-            <Button variant="ghost" size="icon-sm" className="relative">
+            <Button variant="ghost" size="icon" className="relative">
               <Bell className="w-5 h-5" />
               {(alerts?.length || 0) > 0 && (
                 <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
@@ -71,7 +66,7 @@ export default function Dashboard() {
         />
 
         <div className="px-4 space-y-5 pb-28">
-          {/* AI Contextual Tip */}
+          {/* AI Tip - compact */}
           <AIContextualTip 
             context="dashboard" 
             data={{ 
@@ -81,38 +76,7 @@ export default function Dashboard() {
             }} 
           />
 
-          {/* Weather Card - Agriculteurs */}
-          {(isAgriculteur || isAdmin) && (
-            <Card variant="feature" className="overflow-hidden">
-              <div className="gradient-primary p-5 relative">
-                <div className="flex items-center justify-between text-primary-foreground relative">
-                  <div>
-                    <p className="text-xs opacity-80 font-medium">Météo • Thiès</p>
-                    <div className="flex items-baseline gap-1.5 mt-1">
-                      <span className="text-4xl font-bold">28°</span>
-                      <span className="text-base opacity-60">/ 21°</span>
-                    </div>
-                    <p className="text-xs mt-2 opacity-80">Ensoleillé avec nuages</p>
-                  </div>
-                  <div className="text-right">
-                    <CloudSun className="w-16 h-16 opacity-80" />
-                    <div className="flex items-center gap-3 mt-2 text-xs">
-                      <span className="flex items-center gap-1 opacity-80">
-                        <Droplets className="w-3.5 h-3.5" />
-                        45%
-                      </span>
-                      <span className="flex items-center gap-1 opacity-80">
-                        <Wind className="w-3.5 h-3.5" />
-                        12km/h
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          )}
-
-          {/* Stats */}
+          {/* Stats Grid */}
           {isLoading ? (
             <div className="grid grid-cols-2 gap-3">
               {[1, 2, 3, 4].map((i) => (
@@ -128,7 +92,7 @@ export default function Dashboard() {
                     icon={<MapPin className="w-5 h-5" />}
                     label="Parcelles"
                     value={stats?.totalFields || 0}
-                    subtitle={`${stats?.totalArea?.toFixed(1) || 0} hectares`}
+                    subtitle={`${stats?.totalArea?.toFixed(1) || 0} ha`}
                     iconBg="primary"
                   />
                   <StatCard
@@ -169,7 +133,7 @@ export default function Dashboard() {
                     icon={<PawPrint className="w-5 h-5" />}
                     label="Patients"
                     value={stats?.totalLivestock || 0}
-                    subtitle="animaux suivis"
+                    subtitle="suivis"
                     iconBg="secondary"
                   />
                 </div>
@@ -180,7 +144,7 @@ export default function Dashboard() {
                 <div className="grid grid-cols-2 gap-3">
                   <StatCard
                     icon={<ShoppingBag className="w-5 h-5" />}
-                    label="Mes achats"
+                    label="Achats"
                     value={stats?.totalPurchases || 0}
                     subtitle="acceptés"
                     iconBg="primary"
@@ -202,14 +166,14 @@ export default function Dashboard() {
                     icon={<DollarSign className="w-5 h-5" />}
                     label="Investis"
                     value={`${((stats?.totalInvested || 0) / 1000).toFixed(0)}k`}
-                    subtitle={`${stats?.activeInvestments || 0} projets actifs`}
+                    subtitle={`${stats?.activeInvestments || 0} actifs`}
                     iconBg="primary"
                   />
                   <StatCard
                     icon={<TrendingUp className="w-5 h-5" />}
                     label="Rendement"
                     value={`${(stats?.averageReturn || 15).toFixed(0)}%`}
-                    subtitle="moyen attendu"
+                    subtitle="attendu"
                     iconBg="success"
                   />
                 </div>
@@ -217,16 +181,10 @@ export default function Dashboard() {
             </>
           )}
 
-          {/* IoT Compact - Agriculteurs */}
-          {(isAgriculteur || isAdmin) && <IoTDashboard compact />}
-
-          {/* Chart - Agriculteurs */}
+          {/* Harvest Chart - Agriculteurs only */}
           {(isAgriculteur || isAdmin) && !isLoading && harvestTrend && (
             <HarvestChart data={harvestTrend} />
           )}
-
-          {/* Alerts */}
-          {alerts && alerts.length > 0 && <AlertsList alerts={alerts} />}
 
           {/* Quick Actions */}
           <div className="space-y-3">
@@ -254,10 +212,10 @@ export default function Dashboard() {
                   onClick={() => navigate("/betail")}
                 />
                 <QuickActionCard
-                  icon={<DollarSign className="w-4 h-4" />}
-                  title="Investisseur"
-                  description="Chercher"
-                  onClick={() => navigate("/cultures")}
+                  icon={<ShoppingBag className="w-4 h-4" />}
+                  title="Marketplace"
+                  description="Vendre"
+                  onClick={() => navigate("/marketplace")}
                   variant="accent"
                 />
               </div>
@@ -302,10 +260,9 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Marketplace CTA */}
+          {/* Marketplace CTA - simple version */}
           <Card 
-            variant="interactive"
-            className="overflow-hidden"
+            className="overflow-hidden cursor-pointer border-0 shadow-soft hover:shadow-elevated transition-shadow"
             onClick={() => navigate("/marketplace")}
           >
             <CardContent className="p-0">
@@ -317,11 +274,11 @@ export default function Dashboard() {
                   <div className="text-white">
                     <p className="font-semibold">Marketplace</p>
                     <p className="text-xs opacity-80">
-                      {isAgriculteur ? "Vendre vos produits" : "Acheter des produits frais"}
+                      {isAgriculteur ? "Vendre vos produits" : "Acheter frais"}
                     </p>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-white opacity-80" />
+                <ArrowRight className="w-5 h-5 text-white/80" />
               </div>
             </CardContent>
           </Card>

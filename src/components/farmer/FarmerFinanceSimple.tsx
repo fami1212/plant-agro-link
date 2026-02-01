@@ -7,7 +7,6 @@ import {
   TrendingDown,
   Package,
   DollarSign,
-  Eye,
   ShoppingBag,
   ArrowRight,
   Wallet,
@@ -62,46 +61,32 @@ export function FarmerFinanceSimple() {
     try {
       const sixMonthsAgo = subMonths(new Date(), 6);
 
-      // Fetch listings
-      const { data: listings } = await supabase
-        .from("marketplace_listings")
-        .select("id, status")
-        .eq("user_id", user.id);
+      const [listingsRes, offersRes, bookingsRes] = await Promise.all([
+        supabase.from("marketplace_listings").select("id, status").eq("user_id", user.id),
+        supabase.from("marketplace_offers").select("id, status, proposed_price, created_at").eq("seller_id", user.id).gte("created_at", sixMonthsAgo.toISOString()),
+        supabase.from("service_bookings").select("id, price, created_at, service_type").eq("client_id", user.id).in("status", ["terminee", "payee"]).gte("created_at", sixMonthsAgo.toISOString()),
+      ]);
 
-      // Fetch offers received
-      const { data: offers } = await supabase
-        .from("marketplace_offers")
-        .select("id, status, proposed_price, created_at")
-        .eq("seller_id", user.id)
-        .gte("created_at", sixMonthsAgo.toISOString());
+      const listings = listingsRes.data || [];
+      const offers = offersRes.data || [];
+      const bookings = bookingsRes.data || [];
 
-      // Fetch service bookings (expenses)
-      const { data: bookings } = await supabase
-        .from("service_bookings")
-        .select("id, price, created_at, service_type")
-        .eq("client_id", user.id)
-        .in("status", ["terminee", "payee"])
-        .gte("created_at", sixMonthsAgo.toISOString());
-
-      const activeListings = listings?.filter((l) => l.status === "publie").length || 0;
-      const totalOffers = offers?.length || 0;
-      const acceptedOffers = offers?.filter((o) => o.status === "acceptee").length || 0;
-      const totalRevenue = offers
-        ?.filter((o) => o.status === "acceptee")
-        .reduce((sum, o) => sum + (o.proposed_price || 0), 0) || 0;
-      const totalExpenses = bookings?.reduce((sum, b) => sum + (b.price || 0), 0) || 0;
+      const activeListings = listings.filter((l) => l.status === "publie").length;
+      const totalOffers = offers.length;
+      const acceptedOffers = offers.filter((o) => o.status === "acceptee").length;
+      const totalRevenue = offers.filter((o) => o.status === "acceptee").reduce((sum, o) => sum + (o.proposed_price || 0), 0);
+      const totalExpenses = bookings.reduce((sum, b) => sum + (b.price || 0), 0);
       const netProfit = totalRevenue - totalExpenses;
 
-      // Recent transactions
       const recentTransactions: FinanceData["recentTransactions"] = [
-        ...(offers?.filter(o => o.status === "acceptee") || []).map(o => ({
+        ...offers.filter(o => o.status === "acceptee").map(o => ({
           id: o.id,
           type: "revenue" as const,
-          description: "Vente produit",
+          description: "Vente",
           amount: o.proposed_price || 0,
           date: o.created_at,
         })),
-        ...(bookings || []).map(b => ({
+        ...bookings.map(b => ({
           id: b.id,
           type: "expense" as const,
           description: b.service_type || "Service",
@@ -130,7 +115,7 @@ export function FarmerFinanceSimple() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-12">
+      <div className="flex justify-center items-center py-16">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -139,13 +124,13 @@ export function FarmerFinanceSimple() {
   return (
     <div className="space-y-4">
       {/* Net Profit Card */}
-      <Card className="overflow-hidden">
-        <div className="bg-gradient-to-br from-primary to-primary/80 p-5 text-primary-foreground">
+      <Card className="overflow-hidden border-0 shadow-soft">
+        <div className="gradient-hero p-5 text-primary-foreground">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm opacity-80">Bénéfice net (6 mois)</p>
+              <p className="text-sm opacity-80 font-medium">Bénéfice net (6 mois)</p>
               <p className="text-3xl font-bold mt-1">
-                {data.netProfit.toLocaleString()} <span className="text-lg">FCFA</span>
+                {data.netProfit.toLocaleString()} <span className="text-base opacity-80">FCFA</span>
               </p>
               <p className="text-sm mt-2 opacity-80">
                 {data.acceptedOffers} ventes réalisées
@@ -160,14 +145,14 @@ export function FarmerFinanceSimple() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 gap-3">
-        <Card>
+        <Card className="border-0 shadow-soft">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-success" />
               </div>
               <div>
-                <p className="text-xl font-bold text-success">
+                <p className="text-lg font-bold text-success">
                   {(data.totalRevenue / 1000).toFixed(0)}k
                 </p>
                 <p className="text-xs text-muted-foreground">Revenus</p>
@@ -176,14 +161,14 @@ export function FarmerFinanceSimple() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-soft">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
                 <TrendingDown className="w-5 h-5 text-destructive" />
               </div>
               <div>
-                <p className="text-xl font-bold text-destructive">
+                <p className="text-lg font-bold text-destructive">
                   {(data.totalExpenses / 1000).toFixed(0)}k
                 </p>
                 <p className="text-xs text-muted-foreground">Dépenses</p>
@@ -192,28 +177,28 @@ export function FarmerFinanceSimple() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-soft">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Package className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-xl font-bold">{data.activeListings}</p>
+                <p className="text-lg font-bold text-foreground">{data.activeListings}</p>
                 <p className="text-xs text-muted-foreground">Annonces</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-soft">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center">
                 <ShoppingBag className="w-5 h-5 text-warning" />
               </div>
               <div>
-                <p className="text-xl font-bold">{data.totalOffers}</p>
+                <p className="text-lg font-bold text-foreground">{data.totalOffers}</p>
                 <p className="text-xs text-muted-foreground">Offres</p>
               </div>
             </div>
@@ -223,14 +208,14 @@ export function FarmerFinanceSimple() {
 
       {/* Recent Transactions */}
       {data.recentTransactions.length > 0 && (
-        <Card>
+        <Card className="border-0 shadow-soft">
           <CardContent className="p-4">
-            <h3 className="font-semibold text-sm mb-3">Dernières transactions</h3>
+            <h3 className="font-semibold text-sm mb-3 text-foreground">Dernières transactions</h3>
             <div className="space-y-2">
               {data.recentTransactions.map((txn) => (
                 <div
                   key={txn.id}
-                  className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-muted/50"
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
@@ -243,7 +228,7 @@ export function FarmerFinanceSimple() {
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-medium">{txn.description}</p>
+                      <p className="text-sm font-medium text-foreground">{txn.description}</p>
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(txn.date), "dd MMM", { locale: fr })}
                       </p>
@@ -266,7 +251,7 @@ export function FarmerFinanceSimple() {
       <div className="grid grid-cols-2 gap-3">
         <Button 
           variant="outline" 
-          className="h-auto py-3"
+          className="h-auto py-3 border-0 shadow-soft bg-card hover:bg-muted/50"
           onClick={() => navigate("/marketplace/farmer")}
         >
           <Package className="w-4 h-4 mr-2" />
@@ -274,7 +259,7 @@ export function FarmerFinanceSimple() {
         </Button>
         <Button 
           variant="outline"
-          className="h-auto py-3"
+          className="h-auto py-3 border-0 shadow-soft bg-card hover:bg-muted/50"
           onClick={() => navigate("/farmer-investments")}
         >
           <DollarSign className="w-4 h-4 mr-2" />
