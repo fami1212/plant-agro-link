@@ -59,17 +59,29 @@ export function FarmCalendar() {
 
   useEffect(() => {
     if (user) {
-      const storedTasks = localStorage.getItem(`farm_tasks_${user.id}`);
-      if (storedTasks) {
-        setTasks(JSON.parse(storedTasks));
+      try {
+        const storedTasks = localStorage.getItem(`farm_tasks_${user.id}`);
+        if (storedTasks) {
+          const parsed = JSON.parse(storedTasks);
+          if (Array.isArray(parsed)) {
+            setTasks(parsed);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading tasks from localStorage:", error);
       }
     }
   }, [user]);
 
   const saveTasks = (updatedTasks: Task[]) => {
     if (user) {
-      localStorage.setItem(`farm_tasks_${user.id}`, JSON.stringify(updatedTasks));
-      setTasks(updatedTasks);
+      try {
+        localStorage.setItem(`farm_tasks_${user.id}`, JSON.stringify(updatedTasks));
+        setTasks(updatedTasks);
+      } catch (error) {
+        console.error("Error saving tasks to localStorage:", error);
+        toast.error("Impossible de sauvegarder les tâches");
+      }
     }
   };
 

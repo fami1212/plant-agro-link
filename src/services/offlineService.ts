@@ -75,10 +75,13 @@ class OfflineService {
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['pending_operations'], 'readonly');
       const store = transaction.objectStore('pending_operations');
-      const index = store.index('synced');
-      const request = index.getAll(IDBKeyRange.only(false));
+      const request = store.getAll();
 
-      request.onsuccess = () => resolve(request.result);
+      request.onsuccess = () => {
+        // Filter by synced === false in JavaScript instead of using IDBKeyRange
+        const results = (request.result || []).filter((record: OfflineRecord) => record.synced === false);
+        resolve(results);
+      };
       request.onerror = () => reject(request.error);
     });
   }
@@ -145,10 +148,13 @@ class OfflineService {
     const syncedRecords = await new Promise<OfflineRecord[]>((resolve, reject) => {
       const transaction = this.db!.transaction(['pending_operations'], 'readonly');
       const store = transaction.objectStore('pending_operations');
-      const index = store.index('synced');
-      const request = index.getAll(IDBKeyRange.only(true));
+      const request = store.getAll();
 
-      request.onsuccess = () => resolve(request.result);
+      request.onsuccess = () => {
+        // Filter by synced === true in JavaScript instead of using IDBKeyRange
+        const results = (request.result || []).filter((record: OfflineRecord) => record.synced === true);
+        resolve(results);
+      };
       request.onerror = () => reject(request.error);
     });
 
