@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Sprout, Phone, Mail, Lock, ArrowRight, Eye, EyeOff, User, Loader2 } from "lucide-react";
+import { Sprout, Mail, Lock, ArrowRight, Eye, EyeOff, User, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { RoleSelector } from "@/components/auth/RoleSelector";
@@ -16,23 +16,19 @@ type AppRole = 'agriculteur' | 'veterinaire' | 'acheteur' | 'investisseur' | 'ad
 export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, loading: authLoading, signIn, signUp, signInWithPhone, verifyOtp } = useAuth();
+  const { user, loading: authLoading, signIn, signUp } = useAuth();
   
   const [mode, setMode] = useState<AuthMode>("login");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
 
   const [formData, setFormData] = useState({
-    phone: "",
     email: "",
     password: "",
     name: "",
     role: "agriculteur" as AppRole,
   });
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (user && !authLoading) {
       const from = (location.state as any)?.from?.pathname || "/dashboard";
@@ -68,7 +64,6 @@ export default function Auth() {
         
         const { error } = await signUp(formData.email, formData.password, {
           full_name: formData.name,
-          phone: formData.phone,
           role: formData.role,
         });
         
@@ -80,53 +75,10 @@ export default function Auth() {
           }
           return;
         }
-        toast.success("Compte créé avec succès!");
+        toast.success("Compte créé! Vérifiez votre email.");
       }
     } catch (error: any) {
       toast.error(error.message || "Une erreur est survenue");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePhoneAuth = async () => {
-    if (!formData.phone) {
-      toast.error("Veuillez entrer votre numéro de téléphone");
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      const { error } = await signInWithPhone(formData.phone);
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-      setOtpSent(true);
-      toast.success("Code OTP envoyé par SMS");
-    } catch (error: any) {
-      toast.error(error.message || "Erreur d'envoi SMS");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    if (!otpCode || otpCode.length < 6) {
-      toast.error("Veuillez entrer le code OTP complet");
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      const { error } = await verifyOtp(formData.phone, otpCode);
-      if (error) {
-        toast.error("Code OTP invalide");
-        return;
-      }
-      toast.success("Connexion réussie!");
-    } catch (error: any) {
-      toast.error(error.message || "Erreur de vérification");
     } finally {
       setLoading(false);
     }
@@ -145,39 +97,39 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-gradient-soft flex flex-col">
       {/* Header */}
-      <div className="flex flex-col items-center pt-16 pb-8 px-6 safe-top">
-        <div className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center mb-4 shadow-glow">
-          <Sprout className="w-7 h-7 text-primary-foreground" />
+      <div className="flex flex-col items-center pt-16 pb-6 px-6 safe-top">
+        <div className="w-16 h-16 rounded-2xl gradient-hero flex items-center justify-center mb-4 shadow-glow">
+          <Sprout className="w-8 h-8 text-primary-foreground" />
         </div>
         <h1 className="text-2xl font-bold text-foreground">Plantéra</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Votre exploitation, simplifiée
+          {mode === "login" ? "Bon retour parmi nous" : "Créez votre compte"}
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="px-6 mb-5">
-        <div className="flex bg-muted/50 rounded-2xl p-1">
+      <div className="px-6 mb-4">
+        <div className="flex bg-muted/60 rounded-xl p-1">
           <button
-            onClick={() => { setMode("login"); setOtpSent(false); }}
+            onClick={() => setMode("login")}
             className={cn(
-              "flex-1 py-2.5 rounded-xl text-sm font-medium transition-all",
+              "flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
               mode === "login"
-                ? "bg-card text-foreground shadow-xs"
-                : "text-muted-foreground"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             Connexion
           </button>
           <button
-            onClick={() => { setMode("register"); setOtpSent(false); }}
+            onClick={() => setMode("register")}
             className={cn(
-              "flex-1 py-2.5 rounded-xl text-sm font-medium transition-all",
+              "flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
               mode === "register"
-                ? "bg-card text-foreground shadow-xs"
-                : "text-muted-foreground"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             Inscription
@@ -186,14 +138,14 @@ export default function Auth() {
       </div>
 
       {/* Form */}
-      <div className="flex-1 px-6 overflow-y-auto">
-        <Card variant="default" className="animate-fade-in border-border/30">
+      <div className="flex-1 px-6 overflow-y-auto pb-8">
+        <Card className="border-0 shadow-soft bg-card/80 backdrop-blur-sm">
           <CardContent className="p-5">
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === "register" && (
                 <>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="name" className="text-xs font-medium">Nom complet</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-sm font-medium">Nom complet</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
@@ -202,14 +154,14 @@ export default function Auth() {
                         placeholder="Amadou Diallo"
                         value={formData.name}
                         onChange={handleInputChange}
-                        className="h-11 pl-10"
+                        className="h-12 pl-10 bg-muted/30 border-0 focus:bg-background transition-colors"
                         required
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Je suis</Label>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Je suis</Label>
                     <RoleSelector
                       value={formData.role}
                       onChange={(role) => setFormData(prev => ({ ...prev, role }))}
@@ -218,8 +170,8 @@ export default function Auth() {
                 </>
               )}
 
-              <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-xs font-medium">Email</Label>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
@@ -229,32 +181,24 @@ export default function Auth() {
                     placeholder="amadou@email.com"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="h-11 pl-10"
+                    className="h-12 pl-10 bg-muted/30 border-0 focus:bg-background transition-colors"
                     required
                   />
                 </div>
               </div>
 
-              {mode === "register" && (
-                <div className="space-y-1.5">
-                  <Label htmlFor="phone" className="text-xs font-medium">Téléphone (optionnel)</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="+221 77 123 45 67"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="h-11 pl-10"
-                    />
-                  </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-sm font-medium">Mot de passe</Label>
+                  {mode === "login" && (
+                    <button
+                      type="button"
+                      className="text-xs text-primary font-medium hover:underline"
+                    >
+                      Oublié?
+                    </button>
+                  )}
                 </div>
-              )}
-
-              <div className="space-y-1.5">
-                <Label htmlFor="password" className="text-xs font-medium">Mot de passe</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
@@ -264,7 +208,7 @@ export default function Auth() {
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="h-11 pl-10 pr-10"
+                    className="h-12 pl-10 pr-10 bg-muted/30 border-0 focus:bg-background transition-colors"
                     required
                     minLength={6}
                   />
@@ -273,39 +217,25 @@ export default function Auth() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
                 {mode === "register" && (
-                  <p className="text-[10px] text-muted-foreground">Minimum 6 caractères</p>
+                  <p className="text-xs text-muted-foreground">Minimum 6 caractères</p>
                 )}
               </div>
 
-              {mode === "login" && (
-                <button
-                  type="button"
-                  className="text-xs text-primary font-medium hover:underline"
-                >
-                  Mot de passe oublié?
-                </button>
-              )}
-
               <Button
                 type="submit"
-                variant="hero"
-                className="w-full h-11 mt-2"
+                className="w-full h-12 mt-4 gradient-hero text-primary-foreground font-medium shadow-sm hover:shadow-glow transition-all"
                 disabled={loading}
               >
                 {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <>
                     {mode === "login" ? "Se connecter" : "Créer mon compte"}
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-4 h-4 ml-2" />
                   </>
                 )}
               </Button>
@@ -313,88 +243,25 @@ export default function Auth() {
           </CardContent>
         </Card>
 
-        {/* SMS/OTP Section */}
-        <div className="mt-5">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="flex-1 h-px bg-border/50" />
-            <span className="text-xs text-muted-foreground">ou</span>
-            <div className="flex-1 h-px bg-border/50" />
-          </div>
-
-          {!otpSent ? (
-            <Card className="border-border/30">
-              <CardContent className="p-4">
-                <Label className="text-xs font-medium mb-2 block">Connexion par SMS</Label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      type="tel"
-                      placeholder="+221 77 123 45 67"
-                      value={formData.phone}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                      className="pl-10 h-10"
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handlePhoneAuth}
-                    disabled={loading}
-                    className="h-10"
-                  >
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Envoyer"}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="border-border/30">
-              <CardContent className="p-4">
-                <Label className="text-xs font-medium mb-2 block">Entrez le code OTP</Label>
-                <div className="flex gap-2">
-                  <Input
-                    type="text"
-                    placeholder="123456"
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value)}
-                    maxLength={6}
-                    className="flex-1 text-center text-base tracking-widest h-10"
-                  />
-                  <Button
-                    type="button"
-                    variant="hero"
-                    onClick={handleVerifyOtp}
-                    disabled={loading}
-                    className="h-10"
-                  >
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Vérifier"}
-                  </Button>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setOtpSent(false)}
-                  className="text-[10px] text-primary mt-2 hover:underline"
-                >
-                  Changer de numéro
-                </button>
-              </CardContent>
-            </Card>
-          )}
+        {/* Back to home */}
+        <div className="mt-6 text-center">
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            ← Retour à l'accueil
+          </button>
         </div>
       </div>
 
       {/* Footer */}
       <div className="px-6 py-4 text-center safe-bottom">
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           En continuant, vous acceptez nos{" "}
-          <button className="text-primary hover:underline">
-            Conditions d'utilisation
-          </button>{" "}
-          et notre{" "}
-          <button className="text-primary hover:underline">
-            Politique de confidentialité
-          </button>
+          <button className="text-primary hover:underline">Conditions</button>
+          {" "}et{" "}
+          <button className="text-primary hover:underline">Confidentialité</button>
         </p>
       </div>
     </div>

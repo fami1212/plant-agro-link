@@ -10,12 +10,14 @@ import {
   ArrowRight,
   PawPrint,
   LineChart,
+  RefreshCw,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { SmartAlerts } from "./SmartAlerts";
 
 interface Field {
   id: string;
@@ -78,7 +80,6 @@ export function FarmOverview() {
 
       setFields(fieldsData || []);
 
-      // Calculate stats
       const totalArea = fieldsData?.reduce((sum, f) => sum + (f.area_hectares || 0), 0) || 0;
       const totalCrops = fieldsData?.reduce((sum, f) => sum + (f.crops?.length || 0), 0) || 0;
       const expectedYield = fieldsData?.reduce((sum, f) => {
@@ -110,34 +111,27 @@ export function FarmOverview() {
 
   if (loading) {
     return (
-      <div className="space-y-3">
-        {[1, 2, 3].map((i) => (
-          <Card key={i} className="animate-pulse">
-            <CardContent className="h-24" />
-          </Card>
-        ))}
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      {/* Smart AI Alerts */}
-      <SmartAlerts />
-
-      {/* Quick Stats Grid */}
+      {/* Quick Stats */}
       <div className="grid grid-cols-2 gap-3">
         <Card 
-          className="cursor-pointer hover:shadow-md transition-shadow"
+          className="cursor-pointer border-0 shadow-soft hover:shadow-elevated transition-all"
           onClick={() => navigate("/parcelles")}
         >
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
                 <MapPin className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.totalArea.toFixed(1)}</p>
+                <p className="text-2xl font-bold text-foreground">{stats.totalArea.toFixed(1)}</p>
                 <p className="text-xs text-muted-foreground">Hectares</p>
               </div>
             </div>
@@ -145,16 +139,16 @@ export function FarmOverview() {
         </Card>
         
         <Card 
-          className="cursor-pointer hover:shadow-md transition-shadow"
+          className="cursor-pointer border-0 shadow-soft hover:shadow-elevated transition-all"
           onClick={() => navigate("/cultures")}
         >
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center">
                 <Wheat className="w-5 h-5 text-accent" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.totalCrops}</p>
+                <p className="text-2xl font-bold text-foreground">{stats.totalCrops}</p>
                 <p className="text-xs text-muted-foreground">Cultures</p>
               </div>
             </div>
@@ -162,26 +156,26 @@ export function FarmOverview() {
         </Card>
 
         <Card 
-          className="cursor-pointer hover:shadow-md transition-shadow"
+          className="cursor-pointer border-0 shadow-soft hover:shadow-elevated transition-all"
           onClick={() => navigate("/betail")}
         >
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-warning/10 flex items-center justify-center">
                 <PawPrint className="w-5 h-5 text-warning" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{livestock.total}</p>
+                <p className="text-2xl font-bold text-foreground">{livestock.total}</p>
                 <p className="text-xs text-muted-foreground">Animaux</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-soft">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-success/10 flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-success" />
               </div>
               <div>
@@ -195,20 +189,20 @@ export function FarmOverview() {
         </Card>
       </div>
 
-      {/* Quick Access to Market Prices */}
+      {/* IA & Market Access */}
       <Card 
-        className="cursor-pointer hover:shadow-md transition-shadow bg-gradient-to-r from-primary/5 to-accent/5"
+        className="cursor-pointer border-0 shadow-soft hover:shadow-elevated transition-all overflow-hidden"
         onClick={() => navigate("/ia")}
       >
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <LineChart className="w-5 h-5 text-primary" />
+              <div className="w-11 h-11 rounded-xl gradient-primary flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
-                <p className="font-semibold">Prix du marché & IA</p>
-                <p className="text-xs text-muted-foreground">Analyse et recommandations</p>
+                <p className="font-semibold text-foreground">IA & Analyses</p>
+                <p className="text-xs text-muted-foreground">Recommandations intelligentes</p>
               </div>
             </div>
             <ArrowRight className="w-5 h-5 text-muted-foreground" />
@@ -216,11 +210,11 @@ export function FarmOverview() {
         </CardContent>
       </Card>
 
-      {/* Fields Preview - Simplified */}
+      {/* Parcelles List */}
       {fields.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-sm">Mes parcelles</h3>
+            <h3 className="font-semibold text-sm text-foreground">Mes parcelles</h3>
             <Button variant="ghost" size="sm" onClick={() => navigate("/parcelles")}>
               Tout voir
               <ArrowRight className="w-4 h-4 ml-1" />
@@ -230,31 +224,36 @@ export function FarmOverview() {
           {fields.slice(0, 3).map((field) => (
             <Card
               key={field.id}
-              className="cursor-pointer hover:shadow-md transition-shadow"
+              className="cursor-pointer border-0 shadow-soft hover:shadow-elevated transition-all"
               onClick={() => navigate("/parcelles")}
             >
-              <CardContent className="p-3">
+              <CardContent className="p-3.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                    <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
                       <MapPin className="w-4 h-4 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="font-medium text-sm">{field.name}</p>
+                      <p className="font-medium text-sm text-foreground">{field.name}</p>
                       <p className="text-xs text-muted-foreground">{field.area_hectares} ha</p>
                     </div>
                   </div>
                   {field.crops && field.crops.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Wheat className="w-4 h-4 text-primary" />
-                      <span className="text-sm">{field.crops.length}</span>
-                    </div>
+                    <Badge variant="secondary" className="text-xs">
+                      {field.crops.length} culture{field.crops.length > 1 ? "s" : ""}
+                    </Badge>
                   )}
                 </div>
                 {field.crops && field.crops.length > 0 && field.crops[0] && (
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-3 flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">{field.crops[0].name}</span>
-                    <Progress value={cropStatusProgress[field.crops[0].status] || 0} className="h-1 flex-1" />
+                    <Progress 
+                      value={cropStatusProgress[field.crops[0].status] || 0} 
+                      className="h-1.5 flex-1" 
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      {cropStatusProgress[field.crops[0].status] || 0}%
+                    </span>
                   </div>
                 )}
               </CardContent>
@@ -264,12 +263,14 @@ export function FarmOverview() {
       )}
 
       {fields.length === 0 && (
-        <Card>
-          <CardContent className="p-6 text-center">
-            <MapPin className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground mb-3">Ajoutez vos premières parcelles</p>
-            <Button size="sm" onClick={() => navigate("/parcelles")}>
-              Commencer
+        <Card className="border-0 shadow-soft">
+          <CardContent className="p-8 text-center">
+            <MapPin className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+            <p className="text-sm text-muted-foreground mb-4">
+              Commencez par ajouter vos parcelles
+            </p>
+            <Button onClick={() => navigate("/parcelles")}>
+              Ajouter une parcelle
             </Button>
           </CardContent>
         </Card>
