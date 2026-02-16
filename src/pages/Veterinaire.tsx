@@ -27,6 +27,7 @@ import { VetAppointmentsList } from "@/components/veterinaire/VetAppointmentsLis
 import { VetPatientsList } from "@/components/veterinaire/VetPatientsList";
 import { VetMedicalRecords } from "@/components/veterinaire/VetMedicalRecords";
 import { AnimalPatientDetails } from "@/components/veterinaire/AnimalPatientDetails";
+import { VetBilling } from "@/components/veterinaire/VetBilling";
 
 interface Booking {
   id: string;
@@ -309,9 +310,9 @@ export default function Veterinaire() {
               <Stethoscope className="w-4 h-4" />
               <span className="hidden sm:inline">IA</span>
             </TabsTrigger>
-            <TabsTrigger value="historique" className="gap-1 text-xs px-1">
-              <FileText className="w-4 h-4" />
-              <span className="hidden sm:inline">Historique</span>
+            <TabsTrigger value="billing" className="gap-1 text-xs px-1">
+              <Heart className="w-4 h-4" />
+              <span className="hidden sm:inline">Revenus</span>
             </TabsTrigger>
           </TabsList>
 
@@ -359,12 +360,9 @@ export default function Veterinaire() {
             />
           </TabsContent>
 
-          {/* History Tab (quick view) */}
-          <TabsContent value="historique" className="mt-0">
-            <VetMedicalRecords
-              records={records.slice(0, 20)}
-              onViewAnimal={handleViewAnimalFromRecord}
-            />
+          {/* Billing Tab */}
+          <TabsContent value="billing" className="mt-0">
+            <VetBilling />
           </TabsContent>
         </Tabs>
       </div>

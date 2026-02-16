@@ -453,11 +453,33 @@ export default function Investisseur() {
                   </span>
                 </div>
                 {investAmount && !isNaN(parseFloat(investAmount)) && (
-                  <p className="text-xs text-muted-foreground">
-                    Retour estimé: <span className="font-semibold text-success">
-                      {(parseFloat(investAmount) * (1 + selectedOpportunity.expected_return_percent / 100) / 1000).toFixed(0)}k FCFA
-                    </span>
-                  </p>
+                  <div className="p-3 rounded-lg bg-success/5 border border-success/20 space-y-1">
+                    <p className="text-xs font-medium text-success">Résumé du contrat</p>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Montant investi</span>
+                      <span className="font-bold">{parseFloat(investAmount).toLocaleString()} F</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">ROI ({selectedOpportunity.expected_return_percent}%)</span>
+                      <span className="font-bold text-success">
+                        +{(parseFloat(investAmount) * selectedOpportunity.expected_return_percent / 100).toLocaleString()} F
+                      </span>
+                    </div>
+                    <div className="border-t border-success/20 pt-1 flex justify-between text-sm">
+                      <span className="font-medium">Retour total estimé</span>
+                      <span className="font-bold text-success">
+                        {(parseFloat(investAmount) * (1 + selectedOpportunity.expected_return_percent / 100)).toLocaleString()} F
+                      </span>
+                    </div>
+                    {selectedOpportunity.expected_harvest_date && (
+                      <p className="text-xs text-muted-foreground pt-1">
+                        Récolte prévue: {new Date(selectedOpportunity.expected_harvest_date).toLocaleDateString("fr-FR")}
+                      </p>
+                    )}
+                    <p className="text-[10px] text-muted-foreground pt-1 italic">
+                      * Les rendements sont estimatifs et dépendent des conditions agricoles
+                    </p>
+                  </div>
                 )}
               </div>
             </div>

@@ -395,6 +395,45 @@ export type Database = {
           },
         ]
       }
+      farm_tasks: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          due_date: string
+          id: string
+          priority: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          due_date: string
+          id?: string
+          priority?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string
+          id?: string
+          priority?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       fields: {
         Row: {
           area_hectares: number
