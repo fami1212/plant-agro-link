@@ -58,6 +58,7 @@ import { AdminTransactions } from "@/components/admin/AdminTransactions";
 import { AdminDisputePanel } from "@/components/admin/AdminDisputePanel";
 import { AdminUserModeration } from "@/components/admin/AdminUserModeration";
 import { AdminListingModeration } from "@/components/admin/AdminListingModeration";
+import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
 
 type Profile = DatabaseTypes["public"]["Tables"]["profiles"]["Row"];
 type Listing = DatabaseTypes["public"]["Tables"]["marketplace_listings"]["Row"];
@@ -380,57 +381,7 @@ export default function Admin() {
 
           {/* Overview Tab */}
           <ScrollableTabsContent value="overview" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-orange-500" />
-                  Actions en attente
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Package className="w-5 h-5 text-orange-500" />
-                    <span>Annonces à modérer</span>
-                  </div>
-                  <Badge variant="secondary">{stats.pendingListings}</Badge>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Shield className="w-5 h-5 text-blue-500" />
-                    <span>Prestataires à vérifier</span>
-                  </div>
-                  <Badge variant="secondary">{stats.totalProviders - stats.verifiedProviders}</Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Activité récente</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {listings.slice(0, 5).map((listing) => (
-                      <div key={listing.id} className="flex justify-between items-center p-2 hover:bg-muted/50 rounded">
-                        <div>
-                          <p className="font-medium text-sm">{listing.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(listing.created_at).toLocaleDateString('fr-FR')}
-                          </p>
-                        </div>
-                        {getStatusBadge(listing.status)}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <AdminAnalytics />
           </ScrollableTabsContent>
 
           {/* Users Tab */}

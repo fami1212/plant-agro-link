@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,15 +21,15 @@ import {
 } from "@/components/ui/select";
 import {
   Plus,
-  Check,
   Clock,
   Trash2,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { format, isSameDay } from "date-fns";
+import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { SmartTaskSuggestions } from "@/components/farmer/SmartTaskSuggestions";
@@ -38,108 +38,132 @@ interface Task {
   id: string;
   title: string;
   due_date: string;
-  priority: "haute" | "moyenne" | "basse";
-  status: "a_faire" | "terminee";
+  priority: "high" | "medium" | "low";
+  status: "todo" | "in_progress" | "done";
+  category?: string;
   ai_generated?: boolean;
 }
 
 const priorityConfig = {
-  haute: { label: "Haute", color: "bg-destructive/20 text-destructive" },
-  moyenne: { label: "Moyenne", color: "bg-warning/20 text-warning" },
-  basse: { label: "Basse", color: "bg-muted text-muted-foreground" },
+  high: { label: "Haute", color: "bg-destructive/20 text-destructive" },
+  medium: { label: "Moyenne", color: "bg-warning/20 text-warning" },
+  low: { label: "Basse", color: "bg-muted text-muted-foreground" },
 };
 
 export function FarmCalendar() {
   const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAddTask, setShowAddTask] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [newTaskPriority, setNewTaskPriority] = useState<"haute" | "moyenne" | "basse">("moyenne");
+  const [newTaskPriority, setNewTaskPriority] = useState<"high" | "medium" | "low">("medium");
 
-  useEffect(() => {
-    if (user) {
-      try {
-        const storedTasks = localStorage.getItem(`farm_tasks_${user.id}`);
-        if (storedTasks) {
-          const parsed = JSON.parse(storedTasks);
-          if (Array.isArray(parsed)) {
-            setTasks(parsed);
-          }
-        }
-      } catch (error) {
-        console.error("Error loading tasks from localStorage:", error);
-      }
+  const fetchTasks = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("farm_tasks")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("due_date", { ascending: true });
+
+      if (error) throw error;
+      setTasks((data || []).map(t => ({
+        ...t,
+        priority: t.priority as Task["priority"],
+        status: t.status as Task["status"],
+        ai_generated: t.category === "ai_generated",
+      })));
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    } finally {
+      setLoading(false);
     }
   }, [user]);
 
-  const saveTasks = (updatedTasks: Task[]) => {
-    if (user) {
-      try {
-        localStorage.setItem(`farm_tasks_${user.id}`, JSON.stringify(updatedTasks));
-        setTasks(updatedTasks);
-      } catch (error) {
-        console.error("Error saving tasks to localStorage:", error);
-        toast.error("Impossible de sauvegarder les tâches");
-      }
-    }
-  };
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
-  const handleAddTask = () => {
-    if (!newTaskTitle.trim()) {
+  // Realtime subscription
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel("farm_tasks_changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "farm_tasks", filter: `user_id=eq.${user.id}` }, () => {
+        fetchTasks();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, fetchTasks]);
+
+  const handleAddTask = async () => {
+    if (!newTaskTitle.trim() || !user) {
       toast.error("Titre requis");
       return;
     }
 
-    const task: Task = {
-      id: crypto.randomUUID(),
-      title: newTaskTitle,
-      due_date: format(selectedDate, "yyyy-MM-dd"),
-      priority: newTaskPriority,
-      status: "a_faire",
-    };
-
-    saveTasks([...tasks, task]);
-    setNewTaskTitle("");
-    setNewTaskPriority("moyenne");
-    setShowAddTask(false);
-    toast.success("Tâche ajoutée");
+    try {
+      const { error } = await supabase.from("farm_tasks").insert({
+        user_id: user.id,
+        title: newTaskTitle,
+        due_date: format(selectedDate, "yyyy-MM-dd"),
+        priority: newTaskPriority,
+        status: "todo",
+      });
+      if (error) throw error;
+      setNewTaskTitle("");
+      setNewTaskPriority("medium");
+      setShowAddTask(false);
+      toast.success("Tâche ajoutée");
+    } catch {
+      toast.error("Erreur lors de l'ajout");
+    }
   };
 
-  const handleAddAITask = (task: { title: string; description: string; dueDate: string; priority: string }) => {
-    const newTask: Task = {
-      id: crypto.randomUUID(),
+  const handleAddAITask = async (task: { title: string; description: string; dueDate: string; priority: string }) => {
+    if (!user) return;
+    const priorityMap: Record<string, string> = { haute: "high", moyenne: "medium", basse: "low" };
+    await supabase.from("farm_tasks").insert({
+      user_id: user.id,
       title: task.title,
+      description: task.description,
       due_date: task.dueDate,
-      priority: (task.priority as "haute" | "moyenne" | "basse") || "moyenne",
-      status: "a_faire",
-      ai_generated: true,
-    };
-    saveTasks([...tasks, newTask]);
+      priority: priorityMap[task.priority] || "medium",
+      status: "todo",
+      category: "ai_generated",
+    });
   };
 
-  const toggleTask = (taskId: string) => {
-    const updatedTasks = tasks.map((t): Task => 
-      t.id === taskId 
-        ? { ...t, status: t.status === "terminee" ? "a_faire" : "terminee" }
-        : t
-    );
-    saveTasks(updatedTasks);
+  const toggleTask = async (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    const newStatus = task.status === "done" ? "todo" : "done";
+    await supabase.from("farm_tasks").update({ status: newStatus }).eq("id", taskId);
   };
 
-  const deleteTask = (taskId: string) => {
-    saveTasks(tasks.filter((t) => t.id !== taskId));
+  const deleteTask = async (taskId: string) => {
+    await supabase.from("farm_tasks").delete().eq("id", taskId);
     toast.success("Supprimée");
   };
 
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
   const tasksForDate = tasks.filter((t) => t.due_date === selectedDateStr);
-  const pendingTasks = tasks.filter((t) => t.status !== "terminee");
+  const pendingTasks = tasks.filter((t) => t.status !== "done");
   const daysWithTasks = tasks.map((t) => new Date(t.due_date));
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      {/* Calendar */}
       <Card>
         <CardContent className="p-3">
           <Calendar
@@ -159,7 +183,6 @@ export function FarmCalendar() {
         </CardContent>
       </Card>
 
-      {/* Selected Date Tasks */}
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3">
@@ -188,9 +211,9 @@ export function FarmCalendar() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="haute">🔴 Haute</SelectItem>
-                      <SelectItem value="moyenne">🟡 Moyenne</SelectItem>
-                      <SelectItem value="basse">🟢 Basse</SelectItem>
+                      <SelectItem value="high">🔴 Haute</SelectItem>
+                      <SelectItem value="medium">🟡 Moyenne</SelectItem>
+                      <SelectItem value="low">🟢 Basse</SelectItem>
                     </SelectContent>
                   </Select>
                   <Button onClick={handleAddTask} className="w-full">
@@ -212,24 +235,24 @@ export function FarmCalendar() {
                   key={task.id}
                   className={cn(
                     "flex items-center gap-3 p-2 rounded-lg border",
-                    task.status === "terminee" && "opacity-50"
+                    task.status === "done" && "opacity-50"
                   )}
                 >
                   <Checkbox
-                    checked={task.status === "terminee"}
+                    checked={task.status === "done"}
                     onCheckedChange={() => toggleTask(task.id)}
                   />
                   <div className="flex-1 flex items-center gap-2">
                     <span className={cn(
                       "text-sm",
-                      task.status === "terminee" && "line-through text-muted-foreground"
+                      task.status === "done" && "line-through text-muted-foreground"
                     )}>
                       {task.title}
                     </span>
                     {task.ai_generated && <Sparkles className="w-3 h-3 text-primary" />}
                   </div>
-                  <Badge variant="outline" className={cn("text-[10px]", priorityConfig[task.priority].color)}>
-                    {priorityConfig[task.priority].label}
+                  <Badge variant="outline" className={cn("text-[10px]", priorityConfig[task.priority]?.color)}>
+                    {priorityConfig[task.priority]?.label || task.priority}
                   </Badge>
                   <Button
                     size="icon"
@@ -246,7 +269,6 @@ export function FarmCalendar() {
         </CardContent>
       </Card>
 
-      {/* Pending Tasks */}
       {pendingTasks.length > 0 && (
         <Card>
           <CardContent className="p-4">
@@ -274,7 +296,6 @@ export function FarmCalendar() {
         </Card>
       )}
 
-      {/* AI Task Suggestions */}
       <SmartTaskSuggestions onAddTask={handleAddAITask} />
     </div>
   );

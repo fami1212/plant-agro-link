@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
+import { BuyerReviewDialog } from "@/components/buyer/BuyerReviewDialog";
 
 interface Order {
   id: string;
@@ -74,6 +75,7 @@ export function BuyerOrderTracking() {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filter, setFilter] = useState<string>("all");
+  const [reviewOrder, setReviewOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     if (user) fetchOrders();
@@ -415,7 +417,10 @@ export function BuyerOrderTracking() {
 
               {/* Actions */}
               {selectedOrder.status === "livree" && (
-                <Button className="w-full gap-2">
+                <Button className="w-full gap-2" onClick={() => {
+                  setReviewOrder(selectedOrder);
+                  setSelectedOrder(null);
+                }}>
                   <Star className="w-4 h-4" />
                   Laisser un avis
                 </Button>
@@ -424,6 +429,18 @@ export function BuyerOrderTracking() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Review Dialog */}
+      {reviewOrder && (
+        <BuyerReviewDialog
+          open={!!reviewOrder}
+          onOpenChange={(open) => !open && setReviewOrder(null)}
+          offerId={reviewOrder.id}
+          sellerId={reviewOrder.seller_id}
+          productTitle={reviewOrder.product_title}
+          onSuccess={fetchOrders}
+        />
+      )}
     </div>
   );
 }
