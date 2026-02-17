@@ -59,6 +59,7 @@ import { AdminDisputePanel } from "@/components/admin/AdminDisputePanel";
 import { AdminUserModeration } from "@/components/admin/AdminUserModeration";
 import { AdminListingModeration } from "@/components/admin/AdminListingModeration";
 import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
+import { AdminServiceProviders } from "@/components/admin/AdminServiceProviders";
 
 type Profile = DatabaseTypes["public"]["Tables"]["profiles"]["Row"];
 type Listing = DatabaseTypes["public"]["Tables"]["marketplace_listings"]["Row"];
@@ -377,6 +378,10 @@ export default function Admin() {
               <Settings className="w-4 h-4" />
               <span className="text-sm">Système</span>
             </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="providers" className="flex items-center gap-2 px-4">
+              <Activity className="w-4 h-4" />
+              <span className="text-sm">Prestataires</span>
+            </ScrollableTabsTrigger>
           </ScrollableTabsList>
 
           {/* Overview Tab */}
@@ -431,6 +436,11 @@ export default function Admin() {
                 </div>
               </CardContent>
             </Card>
+          </ScrollableTabsContent>
+
+          {/* Service Providers Tab */}
+          <ScrollableTabsContent value="providers">
+            <AdminServiceProviders />
           </ScrollableTabsContent>
         </ScrollableTabs>
       </div>

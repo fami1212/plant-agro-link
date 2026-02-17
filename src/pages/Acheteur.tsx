@@ -29,6 +29,7 @@ import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
 import { BuyerCart } from "@/components/buyer/BuyerCart";
 import { BuyerOrderTracking } from "@/components/buyer/BuyerOrderTracking";
+import { GeolocatedSearch, type GeoFilters, getDistanceKm } from "@/components/buyer/GeolocatedSearch";
 
 interface Product {
   id: string;
@@ -76,6 +77,9 @@ export default function Acheteur() {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [geoFilters, setGeoFilters] = useState<GeoFilters>({
+    latitude: null, longitude: null, radiusKm: 50, sortBy: "recent", region: "Toutes",
+  });
 
   useEffect(() => {
     if (user) fetchData();
@@ -190,10 +194,22 @@ export default function Acheteur() {
     }
   };
 
-  const filteredProducts = products.filter(p => 
+  let filteredProducts = products.filter(p => 
     p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.location?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Region filter
+  if (geoFilters.region !== "Toutes") {
+    filteredProducts = filteredProducts.filter(p =>
+      p.location?.toLowerCase().includes(geoFilters.region.toLowerCase())
+    );
+  }
+
+  // Sort
+  if (geoFilters.sortBy === "price") {
+    filteredProducts.sort((a, b) => (a.price || 0) - (b.price || 0));
+  }
 
   const totalOrders = orders.length;
   const pendingOrders = orders.filter(o => o.status === "en_attente").length;
@@ -260,6 +276,7 @@ export default function Acheteur() {
             className="pl-10"
           />
         </div>
+        <GeolocatedSearch onFilterChange={setGeoFilters} />
       </div>
 
       {/* Tabs */}

@@ -37,6 +37,7 @@ import { InvestmentIoTMonitor } from "@/components/investor/InvestmentIoTMonitor
 import { InvestorReturns } from "@/components/investor/InvestorReturns";
 import { OpportunityCard } from "@/components/investor/OpportunityCard";
 import { PortfolioCard } from "@/components/investor/PortfolioCard";
+import { InvestmentContract } from "@/components/investor/InvestmentContract";
 
 interface InvestmentOpportunity {
   id: string;
@@ -77,6 +78,7 @@ export default function Investisseur() {
   const [selectedOpportunity, setSelectedOpportunity] = useState<InvestmentOpportunity | null>(null);
   const [investAmount, setInvestAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [contractOpen, setContractOpen] = useState(false);
 
   useEffect(() => {
     if (user) fetchData();
@@ -488,6 +490,9 @@ export default function Investisseur() {
             <Button variant="outline" onClick={() => setInvestDialogOpen(false)}>
               Annuler
             </Button>
+            <Button onClick={() => setContractOpen(true)} disabled={submitting || !investAmount} variant="outline">
+              Voir le contrat
+            </Button>
             <Button onClick={confirmInvest} disabled={submitting || !investAmount}>
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Confirmer l'investissement
@@ -495,6 +500,24 @@ export default function Investisseur() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Investment Contract */}
+      {selectedOpportunity && investAmount && (
+        <InvestmentContract
+          open={contractOpen}
+          onOpenChange={setContractOpen}
+          contractData={{
+            projectTitle: selectedOpportunity.title,
+            farmerName: selectedOpportunity.farmer_name || "Agriculteur",
+            investorName: user?.email || "Investisseur",
+            amount: parseFloat(investAmount) || 0,
+            returnPercent: selectedOpportunity.expected_return_percent,
+            harvestDate: selectedOpportunity.expected_harvest_date,
+            contractDate: new Date().toISOString(),
+          }}
+          onSign={confirmInvest}
+        />
+      )}
     </AppLayout>
   );
 }

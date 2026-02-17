@@ -9,10 +9,12 @@ import {
   Calendar,
   Wallet,
   Settings,
+  CloudSun,
 } from "lucide-react";
 import { FarmOverview } from "@/components/farmer/FarmOverview";
 import { FarmCalendar } from "@/components/farmer/FarmCalendar";
 import { FarmerFinanceSimple } from "@/components/farmer/FarmerFinanceSimple";
+import { WeatherWidget } from "@/components/farmer/WeatherWidget";
 import { useNavigate } from "react-router-dom";
 
 export default function Agriculteur() {
@@ -55,6 +57,13 @@ export default function Agriculteur() {
               <Wallet className="w-4 h-4" />
               <span>Finances</span>
             </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger 
+              value="meteo" 
+              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg"
+            >
+              <CloudSun className="w-4 h-4" />
+              <span>Météo</span>
+            </ScrollableTabsTrigger>
           </ScrollableTabsList>
 
           <TabsContent value="overview" className="mt-0 animate-fade-in">
@@ -67,6 +76,10 @@ export default function Agriculteur() {
 
           <TabsContent value="finances" className="mt-0 animate-fade-in">
             <FarmerFinanceSimple />
+          </TabsContent>
+
+          <TabsContent value="meteo" className="mt-0 animate-fade-in">
+            <WeatherWidget />
           </TabsContent>
         </ScrollableTabs>
       </div>
