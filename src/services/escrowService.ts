@@ -1,4 +1,4 @@
-// Escrow Service - Persists escrow contracts to Supabase with blockchain hashes
+// Escrow Service - Persists escrow contracts to Supabase with SHA-256 blockchain hashes
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -36,16 +36,26 @@ export interface EscrowEvent {
   created_at: string;
 }
 
-// Generate blockchain hash
-function generateHash(data: any): string {
-  const str = JSON.stringify(data) + Date.now();
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
+// Generate cryptographic SHA-256 hash
+async function generateHash(data: any): Promise<string> {
+  try {
+    const str = JSON.stringify(data) + Date.now();
+    const encoder = new TextEncoder();
+    const dataBuffer = encoder.encode(str);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return '0x' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch {
+    // Fallback for environments without crypto.subtle
+    const str = JSON.stringify(data) + Date.now();
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return `0x${Math.abs(hash).toString(16).padStart(64, '0')}`;
   }
-  return `0x${Math.abs(hash).toString(16).padStart(64, '0')}`;
 }
 
 function generateTransactionId(): string {
@@ -85,7 +95,7 @@ export async function createEscrowContract(
     platform: "Plantéra",
   };
 
-  const blockchainHash = generateHash(contractData);
+  const blockchainHash = await generateHash(contractData);
 
   const { data, error } = await supabase
     .from('escrow_contracts')
@@ -163,7 +173,7 @@ export async function fundEscrow(
     timestamp: new Date().toISOString(),
   };
 
-  const hash = generateHash(fundData);
+  const hash = await generateHash(fundData);
 
   const { data, error } = await supabase
     .from('escrow_contracts')
@@ -179,7 +189,6 @@ export async function fundEscrow(
     throw new Error(`Erreur lors du financement: ${error.message}`);
   }
 
-  // Record blockchain transaction
   await supabase.from('blockchain_transactions').insert({
     hash,
     transaction_type: 'escrow_funded',
@@ -189,7 +198,6 @@ export async function fundEscrow(
     status: 'confirmed',
   });
 
-  // Record event
   await supabase.from('escrow_events').insert({
     escrow_id: escrowId,
     event_type: 'funded',
@@ -213,56 +221,29 @@ export async function confirmDelivery(
     .eq('id', escrowId)
     .single();
 
-  if (fetchError || !contract) {
-    throw new Error(`Escrow ${escrowId} non trouvé`);
-  }
+  if (fetchError || !contract) throw new Error(`Escrow ${escrowId} non trouvé`);
+  if (contract.status !== 'funded') throw new Error(`Escrow non financé`);
+  if (contract.buyer_id !== buyerId) throw new Error(`Seul l'acheteur peut confirmer la livraison`);
 
-  if (contract.status !== 'funded') {
-    throw new Error(`Escrow non financé`);
-  }
-
-  if (contract.buyer_id !== buyerId) {
-    throw new Error(`Seul l'acheteur peut confirmer la livraison`);
-  }
-
-  const confirmData = {
-    escrowId,
-    buyerId,
-    confirmedAt: new Date().toISOString(),
-  };
-
-  const hash = generateHash(confirmData);
+  const hash = await generateHash({ escrowId, buyerId, confirmedAt: new Date().toISOString() });
 
   const { data, error } = await supabase
     .from('escrow_contracts')
-    .update({
-      delivery_confirmed_at: new Date().toISOString(),
-    })
+    .update({ delivery_confirmed_at: new Date().toISOString() })
     .eq('id', escrowId)
     .select()
     .single();
 
-  if (error) {
-    throw new Error(`Erreur: ${error.message}`);
-  }
+  if (error) throw new Error(`Erreur: ${error.message}`);
 
-  // Record blockchain transaction
   await supabase.from('blockchain_transactions').insert({
-    hash,
-    transaction_type: 'delivery_confirmed',
-    escrow_id: escrowId,
-    user_id: buyerId,
-    data: confirmData,
-    status: 'confirmed',
+    hash, transaction_type: 'delivery_confirmed', escrow_id: escrowId,
+    user_id: buyerId, data: { escrowId, buyerId }, status: 'confirmed',
   });
 
-  // Record event
   await supabase.from('escrow_events').insert({
-    escrow_id: escrowId,
-    event_type: 'delivery_confirmed',
-    actor_id: buyerId,
-    hash,
-    details: 'Livraison confirmée par l\'acheteur',
+    escrow_id: escrowId, event_type: 'delivery_confirmed', actor_id: buyerId,
+    hash, details: 'Livraison confirmée par l\'acheteur',
   });
 
   console.log(`[Escrow] Delivery confirmed: ${escrowId}`);
@@ -280,19 +261,11 @@ export async function releaseFunds(
     .eq('id', escrowId)
     .single();
 
-  if (fetchError || !contract) {
-    throw new Error(`Escrow ${escrowId} non trouvé`);
-  }
+  if (fetchError || !contract) throw new Error(`Escrow ${escrowId} non trouvé`);
+  if (contract.status !== 'funded') throw new Error(`Escrow ne peut pas être libéré dans l'état ${contract.status}`);
 
-  if (contract.status !== 'funded') {
-    throw new Error(`Escrow ne peut pas être libéré dans l'état ${contract.status}`);
-  }
-
-  // Check conditions
   const daysSinceFunded = contract.funded_at 
-    ? (Date.now() - new Date(contract.funded_at).getTime()) / (1000 * 60 * 60 * 24)
-    : 0;
-  
+    ? (Date.now() - new Date(contract.funded_at).getTime()) / (1000 * 60 * 60 * 24) : 0;
   const canAutoRelease = daysSinceFunded >= contract.auto_release_after_days;
   const deliveryConfirmed = !!contract.delivery_confirmed_at;
   
@@ -301,48 +274,30 @@ export async function releaseFunds(
   }
 
   const releaseData = {
-    escrowId,
-    sellerId: contract.seller_id,
-    amount: contract.amount,
-    platformFees: contract.fees,
-    releasedBy: actorId,
-    autoRelease: canAutoRelease && !deliveryConfirmed,
-    timestamp: new Date().toISOString(),
+    escrowId, sellerId: contract.seller_id, amount: contract.amount,
+    platformFees: contract.fees, releasedBy: actorId,
+    autoRelease: canAutoRelease && !deliveryConfirmed, timestamp: new Date().toISOString(),
   };
 
-  const hash = generateHash(releaseData);
+  const hash = await generateHash(releaseData);
 
   const { data, error } = await supabase
     .from('escrow_contracts')
-    .update({
-      status: 'released',
-      released_at: new Date().toISOString(),
-    })
+    .update({ status: 'released', released_at: new Date().toISOString() })
     .eq('id', escrowId)
     .select()
     .single();
 
-  if (error) {
-    throw new Error(`Erreur: ${error.message}`);
-  }
+  if (error) throw new Error(`Erreur: ${error.message}`);
 
-  // Record blockchain transaction
   await supabase.from('blockchain_transactions').insert({
-    hash,
-    transaction_type: 'escrow_released',
-    escrow_id: escrowId,
-    user_id: actorId,
-    data: releaseData,
-    status: 'confirmed',
+    hash, transaction_type: 'escrow_released', escrow_id: escrowId,
+    user_id: actorId, data: releaseData, status: 'confirmed',
   });
 
-  // Record event
   await supabase.from('escrow_events').insert({
-    escrow_id: escrowId,
-    event_type: 'released',
-    actor_id: actorId,
-    hash,
-    details: `Fonds libérés au vendeur: ${contract.amount} XOF`,
+    escrow_id: escrowId, event_type: 'released', actor_id: actorId,
+    hash, details: `Fonds libérés au vendeur: ${contract.amount} XOF`,
   });
 
   console.log(`[Escrow] Funds released: ${escrowId}`);
@@ -361,63 +316,35 @@ export async function requestRefund(
     .eq('id', escrowId)
     .single();
 
-  if (fetchError || !contract) {
-    throw new Error(`Escrow ${escrowId} non trouvé`);
-  }
-
-  if (contract.status !== 'funded') {
-    throw new Error(`Remboursement impossible dans l'état ${contract.status}`);
-  }
-
-  if (contract.buyer_id !== buyerId) {
-    throw new Error(`Seul l'acheteur peut demander un remboursement`);
-  }
-
-  if (contract.delivery_confirmed_at) {
-    throw new Error(`Remboursement impossible après confirmation de livraison`);
-  }
+  if (fetchError || !contract) throw new Error(`Escrow ${escrowId} non trouvé`);
+  if (contract.status !== 'funded') throw new Error(`Remboursement impossible dans l'état ${contract.status}`);
+  if (contract.buyer_id !== buyerId) throw new Error(`Seul l'acheteur peut demander un remboursement`);
+  if (contract.delivery_confirmed_at) throw new Error(`Remboursement impossible après confirmation de livraison`);
 
   const refundData = {
-    escrowId,
-    buyerId,
-    amount: contract.total_amount,
-    reason,
-    timestamp: new Date().toISOString(),
+    escrowId, buyerId, amount: contract.total_amount,
+    reason, timestamp: new Date().toISOString(),
   };
 
-  const hash = generateHash(refundData);
+  const hash = await generateHash(refundData);
 
   const { data, error } = await supabase
     .from('escrow_contracts')
-    .update({
-      status: 'refunded',
-      refunded_at: new Date().toISOString(),
-    })
+    .update({ status: 'refunded', refunded_at: new Date().toISOString() })
     .eq('id', escrowId)
     .select()
     .single();
 
-  if (error) {
-    throw new Error(`Erreur: ${error.message}`);
-  }
+  if (error) throw new Error(`Erreur: ${error.message}`);
 
-  // Record blockchain transaction
   await supabase.from('blockchain_transactions').insert({
-    hash,
-    transaction_type: 'escrow_refunded',
-    escrow_id: escrowId,
-    user_id: buyerId,
-    data: refundData,
-    status: 'confirmed',
+    hash, transaction_type: 'escrow_refunded', escrow_id: escrowId,
+    user_id: buyerId, data: refundData, status: 'confirmed',
   });
 
-  // Record event
   await supabase.from('escrow_events').insert({
-    escrow_id: escrowId,
-    event_type: 'refunded',
-    actor_id: buyerId,
-    hash,
-    details: `Remboursement: ${contract.total_amount} XOF - ${reason}`,
+    escrow_id: escrowId, event_type: 'refunded', actor_id: buyerId,
+    hash, details: `Remboursement: ${contract.total_amount} XOF - ${reason}`,
   });
 
   console.log(`[Escrow] Refunded: ${escrowId}`);
@@ -464,10 +391,7 @@ export async function getEscrowById(escrowId: string): Promise<EscrowContract | 
     .eq('id', escrowId)
     .single();
 
-  if (error) {
-    return null;
-  }
-
+  if (error) return null;
   return data as EscrowContract;
 }
 
