@@ -6,17 +6,20 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { useAuth } from "@/hooks/useAuth";
-import { Moon, Sun, User, Bell, Shield, Globe, Sunrise } from "lucide-react";
+import { useLanguage, languageLabels, type Language } from "@/i18n/LanguageContext";
+import { Moon, Sun, User, Bell, Shield, Globe, Sunrise, Check } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
   const { profile, roles } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
   const [outdoorMode, setOutdoorMode] = useState(false);
 
   const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
 
-  // Appliquer le mode outdoor
   useEffect(() => {
     const root = document.documentElement;
     if (outdoorMode && isDark) {
@@ -26,7 +29,6 @@ export default function Settings() {
     }
   }, [outdoorMode, isDark]);
 
-  // Charger la préférence depuis localStorage
   useEffect(() => {
     const saved = localStorage.getItem("plantera-outdoor-mode");
     if (saved === "true") {
@@ -39,23 +41,14 @@ export default function Settings() {
     localStorage.setItem("plantera-outdoor-mode", String(enabled));
   };
 
-  const getRoleLabel = (role: string) => {
-    const labels: Record<string, string> = {
-      agriculteur: "Agriculteur",
-      veterinaire: "Vétérinaire",
-      acheteur: "Acheteur",
-      investisseur: "Investisseur",
-      admin: "Administrateur",
-    };
-    return labels[role] || role;
-  };
+  const languages: Language[] = ["fr", "en", "wo"];
 
   return (
     <AppLayout>
       <div className="p-4 pb-24 space-y-6">
         <PageHeader
-          title="Paramètres"
-          subtitle="Gérez vos préférences"
+          title={t("settings.title")}
+          subtitle={t("settings.subtitle")}
         />
 
         {/* Profile Section */}
@@ -65,30 +58,30 @@ export default function Settings() {
               <User className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold">Profil</h3>
-              <p className="text-sm text-muted-foreground">Informations du compte</p>
+              <h3 className="font-semibold">{t("settings.profile")}</h3>
+              <p className="text-sm text-muted-foreground">{t("settings.profileDesc")}</p>
             </div>
           </div>
           <Separator className="mb-4" />
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Nom</span>
-              <span className="font-medium">{profile?.full_name || "Non défini"}</span>
+              <span className="text-sm text-muted-foreground">{t("settings.name")}</span>
+              <span className="font-medium">{profile?.full_name || t("settings.notSet")}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Email</span>
-              <span className="font-medium">{profile?.email || "Non défini"}</span>
+              <span className="text-sm text-muted-foreground">{t("settings.email")}</span>
+              <span className="font-medium">{profile?.email || t("settings.notSet")}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Téléphone</span>
-              <span className="font-medium">{profile?.phone || "Non défini"}</span>
+              <span className="text-sm text-muted-foreground">{t("settings.phone")}</span>
+              <span className="font-medium">{profile?.phone || t("settings.notSet")}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Rôles</span>
+              <span className="text-sm text-muted-foreground">{t("settings.roles")}</span>
               <div className="flex gap-1">
                 {roles.map((role) => (
                   <span key={role} className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                    {getRoleLabel(role)}
+                    {t(`role.${role}`)}
                   </span>
                 ))}
               </div>
@@ -103,18 +96,16 @@ export default function Settings() {
               {isDark ? <Moon className="w-5 h-5 text-accent" /> : <Sun className="w-5 h-5 text-accent" />}
             </div>
             <div>
-              <h3 className="font-semibold">Apparence</h3>
-              <p className="text-sm text-muted-foreground">Personnalisez l'affichage</p>
+              <h3 className="font-semibold">{t("settings.appearance")}</h3>
+              <p className="text-sm text-muted-foreground">{t("settings.appearanceDesc")}</p>
             </div>
           </div>
           <Separator className="mb-4" />
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="dark-mode">Mode sombre</Label>
-                <p className="text-sm text-muted-foreground">
-                  Activez le thème sombre pour réduire la fatigue visuelle
-                </p>
+                <Label htmlFor="dark-mode">{t("settings.darkMode")}</Label>
+                <p className="text-sm text-muted-foreground">{t("settings.darkModeDesc")}</p>
               </div>
               <Switch
                 id="dark-mode"
@@ -128,11 +119,9 @@ export default function Settings() {
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
                     <Sunrise className="w-4 h-4 text-warning" />
-                    <Label htmlFor="outdoor-mode">Mode terrain</Label>
+                    <Label htmlFor="outdoor-mode">{t("settings.outdoorMode")}</Label>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Contraste élevé pour utilisation en plein soleil
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t("settings.outdoorModeDesc")}</p>
                 </div>
                 <Switch
                   id="outdoor-mode"
@@ -151,23 +140,23 @@ export default function Settings() {
               <Bell className="w-5 h-5 text-warning" />
             </div>
             <div>
-              <h3 className="font-semibold">Notifications</h3>
-              <p className="text-sm text-muted-foreground">Gérez vos alertes</p>
+              <h3 className="font-semibold">{t("settings.notifications")}</h3>
+              <p className="text-sm text-muted-foreground">{t("settings.notificationsDesc")}</p>
             </div>
           </div>
           <Separator className="mb-4" />
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Alertes IoT</Label>
-                <p className="text-sm text-muted-foreground">Seuils de capteurs dépassés</p>
+                <Label>{t("settings.iotAlerts")}</Label>
+                <p className="text-sm text-muted-foreground">{t("settings.iotAlertsDesc")}</p>
               </div>
               <Switch defaultChecked />
             </div>
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Offres marketplace</Label>
-                <p className="text-sm text-muted-foreground">Nouvelles offres reçues</p>
+                <Label>{t("settings.marketOffers")}</Label>
+                <p className="text-sm text-muted-foreground">{t("settings.marketOffersDesc")}</p>
               </div>
               <Switch defaultChecked />
             </div>
@@ -181,9 +170,27 @@ export default function Settings() {
               <Globe className="w-5 h-5 text-secondary-foreground" />
             </div>
             <div>
-              <h3 className="font-semibold">Langue</h3>
-              <p className="text-sm text-muted-foreground">Français (par défaut)</p>
+              <h3 className="font-semibold">{t("settings.language")}</h3>
+              <p className="text-sm text-muted-foreground">{t("settings.languageDesc")}</p>
             </div>
+          </div>
+          <Separator className="mb-4" />
+          <div className="flex gap-2">
+            {languages.map((lang) => (
+              <Button
+                key={lang}
+                variant={language === lang ? "default" : "outline"}
+                size="sm"
+                className={cn(
+                  "flex-1 gap-1.5",
+                  language === lang && "pointer-events-none"
+                )}
+                onClick={() => setLanguage(lang)}
+              >
+                {language === lang && <Check className="w-3.5 h-3.5" />}
+                {languageLabels[lang]}
+              </Button>
+            ))}
           </div>
         </Card>
 
@@ -194,15 +201,15 @@ export default function Settings() {
               <Shield className="w-5 h-5 text-destructive" />
             </div>
             <div>
-              <h3 className="font-semibold">Sécurité</h3>
-              <p className="text-sm text-muted-foreground">Options de sécurité</p>
+              <h3 className="font-semibold">{t("settings.security")}</h3>
+              <p className="text-sm text-muted-foreground">{t("settings.securityDesc")}</p>
             </div>
           </div>
           <Separator className="mb-4" />
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Authentification à deux facteurs</Label>
-              <p className="text-sm text-muted-foreground">Bientôt disponible</p>
+              <Label>{t("settings.2fa")}</Label>
+              <p className="text-sm text-muted-foreground">{t("settings.2faDesc")}</p>
             </div>
             <Switch disabled />
           </div>
