@@ -1,60 +1,40 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
-  Home, 
-  MapPin, 
-  Wheat, 
-  PawPrint, 
-  ShoppingBag, 
-  Menu,
-  User,
-  LogOut,
-  Settings,
-  Activity,
-  Stethoscope,
-  TrendingUp,
-  Shield,
-  Tractor,
-  Brain,
-  Mic,
-  X,
+  Home, MapPin, Wheat, PawPrint, ShoppingBag, Menu,
+  User, LogOut, Settings, Activity, Stethoscope,
+  TrendingUp, Shield, Tractor, Brain, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoleAccess } from "@/hooks/useRoleAccess";
+import { useLanguage } from "@/i18n/LanguageContext";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetClose,
+  Sheet, SheetContent, SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 
-// All possible navigation items - Simplified and role-focused
 const allNavItems = [
-  { icon: Home, label: "Accueil", path: "/dashboard", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
-  { icon: Tractor, label: "Ferme", path: "/agriculteur", roles: ['agriculteur'] },
-  { icon: ShoppingBag, label: "Marché", path: "/marketplace/farmer", roles: ['agriculteur'] },
-  { icon: Stethoscope, label: "Cabinet", path: "/veterinaire", roles: ['veterinaire'] },
-  { icon: ShoppingBag, label: "Catalogue", path: "/marketplace/buyer", roles: ['acheteur'] },
-  { icon: TrendingUp, label: "Investir", path: "/marketplace/investor", roles: ['investisseur'] },
-  { icon: ShoppingBag, label: "Marché", path: "/marketplace/farmer", roles: ['admin'] },
+  { icon: Home, labelKey: "nav.home", path: "/dashboard", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
+  { icon: Tractor, labelKey: "nav.farm", path: "/agriculteur", roles: ['agriculteur'] },
+  { icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/farmer", roles: ['agriculteur'] },
+  { icon: Stethoscope, labelKey: "nav.cabinet", path: "/veterinaire", roles: ['veterinaire'] },
+  { icon: ShoppingBag, labelKey: "nav.catalog", path: "/marketplace/buyer", roles: ['acheteur'] },
+  { icon: TrendingUp, labelKey: "nav.invest", path: "/marketplace/investor", roles: ['investisseur'] },
+  { icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/farmer", roles: ['admin'] },
 ];
 
-// All possible menu items - Simplified for each role
 const allMenuItems = [
-  { icon: Brain, label: "IA", path: "/ia", roles: ['agriculteur', 'admin'], highlight: true },
-  { icon: Wheat, label: "Cultures", path: "/cultures", roles: ['agriculteur', 'admin'] },
-  { icon: PawPrint, label: "Bétail", path: "/betail", roles: ['agriculteur', 'admin'] },
-  { icon: MapPin, label: "Parcelles", path: "/parcelles", roles: ['agriculteur', 'admin'] },
-  { icon: Activity, label: "IoT", path: "/iot", roles: ['agriculteur', 'admin'] },
-  { icon: PawPrint, label: "Animaux", path: "/betail", roles: ['veterinaire'] },
-  { icon: Shield, label: "Admin", path: "/admin", roles: ['admin'] },
-  { icon: Settings, label: "Paramètres", path: "/settings", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
+  { icon: Brain, labelKey: "nav.ai", path: "/ia", roles: ['agriculteur', 'admin'], highlight: true },
+  { icon: Wheat, labelKey: "nav.crops", path: "/cultures", roles: ['agriculteur', 'admin'] },
+  { icon: PawPrint, labelKey: "nav.livestock", path: "/betail", roles: ['agriculteur', 'admin'] },
+  { icon: MapPin, labelKey: "nav.parcels", path: "/parcelles", roles: ['agriculteur', 'admin'] },
+  { icon: Activity, labelKey: "nav.iot", path: "/iot", roles: ['agriculteur', 'admin'] },
+  { icon: PawPrint, labelKey: "nav.animals", path: "/betail", roles: ['veterinaire'] },
+  { icon: Shield, labelKey: "nav.admin", path: "/admin", roles: ['admin'] },
+  { icon: Settings, labelKey: "nav.settings", path: "/settings", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
 ];
 
 export function BottomNav() {
@@ -62,14 +42,13 @@ export function BottomNav() {
   const location = useLocation();
   const { user, profile, roles, signOut } = useAuth();
   const { canAccessRoute } = useRoleAccess();
+  const { t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Filter nav items based on user roles
   const navItems = allNavItems.filter(item => 
     item.roles.some(role => roles.includes(role as any)) || roles.length === 0
   );
 
-  // Filter menu items based on user roles (Settings is always visible for authenticated users)
   const menuItems = allMenuItems.filter(item =>
     item.roles.some(role => roles.includes(role as any)) || item.path === '/settings'
   );
@@ -77,22 +56,11 @@ export function BottomNav() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.success("Déconnexion réussie");
+      toast.success(t("auth.logoutSuccess"));
       navigate("/");
     } catch (error) {
-      toast.error("Erreur lors de la déconnexion");
+      toast.error(t("auth.logoutError"));
     }
-  };
-
-  const getRoleLabel = (role: string) => {
-    const labels: Record<string, string> = {
-      agriculteur: "Agriculteur",
-      veterinaire: "Vétérinaire",
-      acheteur: "Acheteur",
-      investisseur: "Investisseur",
-      admin: "Admin",
-    };
-    return labels[role] || role;
   };
 
   const getInitials = (name: string | undefined) => {
@@ -113,9 +81,7 @@ export function BottomNav() {
               onClick={() => navigate(item.path)}
               className={cn(
                 "flex flex-col items-center justify-center flex-1 h-14 rounded-2xl transition-all duration-200",
-                isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
             >
               <div className={cn(
@@ -127,25 +93,23 @@ export function BottomNav() {
               <span className={cn(
                 "text-[10px] mt-0.5 transition-all",
                 isActive ? "font-semibold" : "font-medium"
-              )}>{item.label}</span>
+              )}>{t(item.labelKey)}</span>
             </button>
           );
         })}
 
-        {/* Menu Button */}
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild>
             <button className="flex flex-col items-center justify-center flex-1 h-14 rounded-2xl transition-all duration-200 text-muted-foreground hover:text-foreground">
               <div className="flex items-center justify-center w-10 h-8 rounded-xl">
                 <Menu className="w-5 h-5" strokeWidth={2} />
               </div>
-              <span className="text-[10px] font-medium mt-0.5">Plus</span>
+              <span className="text-[10px] font-medium mt-0.5">{t("nav.more")}</span>
             </button>
           </SheetTrigger>
           <SheetContent side="bottom" className="h-auto max-h-[80vh] rounded-t-3xl border-t border-border/50 px-4 pb-8">
             <div className="w-12 h-1 bg-border rounded-full mx-auto mt-3 mb-4" />
             
-            {/* User Profile Section */}
             {user && (
               <div className="flex items-center gap-3 p-4 rounded-2xl bg-muted/30 mb-4">
                 <Avatar className="h-12 w-12">
@@ -154,13 +118,13 @@ export function BottomNav() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold truncate text-sm">{profile?.full_name || "Utilisateur"}</p>
+                  <p className="font-semibold truncate text-sm">{profile?.full_name || t("common.user")}</p>
                   <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   {roles.length > 0 && (
                     <div className="flex gap-1 mt-1.5 flex-wrap">
                       {roles.map((role) => (
                         <span key={role} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                          {getRoleLabel(role)}
+                          {t(`role.${role}`)}
                         </span>
                       ))}
                     </div>
@@ -169,7 +133,6 @@ export function BottomNav() {
               </div>
             )}
 
-            {/* Menu Items */}
             <div className="grid grid-cols-4 gap-2 mb-4">
               {menuItems.map((item) => {
                 const Icon = item.icon;
@@ -189,13 +152,12 @@ export function BottomNav() {
                     )}
                   >
                     <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
-                    <span className="text-[10px] font-medium text-center leading-tight">{item.label}</span>
+                    <span className="text-[10px] font-medium text-center leading-tight">{t(item.labelKey)}</span>
                   </button>
                 );
               })}
             </div>
 
-            {/* Sign Out */}
             {user && (
               <Button 
                 variant="ghost" 
@@ -203,7 +165,7 @@ export function BottomNav() {
                 onClick={handleSignOut}
               >
                 <LogOut className="w-4 h-4 mr-2" />
-                Déconnexion
+                {t("auth.logout")}
               </Button>
             )}
 
@@ -216,7 +178,7 @@ export function BottomNav() {
                 }}
               >
                 <User className="w-4 h-4 mr-2" />
-                Se connecter
+                {t("auth.login")}
               </Button>
             )}
           </SheetContent>
