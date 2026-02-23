@@ -16,16 +16,18 @@ import { FarmCalendar } from "@/components/farmer/FarmCalendar";
 import { FarmerFinanceSimple } from "@/components/farmer/FarmerFinanceSimple";
 import { WeatherWidget } from "@/components/farmer/WeatherWidget";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function Agriculteur() {
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <AppLayout>
       <PageHeader
-        title="Mon exploitation"
-        subtitle="Gérez votre ferme simplement"
+        title={t("farmer.title")}
+        subtitle={t("farmer.subtitle")}
         action={
           <Button variant="ghost" size="icon" onClick={() => navigate("/settings")}>
             <Settings className="w-5 h-5" />
@@ -41,28 +43,28 @@ export default function Agriculteur() {
               className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg"
             >
               <LayoutDashboard className="w-4 h-4" />
-              <span>Aperçu</span>
+              <span>{t("farmer.overview")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger 
               value="calendar" 
               className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg"
             >
               <Calendar className="w-4 h-4" />
-              <span>Calendrier</span>
+              <span>{t("farmer.calendar")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger 
               value="finances" 
               className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg"
             >
               <Wallet className="w-4 h-4" />
-              <span>Finances</span>
+              <span>{t("farmer.finances")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger 
               value="meteo" 
               className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg"
             >
               <CloudSun className="w-4 h-4" />
-              <span>Météo</span>
+              <span>{t("farmer.weather")}</span>
             </ScrollableTabsTrigger>
           </ScrollableTabsList>
 

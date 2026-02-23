@@ -140,9 +140,9 @@ export function SmartTaskSuggestions({ onAddTask }: SmartTaskSuggestionsProps) {
     }
   };
 
-  const handleAddTask = (task: SuggestedTask) => {
+  const handleAddTask = async (task: SuggestedTask) => {
     if (onAddTask) {
-      onAddTask({
+      await onAddTask({
         title: task.title,
         description: task.description,
         dueDate: task.dueDate,
@@ -151,6 +151,21 @@ export function SmartTaskSuggestions({ onAddTask }: SmartTaskSuggestionsProps) {
       setAddedTasks(prev => new Set([...prev, task.id]));
       toast.success(`Tâche "${task.title}" ajoutée`);
     }
+  };
+
+  const handleAddAll = async () => {
+    if (!onAddTask || !data?.suggestedTasks) return;
+    const tasksToAdd = data.suggestedTasks.filter(t => !addedTasks.has(t.id));
+    for (const task of tasksToAdd) {
+      await onAddTask({
+        title: task.title,
+        description: task.description,
+        dueDate: task.dueDate,
+        priority: task.priority,
+      });
+      setAddedTasks(prev => new Set([...prev, task.id]));
+    }
+    toast.success(`${tasksToAdd.length} tâches ajoutées`);
   };
 
   return (
@@ -258,7 +273,15 @@ export function SmartTaskSuggestions({ onAddTask }: SmartTaskSuggestionsProps) {
           {/* Suggested Tasks */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Tâches suggérées</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Tâches suggérées</CardTitle>
+                {data.suggestedTasks.length > 0 && data.suggestedTasks.some(t => !addedTasks.has(t.id)) && (
+                  <Button size="sm" variant="outline" onClick={handleAddAll}>
+                    <Plus className="w-3 h-3 mr-1" />
+                    Tout ajouter
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-2">
               {data.suggestedTasks.length === 0 ? (

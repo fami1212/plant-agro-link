@@ -10,20 +10,22 @@ import { PlantDiseaseDetector } from "@/components/ai/PlantDiseaseDetector";
 import { YieldPredictionModule } from "@/components/ai/YieldPredictionModule";
 import { IrrigationRecommendationsModule } from "@/components/ai/IrrigationRecommendationsModule";
 import { ScanHistory } from "@/components/ai/ScanHistory";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function IA() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("disease");
+  const { t } = useLanguage();
 
   return (
     <AppLayout>
       <PageHeader
-        title="Intelligence Artificielle"
-        subtitle="Outils IA pour votre exploitation"
+        title={t("ai.title")}
+        subtitle={t("ai.subtitle")}
       />
 
       <div className="px-4 pb-28 space-y-4">
-        {/* Voice Assistant CTA - Prominent for accessibility */}
+        {/* Voice Assistant CTA */}
         <Card className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground overflow-hidden">
           <CardContent className="p-4">
             <div className="flex items-center gap-4">
@@ -31,9 +33,9 @@ export default function IA() {
                 <Mic className="w-8 h-8" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-lg">Assistant Vocal</h3>
+                <h3 className="font-semibold text-lg">{t("ai.voiceAssistant")}</h3>
                 <p className="text-sm text-primary-foreground/80 mb-2">
-                  Parlez à l'IA - pas besoin de taper !
+                  {t("ai.voiceDesc")}
                 </p>
                 <div className="flex gap-2">
                   <Button 
@@ -43,7 +45,7 @@ export default function IA() {
                     onClick={() => navigate("/voice")}
                   >
                     <Mic className="w-4 h-4" />
-                    Ouvrir
+                    {t("ai.open")}
                   </Button>
                 </div>
               </div>
@@ -61,8 +63,8 @@ export default function IA() {
               <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
                 <MessageCircle className="w-6 h-6 text-blue-500" />
               </div>
-              <span className="text-sm font-medium">Chat IA</span>
-              <span className="text-xs text-muted-foreground">Posez vos questions</span>
+              <span className="text-sm font-medium">{t("ai.chatIA")}</span>
+              <span className="text-xs text-muted-foreground">{t("ai.chatDesc")}</span>
             </CardContent>
           </Card>
           <Card 
@@ -73,8 +75,8 @@ export default function IA() {
               <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
                 <Sparkles className="w-6 h-6 text-green-500" />
               </div>
-              <span className="text-sm font-medium">Conseils IA</span>
-              <span className="text-xs text-muted-foreground">Recommandations</span>
+              <span className="text-sm font-medium">{t("ai.adviceIA")}</span>
+              <span className="text-xs text-muted-foreground">{t("ai.adviceDesc")}</span>
             </CardContent>
           </Card>
         </div>
@@ -84,19 +86,19 @@ export default function IA() {
           <TabsList className="grid w-full grid-cols-4 h-auto p-1">
             <TabsTrigger value="disease" className="flex flex-col gap-1 py-2">
               <Bug className="w-4 h-4" />
-              <span className="text-xs">Maladies</span>
+              <span className="text-xs">{t("ai.diseases")}</span>
             </TabsTrigger>
             <TabsTrigger value="yield" className="flex flex-col gap-1 py-2">
               <Sprout className="w-4 h-4" />
-              <span className="text-xs">Rendement</span>
+              <span className="text-xs">{t("ai.yield")}</span>
             </TabsTrigger>
             <TabsTrigger value="irrigation" className="flex flex-col gap-1 py-2">
               <Droplets className="w-4 h-4" />
-              <span className="text-xs">Irrigation</span>
+              <span className="text-xs">{t("ai.irrigation")}</span>
             </TabsTrigger>
             <TabsTrigger value="history" className="flex flex-col gap-1 py-2">
               <History className="w-4 h-4" />
-              <span className="text-xs">Historique</span>
+              <span className="text-xs">{t("ai.history")}</span>
             </TabsTrigger>
           </TabsList>
 
