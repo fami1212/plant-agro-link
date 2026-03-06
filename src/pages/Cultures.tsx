@@ -281,7 +281,7 @@ export default function Cultures() {
         <div className="px-4 mb-4">
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
             <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20">
-              <p className="text-xs text-muted-foreground">En cours</p>
+              <p className="text-xs text-muted-foreground">{t("crops.inProgress")}</p>
               <p className="text-lg font-bold text-foreground">{activeCrops.length}</p>
             </div>
             <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-success/10 border border-success/20">
