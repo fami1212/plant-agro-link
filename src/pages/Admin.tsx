@@ -424,9 +424,9 @@ export default function Admin() {
                 <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <Cpu className="w-5 h-5 text-green-500" />
-                    <span>État du système</span>
+                    <span>{t("admin.systemStatus")}</span>
                   </div>
-                  <Badge className="bg-green-500">Opérationnel</Badge>
+                  <Badge className="bg-green-500">{t("admin.operational")}</Badge>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                   <span>Tables actives</span>
