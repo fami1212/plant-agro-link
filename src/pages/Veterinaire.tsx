@@ -75,6 +75,7 @@ interface MedicalRecord {
 
 export default function Veterinaire() {
   const { user, profile } = useAuth();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("rdv");
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
