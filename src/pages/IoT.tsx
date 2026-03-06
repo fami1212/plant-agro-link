@@ -265,7 +265,7 @@ export default function IoT() {
           <TabsList className="grid w-full grid-cols-4 mb-4">
             <TabsTrigger value="dashboard" className="text-xs">
               <Activity className="w-4 h-4 mr-1" />
-              Live
+              {t("iot.live")}
             </TabsTrigger>
             <TabsTrigger value="history" className="text-xs">
               <BarChart3 className="w-4 h-4 mr-1" />
