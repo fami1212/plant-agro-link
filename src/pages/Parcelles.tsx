@@ -216,7 +216,7 @@ export default function Parcelles() {
         <div className="px-4 mb-4">
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
             <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20">
-              <p className="text-xs text-muted-foreground">Actives</p>
+              <p className="text-xs text-muted-foreground">{t("parcels.active")}</p>
               <p className="text-lg font-bold text-foreground">{activeFields}</p>
             </div>
             <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-success/10 border border-success/20">
