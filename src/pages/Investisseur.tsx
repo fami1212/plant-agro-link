@@ -335,8 +335,8 @@ export default function Investisseur() {
             {filteredOpportunities.length === 0 ? (
               <EmptyState
                 icon={<Sprout className="w-8 h-8" />}
-                title="Aucune opportunité"
-                description={searchQuery ? "Aucun résultat trouvé" : "Revenez bientôt pour découvrir des projets"}
+                title={t("investor.noOpportunities")}
+                description={searchQuery ? t("investor.noResults") : t("investor.comeBackSoon")}
               />
             ) : (
               <div className="space-y-4">
