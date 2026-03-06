@@ -335,7 +335,7 @@ export default function Admin() {
                 <Activity className="w-4 h-4 text-blue-600" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Prestataires</p>
+                <p className="text-xs text-muted-foreground">{t("admin.providers")}</p>
                 <p className="text-lg font-bold">{stats.totalProviders}</p>
               </div>
             </div>
