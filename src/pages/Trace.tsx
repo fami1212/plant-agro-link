@@ -435,7 +435,7 @@ export default function Trace() {
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                Ce certificat est émis par la plateforme Plantéra et vérifié par blockchain.
+                {t("trace.certDesc")}
               </p>
               <p className="text-xs text-muted-foreground">
                 © {new Date().getFullYear()} Plantéra - Agriculture Intelligente
