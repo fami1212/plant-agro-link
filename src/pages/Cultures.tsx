@@ -339,10 +339,10 @@ export default function Cultures() {
         ) : crops.length === 0 && !showForm ? (
           <EmptyState
             icon={<Wheat className="w-8 h-8" />}
-            title="Aucune culture"
-            description="Commencez par ajouter une culture à vos parcelles"
+            title={t("crops.noCrops")}
+            description={t("crops.noCropsDesc")}
             action={{
-              label: "Ajouter une culture",
+              label: t("crops.addCrop"),
               onClick: () => setShowForm(true),
             }}
           />
