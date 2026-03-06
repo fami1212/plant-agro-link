@@ -220,7 +220,7 @@ export default function Parcelles() {
               <p className="text-lg font-bold text-foreground">{activeFields}</p>
             </div>
             <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-success/10 border border-success/20">
-              <p className="text-xs text-muted-foreground">Surface totale</p>
+              <p className="text-xs text-muted-foreground">{t("parcels.totalArea")}</p>
               <p className="text-lg font-bold text-success">{totalArea.toFixed(1)} ha</p>
             </div>
             <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-accent/10 border border-accent/20">
