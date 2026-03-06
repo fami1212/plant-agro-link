@@ -33,6 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/common/EmptyState";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { InvestmentIoTMonitor } from "@/components/investor/InvestmentIoTMonitor";
 import { InvestorReturns } from "@/components/investor/InvestorReturns";
 import { OpportunityCard } from "@/components/investor/OpportunityCard";
