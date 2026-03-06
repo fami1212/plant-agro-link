@@ -441,8 +441,8 @@ export default function Investisseur() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
-                  Montant à investir (FCFA)
+              <label className="text-sm font-medium text-foreground">
+                  {t("investor.amountToInvest")}
                 </label>
                 <div className="relative">
                   <Input

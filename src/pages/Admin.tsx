@@ -433,7 +433,7 @@ export default function Admin() {
                   <Badge variant="secondary">15</Badge>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                  <span>Edge Functions</span>
+                  <span>{t("admin.edgeFunctions")}</span>
                   <Badge variant="secondary">5</Badge>
                 </div>
               </CardContent>

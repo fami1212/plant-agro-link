@@ -462,8 +462,8 @@ export default function Betail() {
                           setNewWeight(animal.weight_kg?.toString() || "");
                         }}
                       >
-                        <Scale className="w-4 h-4 mr-1" />
-                        Poids
+                         <Scale className="w-4 h-4 mr-1" />
+                        {t("livestock.updateWeight")}
                       </Button>
                       {recordCount > 0 && (
                         <Button

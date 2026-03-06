@@ -449,7 +449,7 @@ export default function Trace() {
           <Link to="/">
             <Button variant="outline" size="sm">
               <ExternalLink className="w-4 h-4 mr-2" />
-              Visiter Plantéra
+              {t("trace.visitPlantera")}
             </Button>
           </Link>
         </div>

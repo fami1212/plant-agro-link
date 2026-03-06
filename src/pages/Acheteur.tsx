@@ -435,7 +435,7 @@ export default function Acheteur() {
                         onClick={() => toggleFavorite(fav.listing_id)}
                       >
                         <Heart className="w-4 h-4 fill-current mr-1" />
-                        Retirer
+                        {t("buyer.remove")}
                       </Button>
                     </div>
                   </CardContent>

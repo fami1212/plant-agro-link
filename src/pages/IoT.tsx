@@ -277,7 +277,7 @@ export default function IoT() {
             </TabsTrigger>
             <TabsTrigger value="alerts" className="text-xs">
               <Bell className="w-4 h-4 mr-1" />
-              Alertes
+              {t("iot.alerts")}
             </TabsTrigger>
           </TabsList>
 

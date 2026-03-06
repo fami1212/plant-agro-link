@@ -449,7 +449,7 @@ export default function Parcelles() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Aucune culture sur cette parcelle</p>
+                  <p className="text-sm text-muted-foreground">{t("parcels.noCropsOnField")}</p>
                 )}
               </div>
 

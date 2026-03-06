@@ -616,7 +616,7 @@ export default function VoiceAssistant() {
 
               {/* Speech rate */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Vitesse: {speechRate.toFixed(1)}x</label>
+                <label className="text-sm font-medium">{t("voice.speed")}: {speechRate.toFixed(1)}x</label>
                 <div className="flex gap-2">
                   {[0.75, 1.0, 1.25, 1.5].map((rate) => (
                     <Button
