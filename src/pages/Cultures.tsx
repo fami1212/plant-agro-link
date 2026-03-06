@@ -103,6 +103,7 @@ const cropTypeLabels: Record<string, string> = {
 
 export default function Cultures() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [crops, setCrops] = useState<Crop[]>([]);
   const [harvestRecords, setHarvestRecords] = useState<Record<string, HarvestRecord[]>>({});
   const [loading, setLoading] = useState(true);
