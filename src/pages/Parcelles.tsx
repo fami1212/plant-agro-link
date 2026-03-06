@@ -411,7 +411,7 @@ export default function Parcelles() {
                   <p className="font-semibold text-foreground">{viewingField.area_hectares} ha</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground">Type de sol</p>
+                  <p className="text-xs text-muted-foreground">{t("parcels.soilType")}</p>
                   <p className="font-semibold text-foreground">{soilTypeLabels[viewingField.soil_type]}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
