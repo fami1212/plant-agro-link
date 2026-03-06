@@ -269,7 +269,7 @@ export default function IoT() {
             </TabsTrigger>
             <TabsTrigger value="history" className="text-xs">
               <BarChart3 className="w-4 h-4 mr-1" />
-              Historique
+              {t("iot.history")}
             </TabsTrigger>
             <TabsTrigger value="devices" className="text-xs">
               <Wifi className="w-4 h-4 mr-1" />
