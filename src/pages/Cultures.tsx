@@ -301,7 +301,7 @@ export default function Cultures() {
           <Card className="animate-fade-in">
             <CardContent className="p-4">
               <h3 className="font-semibold text-foreground mb-4">
-                {editingCrop ? "Modifier la culture" : "Nouvelle culture"}
+                {editingCrop ? t("crops.editCrop") : t("crops.newCrop")}
               </h3>
               <CropForm
                 crop={editingCrop || undefined}
