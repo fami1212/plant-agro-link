@@ -313,7 +313,7 @@ export default function Admin() {
                 <Users className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Utilisateurs</p>
+                <p className="text-xs text-muted-foreground">{t("admin.users")}</p>
                 <p className="text-lg font-bold">{stats.totalUsers}</p>
               </div>
             </div>
