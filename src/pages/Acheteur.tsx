@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { BuyerCart } from "@/components/buyer/BuyerCart";
 import { BuyerOrderTracking } from "@/components/buyer/BuyerOrderTracking";
 import { GeolocatedSearch, type GeoFilters, getDistanceKm } from "@/components/buyer/GeolocatedSearch";
