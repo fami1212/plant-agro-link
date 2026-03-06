@@ -255,8 +255,8 @@ export default function Veterinaire() {
   return (
     <AppLayout>
       <PageHeader
-        title={`Dr. ${profile?.full_name?.split(" ")[0] || "Vétérinaire"}`}
-        subtitle="Espace vétérinaire"
+        title={`Dr. ${profile?.full_name?.split(" ")[0] || t("role.veterinaire")}`}
+        subtitle={t("vet.subtitle")}
         action={
           <Button variant="ghost" size="icon" onClick={fetchData}>
             <RefreshCw className="w-5 h-5" />
