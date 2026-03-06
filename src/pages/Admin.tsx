@@ -295,8 +295,8 @@ export default function Admin() {
   return (
     <AppLayout>
       <PageHeader
-        title="Administration"
-        subtitle="Gérer les utilisateurs et modérer le marketplace"
+        title={t("admin.title")}
+        subtitle={t("admin.subtitle")}
         action={
           <Button variant="outline" size="icon" onClick={fetchData}>
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
