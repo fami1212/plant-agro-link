@@ -252,7 +252,7 @@ export default function IoT() {
             </p>
           </div>
           <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-muted border border-border">
-            <p className="text-xs text-muted-foreground font-medium">Mise à jour</p>
+            <p className="text-xs text-muted-foreground font-medium">{t("iot.update")}</p>
             <p className="text-sm font-semibold text-foreground">
               {lastUpdate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
             </p>
