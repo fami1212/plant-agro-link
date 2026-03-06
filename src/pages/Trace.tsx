@@ -299,7 +299,7 @@ export default function Trace() {
             <div className="space-y-3">
               <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-primary" />
-                Origine
+                {t("trace.origin")}
               </h4>
               <div className="grid grid-cols-2 gap-3 pl-6">
                 {traceData.fieldName && (
