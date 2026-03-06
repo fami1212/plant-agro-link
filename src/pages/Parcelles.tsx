@@ -240,7 +240,7 @@ export default function Parcelles() {
             <CardContent className="p-4">
               <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-primary" />
-                {editingField ? "Modifier la parcelle" : "Nouvelle parcelle"}
+                {editingField ? t("parcels.editParcel") : t("parcels.newParcel")}
               </h3>
               <FieldForm
                 field={editingField || undefined}
