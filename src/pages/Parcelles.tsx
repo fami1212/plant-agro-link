@@ -388,7 +388,7 @@ export default function Parcelles() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={(fieldCrops[deletingField?.id || ''] || []).length > 0}
             >
-              Supprimer
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
