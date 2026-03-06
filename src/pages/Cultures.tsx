@@ -399,7 +399,7 @@ export default function Cultures() {
                     <div className="space-y-3">
                       <div>
                         <div className="flex justify-between text-sm mb-1.5">
-                          <span className="text-muted-foreground">Progression</span>
+                          <span className="text-muted-foreground">{t("crops.progression")}</span>
                           <span className="font-medium text-foreground">{config.progress}%</span>
                         </div>
                         <Progress value={config.progress} className="h-2" />
