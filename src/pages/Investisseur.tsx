@@ -358,8 +358,8 @@ export default function Investisseur() {
             <div className="grid grid-cols-2 gap-3">
               <Card className="bg-primary/5 border-primary/20">
                 <CardContent className="p-4 text-center">
-                  <p className="text-3xl font-bold text-primary">{activeCount}</p>
-                  <p className="text-sm text-muted-foreground">En cours</p>
+                   <p className="text-3xl font-bold text-primary">{activeCount}</p>
+                  <p className="text-sm text-muted-foreground">{t("investor.inProgress")}</p>
                 </CardContent>
               </Card>
               <Card className="bg-success/5 border-success/20">
