@@ -237,7 +237,7 @@ export default function IoT() {
             <p className="text-lg font-bold text-foreground">{devices.length}</p>
           </div>
           <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-success/10 border border-success/20 dark:bg-success/20 dark:border-success/30">
-            <p className="text-xs text-muted-foreground font-medium">En ligne</p>
+            <p className="text-xs text-muted-foreground font-medium">{t("iot.online")}</p>
             <p className="text-lg font-bold text-success">{activeDevices.length}</p>
           </div>
           <div className={cn(
