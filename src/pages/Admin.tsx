@@ -346,7 +346,7 @@ export default function Admin() {
                 <TrendingUp className="w-4 h-4 text-purple-600" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Investissements</p>
+                <p className="text-xs text-muted-foreground">{t("admin.investments")}</p>
                 <p className="text-lg font-bold">{stats.totalInvestments}</p>
               </div>
             </div>
