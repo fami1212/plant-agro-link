@@ -279,7 +279,7 @@ export default function Investisseur() {
                   <p className="text-xs opacity-60">FCFA</p>
                 </div>
                 <div>
-                  <p className="text-sm opacity-80">Retour attendu</p>
+                  <p className="text-sm opacity-80">{t("investor.expectedReturn")}</p>
                   <p className="text-2xl font-bold">{(expectedReturns / 1000).toFixed(0)}k</p>
                   <p className="text-xs opacity-60">FCFA</p>
                 </div>
