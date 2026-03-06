@@ -322,7 +322,7 @@ export default function Betail() {
           <Card className="animate-fade-in">
             <CardContent className="p-4">
               <h3 className="font-semibold text-foreground mb-4">
-                {editingAnimal ? "Modifier l'animal" : "Nouvel animal"}
+                {editingAnimal ? t("livestock.editAnimal") : t("livestock.newAnimal")}
               </h3>
               <LivestockForm
                 livestock={editingAnimal || undefined}
