@@ -28,6 +28,7 @@ import { VetPatientsList } from "@/components/veterinaire/VetPatientsList";
 import { VetMedicalRecords } from "@/components/veterinaire/VetMedicalRecords";
 import { AnimalPatientDetails } from "@/components/veterinaire/AnimalPatientDetails";
 import { VetBilling } from "@/components/veterinaire/VetBilling";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface Booking {
   id: string;
