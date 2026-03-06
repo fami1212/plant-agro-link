@@ -249,8 +249,8 @@ export default function Betail() {
   return (
     <AppLayout>
       <PageHeader
-        title={isVeterinaire && !isAgriculteur ? "Animaux à suivre" : "Mon Bétail"}
-        subtitle={`${livestock.filter(a => a.health_status !== 'decede').length} tête${livestock.length > 1 ? "s" : ""}`}
+        title={isVeterinaire && !isAgriculteur ? t("livestock.vetTitle") : t("livestock.title")}
+        subtitle={`${livestock.filter(a => a.health_status !== 'decede').length} ${livestock.length > 1 ? t("livestock.headsPlural") : t("livestock.heads")}`}
         action={
           canAddAnimal ? (
             <div className="flex gap-2">
