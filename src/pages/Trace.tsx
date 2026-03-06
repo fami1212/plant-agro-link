@@ -418,7 +418,7 @@ export default function Trace() {
               <div className="flex items-center gap-2 mb-1">
                 <ShieldCheck className="w-4 h-4 text-success" />
                 <span className="text-xs font-medium text-success">
-                  Signature Blockchain Vérifiée
+                  {t("trace.blockchainVerified")}
                 </span>
               </div>
               <code className="text-xs font-mono text-foreground break-all block">
