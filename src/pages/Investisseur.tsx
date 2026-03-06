@@ -413,7 +413,7 @@ export default function Investisseur() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Banknote className="w-5 h-5 text-primary" />
-              Investir dans ce projet
+              {t("investor.investInProject")}
             </DialogTitle>
           </DialogHeader>
           {selectedOpportunity && (
