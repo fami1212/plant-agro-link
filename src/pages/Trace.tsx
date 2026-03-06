@@ -261,11 +261,11 @@ export default function Trace() {
           <div className="bg-gradient-to-r from-primary to-accent p-4 text-primary-foreground">
             <div className="flex items-center gap-2 mb-2">
               <QrCode className="w-5 h-5" />
-              <span className="text-sm opacity-90">Certificat d'Origine</span>
+              <span className="text-sm opacity-90">{t("trace.certificate")}</span>
             </div>
-            <h1 className="text-2xl font-bold">Traçabilité Blockchain</h1>
+            <h1 className="text-2xl font-bold">{t("trace.blockchain")}</h1>
             <p className="text-sm opacity-90 mt-1">
-              Vérification d'authenticité et d'origine
+              {t("trace.verification")}
             </p>
           </div>
 
