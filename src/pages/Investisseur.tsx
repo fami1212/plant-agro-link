@@ -33,6 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/common/EmptyState";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { InvestmentIoTMonitor } from "@/components/investor/InvestmentIoTMonitor";
 import { InvestorReturns } from "@/components/investor/InvestorReturns";
 import { OpportunityCard } from "@/components/investor/OpportunityCard";
@@ -69,6 +70,7 @@ interface Investment {
 
 export default function Investisseur() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("opportunites");
   const [loading, setLoading] = useState(true);
   const [opportunities, setOpportunities] = useState<InvestmentOpportunity[]>([]);
@@ -240,8 +242,8 @@ export default function Investisseur() {
   return (
     <AppLayout>
       <PageHeader
-        title="Investissements"
-        subtitle="Financez l'agriculture locale"
+        title={t("investor.title")}
+        subtitle={t("investor.subtitle")}
         action={
           <Button variant="ghost" size="icon" onClick={fetchData}>
             <RefreshCw className="w-5 h-5" />
@@ -265,24 +267,24 @@ export default function Investisseur() {
             <div className="relative">
               <div className="flex items-center gap-2 text-primary-foreground mb-4">
                 <Wallet className="w-5 h-5" />
-                <span className="font-semibold">Mon Portefeuille</span>
+                <span className="font-semibold">{t("investor.portfolio")}</span>
                 <Badge variant="secondary" className="bg-white/20 text-white border-0 ml-auto">
                   {activeCount} actif{activeCount > 1 ? "s" : ""}
                 </Badge>
               </div>
               <div className="grid grid-cols-3 gap-4 text-primary-foreground">
                 <div>
-                  <p className="text-sm opacity-80">Total investi</p>
+                  <p className="text-sm opacity-80">{t("investor.totalInvested")}</p>
                   <p className="text-2xl font-bold">{(totalInvested / 1000).toFixed(0)}k</p>
                   <p className="text-xs opacity-60">FCFA</p>
                 </div>
                 <div>
-                  <p className="text-sm opacity-80">Retour attendu</p>
+                  <p className="text-sm opacity-80">{t("investor.expectedReturn")}</p>
                   <p className="text-2xl font-bold">{(expectedReturns / 1000).toFixed(0)}k</p>
                   <p className="text-xs opacity-60">FCFA</p>
                 </div>
                 <div>
-                  <p className="text-sm opacity-80">Gain potentiel</p>
+                  <p className="text-sm opacity-80">{t("investor.potentialGain")}</p>
                   <div className="flex items-center gap-1">
                     <ArrowUpRight className="w-4 h-4" />
                     <p className="text-2xl font-bold text-white">+{(potentialGain / 1000).toFixed(0)}k</p>
@@ -299,21 +301,21 @@ export default function Investisseur() {
       <div className="px-4 pb-28">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4 mb-4 h-12 p-1">
-            <TabsTrigger value="opportunites" className="gap-1.5 text-xs">
+             <TabsTrigger value="opportunites" className="gap-1.5 text-xs">
               <Target className="w-4 h-4" />
-              <span className="hidden sm:inline">Opportunités</span>
+              <span className="hidden sm:inline">{t("investor.opportunities")}</span>
             </TabsTrigger>
             <TabsTrigger value="portefeuille" className="gap-1.5 text-xs">
               <PieChart className="w-4 h-4" />
-              <span className="hidden sm:inline">Portefeuille</span>
+              <span className="hidden sm:inline">{t("investor.portfolioTab")}</span>
             </TabsTrigger>
             <TabsTrigger value="rendements" className="gap-1.5 text-xs">
               <BarChart3 className="w-4 h-4" />
-              <span className="hidden sm:inline">Rendements</span>
+              <span className="hidden sm:inline">{t("investor.returns")}</span>
             </TabsTrigger>
             <TabsTrigger value="iot" className="gap-1.5 text-xs">
               <Activity className="w-4 h-4" />
-              <span className="hidden sm:inline">Suivi IoT</span>
+              <span className="hidden sm:inline">{t("investor.iotTracking")}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -323,7 +325,7 @@ export default function Investisseur() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Rechercher une opportunité..."
+                placeholder={t("investor.searchOpportunity")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -333,8 +335,8 @@ export default function Investisseur() {
             {filteredOpportunities.length === 0 ? (
               <EmptyState
                 icon={<Sprout className="w-8 h-8" />}
-                title="Aucune opportunité"
-                description={searchQuery ? "Aucun résultat trouvé" : "Revenez bientôt pour découvrir des projets"}
+                title={t("investor.noOpportunities")}
+                description={searchQuery ? t("investor.noResults") : t("investor.comeBackSoon")}
               />
             ) : (
               <div className="space-y-4">
@@ -356,8 +358,8 @@ export default function Investisseur() {
             <div className="grid grid-cols-2 gap-3">
               <Card className="bg-primary/5 border-primary/20">
                 <CardContent className="p-4 text-center">
-                  <p className="text-3xl font-bold text-primary">{activeCount}</p>
-                  <p className="text-sm text-muted-foreground">En cours</p>
+                   <p className="text-3xl font-bold text-primary">{activeCount}</p>
+                  <p className="text-sm text-muted-foreground">{t("investor.inProgress")}</p>
                 </CardContent>
               </Card>
               <Card className="bg-success/5 border-success/20">
@@ -365,7 +367,7 @@ export default function Investisseur() {
                   <p className="text-3xl font-bold text-success">
                     {investments.filter(i => i.status === "complete" || i.status === "rembourse").length}
                   </p>
-                  <p className="text-sm text-muted-foreground">Terminés</p>
+                  <p className="text-sm text-muted-foreground">{t("investor.completed")}</p>
                 </CardContent>
               </Card>
             </div>
@@ -373,10 +375,10 @@ export default function Investisseur() {
             {investments.length === 0 ? (
               <EmptyState
                 icon={<TrendingUp className="w-8 h-8" />}
-                title="Aucun investissement"
-                description="Explorez les opportunités pour commencer"
+                title={t("investor.noInvestments")}
+                description={t("investor.exploreOpp")}
                 action={{
-                  label: "Voir opportunités",
+                  label: t("investor.viewOpp"),
                   onClick: () => setActiveTab("opportunites"),
                 }}
               />
@@ -411,7 +413,7 @@ export default function Investisseur() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Banknote className="w-5 h-5 text-primary" />
-              Investir dans ce projet
+              {t("investor.investInProject")}
             </DialogTitle>
           </DialogHeader>
           {selectedOpportunity && (
@@ -439,8 +441,8 @@ export default function Investisseur() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
-                  Montant à investir (FCFA)
+              <label className="text-sm font-medium text-foreground">
+                  {t("investor.amountToInvest")}
                 </label>
                 <div className="relative">
                   <Input

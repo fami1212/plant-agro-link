@@ -32,6 +32,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Database } from "@/integrations/supabase/types";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type SoilType = Database["public"]["Enums"]["soil_type"];
 type FieldStatus = Database["public"]["Enums"]["field_status"];
@@ -80,6 +81,7 @@ const statusLabels: Record<FieldStatus, string> = {
 
 export default function Parcelles() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [fields, setFields] = useState<Field[]>([]);
   const [fieldCrops, setFieldCrops] = useState<Record<string, Crop[]>>({});
   const [loading, setLoading] = useState(true);
@@ -167,8 +169,8 @@ export default function Parcelles() {
   return (
     <AppLayout>
       <PageHeader
-        title="Mes Parcelles"
-        subtitle={`${fields.length} parcelle${fields.length !== 1 ? 's' : ''} • ${totalArea.toFixed(1)} ha total`}
+        title={t("parcels.title")}
+        subtitle={`${fields.length} ${fields.length !== 1 ? t("parcels.parcels") : t("parcels.parcel")} • ${totalArea.toFixed(1)} ha ${t("parcels.total")}`}
         action={
           <div className="flex gap-2">
             <SmartCameraButton 
@@ -214,15 +216,15 @@ export default function Parcelles() {
         <div className="px-4 mb-4">
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
             <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20">
-              <p className="text-xs text-muted-foreground">Actives</p>
+              <p className="text-xs text-muted-foreground">{t("parcels.active")}</p>
               <p className="text-lg font-bold text-foreground">{activeFields}</p>
             </div>
             <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-success/10 border border-success/20">
-              <p className="text-xs text-muted-foreground">Surface totale</p>
+              <p className="text-xs text-muted-foreground">{t("parcels.totalArea")}</p>
               <p className="text-lg font-bold text-success">{totalArea.toFixed(1)} ha</p>
             </div>
             <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-accent/10 border border-accent/20">
-              <p className="text-xs text-muted-foreground">Cultures</p>
+              <p className="text-xs text-muted-foreground">{t("parcels.cultures")}</p>
               <p className="text-lg font-bold text-accent">
                 {Object.values(fieldCrops).flat().length}
               </p>
@@ -238,7 +240,7 @@ export default function Parcelles() {
             <CardContent className="p-4">
               <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-primary" />
-                {editingField ? "Modifier la parcelle" : "Nouvelle parcelle"}
+                {editingField ? t("parcels.editParcel") : t("parcels.newParcel")}
               </h3>
               <FieldForm
                 field={editingField || undefined}
@@ -272,10 +274,10 @@ export default function Parcelles() {
         ) : fields.length === 0 && !showForm ? (
           <EmptyState
             icon={<MapPin className="w-12 h-12" />}
-            title="Aucune parcelle"
-            description="Commencez par ajouter votre première parcelle pour suivre vos cultures."
+            title={t("parcels.noParcel")}
+            description={t("parcels.noParcelDesc")}
             action={{
-              label: "Ajouter une parcelle",
+              label: t("parcels.addParcel"),
               onClick: () => setShowForm(true)
             }}
           />
@@ -369,24 +371,24 @@ export default function Parcelles() {
       <AlertDialog open={!!deletingField} onOpenChange={() => setDeletingField(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer cette parcelle ?</AlertDialogTitle>
+            <AlertDialogTitle>{t("parcels.deleteConfirm")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. La parcelle "{deletingField?.name}" sera supprimée définitivement.
+              {t("parcels.deleteDesc")} "{deletingField?.name}"
               {(fieldCrops[deletingField?.id || ''] || []).length > 0 && (
                 <span className="block mt-2 text-destructive font-medium">
-                  ⚠️ Cette parcelle contient des cultures. Supprimez-les d'abord.
+                  ⚠️ {t("parcels.hasCrops")}
                 </span>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDelete} 
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={(fieldCrops[deletingField?.id || ''] || []).length > 0}
             >
-              Supprimer
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -405,19 +407,19 @@ export default function Parcelles() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground">Surface</p>
+                <p className="text-xs text-muted-foreground">{t("parcels.surface")}</p>
                   <p className="font-semibold text-foreground">{viewingField.area_hectares} ha</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground">Type de sol</p>
+                  <p className="text-xs text-muted-foreground">{t("parcels.soilType")}</p>
                   <p className="font-semibold text-foreground">{soilTypeLabels[viewingField.soil_type]}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground">Irrigation</p>
+                  <p className="text-xs text-muted-foreground">{t("parcels.irrigationSystem")}</p>
                   <p className="font-semibold text-foreground">{viewingField.irrigation_system || 'Aucun'}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground">Statut</p>
+                  <p className="text-xs text-muted-foreground">{t("parcels.status")}</p>
                   <Badge className={statusColors[viewingField.status || 'active']}>
                     {statusLabels[viewingField.status || 'active']}
                   </Badge>
@@ -426,7 +428,7 @@ export default function Parcelles() {
               
               {viewingField.description && (
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground mb-1">Description</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t("parcels.description")}</p>
                   <p className="text-sm text-foreground">{viewingField.description}</p>
                 </div>
               )}
@@ -435,7 +437,7 @@ export default function Parcelles() {
               <div>
                 <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
                   <Wheat className="w-4 h-4 text-accent" />
-                  Cultures sur cette parcelle
+                  {t("parcels.cropsOnField")}
                 </h4>
                 {(fieldCrops[viewingField.id] || []).length > 0 ? (
                   <div className="space-y-2">
@@ -447,7 +449,7 @@ export default function Parcelles() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Aucune culture sur cette parcelle</p>
+                  <p className="text-sm text-muted-foreground">{t("parcels.noCropsOnField")}</p>
                 )}
               </div>
 

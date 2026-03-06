@@ -48,6 +48,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { useIoTData } from "@/hooks/useIoTData";
 import {
   LineChart,
@@ -97,6 +98,7 @@ const generateHistoricalData = (metric: string, hours: number = 24) => {
 };
 
 export default function IoT() {
+  const { t } = useLanguage();
   const {
     devices,
     sensorData,
@@ -200,8 +202,8 @@ export default function IoT() {
   return (
     <AppLayout>
       <PageHeader
-        title="Capteurs IoT"
-        subtitle={`${activeDevices.length} appareil${activeDevices.length > 1 ? "s" : ""} en ligne`}
+        title={t("iot.title")}
+        subtitle={`${activeDevices.length} ${t("iot.devices")} ${t("iot.online")}`}
         action={
           <div className="flex gap-2">
             <Button
@@ -231,11 +233,11 @@ export default function IoT() {
       <div className="px-4 mb-4">
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
           <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 dark:bg-primary/20 dark:border-primary/30">
-            <p className="text-xs text-muted-foreground font-medium">Appareils</p>
+            <p className="text-xs text-muted-foreground font-medium">{t("iot.devices")}</p>
             <p className="text-lg font-bold text-foreground">{devices.length}</p>
           </div>
           <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-success/10 border border-success/20 dark:bg-success/20 dark:border-success/30">
-            <p className="text-xs text-muted-foreground font-medium">En ligne</p>
+            <p className="text-xs text-muted-foreground font-medium">{t("iot.online")}</p>
             <p className="text-lg font-bold text-success">{activeDevices.length}</p>
           </div>
           <div className={cn(
@@ -244,13 +246,13 @@ export default function IoT() {
               ? "bg-destructive/10 border border-destructive/20 dark:bg-destructive/20 dark:border-destructive/40" 
               : "bg-muted border border-border"
           )}>
-            <p className="text-xs text-muted-foreground font-medium">Alertes</p>
+            <p className="text-xs text-muted-foreground font-medium">{t("iot.alerts")}</p>
             <p className={cn("text-lg font-bold", unresolvedAlerts.length > 0 ? "text-destructive" : "text-foreground")}>
               {unresolvedAlerts.length}
             </p>
           </div>
           <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-muted border border-border">
-            <p className="text-xs text-muted-foreground font-medium">Mise à jour</p>
+            <p className="text-xs text-muted-foreground font-medium">{t("iot.update")}</p>
             <p className="text-sm font-semibold text-foreground">
               {lastUpdate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
             </p>
@@ -263,19 +265,19 @@ export default function IoT() {
           <TabsList className="grid w-full grid-cols-4 mb-4">
             <TabsTrigger value="dashboard" className="text-xs">
               <Activity className="w-4 h-4 mr-1" />
-              Live
+              {t("iot.live")}
             </TabsTrigger>
             <TabsTrigger value="history" className="text-xs">
               <BarChart3 className="w-4 h-4 mr-1" />
-              Historique
+              {t("iot.history")}
             </TabsTrigger>
             <TabsTrigger value="devices" className="text-xs">
               <Wifi className="w-4 h-4 mr-1" />
-              Appareils
+              {t("iot.devices")}
             </TabsTrigger>
             <TabsTrigger value="alerts" className="text-xs">
               <Bell className="w-4 h-4 mr-1" />
-              Alertes
+              {t("iot.alerts")}
             </TabsTrigger>
           </TabsList>
 

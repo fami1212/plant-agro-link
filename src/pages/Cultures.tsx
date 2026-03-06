@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type CropStatus = Database["public"]["Enums"]["crop_status"];
 
@@ -102,6 +103,7 @@ const cropTypeLabels: Record<string, string> = {
 
 export default function Cultures() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [crops, setCrops] = useState<Crop[]>([]);
   const [harvestRecords, setHarvestRecords] = useState<Record<string, HarvestRecord[]>>({});
   const [loading, setLoading] = useState(true);
@@ -243,8 +245,8 @@ export default function Cultures() {
   return (
     <AppLayout>
       <PageHeader
-        title="Cultures"
-        subtitle={`${activeCrops.length} active${activeCrops.length > 1 ? "s" : ""} • ${totalArea.toFixed(1)} ha`}
+        title={t("crops.title")}
+        subtitle={`${activeCrops.length} ${activeCrops.length > 1 ? t("crops.actives") : t("crops.active")} • ${totalArea.toFixed(1)} ha`}
         action={
           <div className="flex gap-2">
             <SmartCameraButton 
@@ -279,15 +281,15 @@ export default function Cultures() {
         <div className="px-4 mb-4">
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
             <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20">
-              <p className="text-xs text-muted-foreground">En cours</p>
+              <p className="text-xs text-muted-foreground">{t("crops.inProgress")}</p>
               <p className="text-lg font-bold text-foreground">{activeCrops.length}</p>
             </div>
             <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-success/10 border border-success/20">
-              <p className="text-xs text-muted-foreground">Récolté</p>
+              <p className="text-xs text-muted-foreground">{t("crops.harvested")}</p>
               <p className="text-lg font-bold text-success">{(totalHarvested / 1000).toFixed(1)} t</p>
             </div>
             <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-accent/10 border border-accent/20">
-              <p className="text-xs text-muted-foreground">Terminées</p>
+              <p className="text-xs text-muted-foreground">{t("crops.completed")}</p>
               <p className="text-lg font-bold text-accent">{crops.length - activeCrops.length}</p>
             </div>
           </div>
@@ -299,7 +301,7 @@ export default function Cultures() {
           <Card className="animate-fade-in">
             <CardContent className="p-4">
               <h3 className="font-semibold text-foreground mb-4">
-                {editingCrop ? "Modifier la culture" : "Nouvelle culture"}
+                {editingCrop ? t("crops.editCrop") : t("crops.newCrop")}
               </h3>
               <CropForm
                 crop={editingCrop || undefined}
@@ -337,10 +339,10 @@ export default function Cultures() {
         ) : crops.length === 0 && !showForm ? (
           <EmptyState
             icon={<Wheat className="w-8 h-8" />}
-            title="Aucune culture"
-            description="Commencez par ajouter une culture à vos parcelles"
+            title={t("crops.noCrops")}
+            description={t("crops.noCropsDesc")}
             action={{
-              label: "Ajouter une culture",
+              label: t("crops.addCrop"),
               onClick: () => setShowForm(true),
             }}
           />
@@ -397,7 +399,7 @@ export default function Cultures() {
                     <div className="space-y-3">
                       <div>
                         <div className="flex justify-between text-sm mb-1.5">
-                          <span className="text-muted-foreground">Progression</span>
+                          <span className="text-muted-foreground">{t("crops.progression")}</span>
                           <span className="font-medium text-foreground">{config.progress}%</span>
                         </div>
                         <Progress value={config.progress} className="h-2" />
@@ -439,8 +441,8 @@ export default function Cultures() {
                           className="flex-1"
                           onClick={() => setHarvestingCrop(crop)}
                         >
-                          <Package className="w-4 h-4 mr-1" />
-                          Récolte
+                           <Package className="w-4 h-4 mr-1" />
+                          {t("crops.harvest")}
                         </Button>
                         {harvestCount > 0 && (
                           <Button
@@ -448,7 +450,7 @@ export default function Cultures() {
                             size="sm"
                             onClick={() => setViewingHarvests(crop)}
                           >
-                            {harvestCount} entrée{harvestCount > 1 ? "s" : ""}
+                            {harvestCount} {t("crops.entries")}
                           </Button>
                         )}
                         <Button
@@ -493,16 +495,15 @@ export default function Cultures() {
       <AlertDialog open={!!deletingCrop} onOpenChange={() => setDeletingCrop(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer cette culture ?</AlertDialogTitle>
+            <AlertDialogTitle>{t("common.delete")} ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. La culture "{deletingCrop?.name}" et tout son historique
-              de récoltes seront supprimés définitivement.
+              {t("parcels.deleteDesc")} "{deletingCrop?.name}"
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Supprimer
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

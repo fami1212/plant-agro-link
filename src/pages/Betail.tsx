@@ -35,6 +35,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type LivestockSpecies = Database["public"]["Enums"]["livestock_species"];
 type LivestockHealthStatus = Database["public"]["Enums"]["livestock_health_status"];
@@ -95,6 +96,7 @@ const healthStatusOrder: LivestockHealthStatus[] = ['malade', 'traitement', 'qua
 
 export default function Betail() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { isVeterinaire, isAgriculteur, isAdmin } = useRoleAccess();
   const [livestock, setLivestock] = useState<Livestock[]>([]);
   const [vetRecords, setVetRecords] = useState<Record<string, VetRecord[]>>({});
@@ -247,8 +249,8 @@ export default function Betail() {
   return (
     <AppLayout>
       <PageHeader
-        title={isVeterinaire && !isAgriculteur ? "Animaux à suivre" : "Mon Bétail"}
-        subtitle={`${livestock.filter(a => a.health_status !== 'decede').length} tête${livestock.length > 1 ? "s" : ""}`}
+        title={isVeterinaire && !isAgriculteur ? t("livestock.vetTitle") : t("livestock.title")}
+        subtitle={`${livestock.filter(a => a.health_status !== 'decede').length} ${livestock.length > 1 ? t("livestock.headsPlural") : t("livestock.heads")}`}
         action={
           canAddAnimal ? (
             <div className="flex gap-2">
@@ -295,19 +297,19 @@ export default function Betail() {
             ))}
             {totalWeight > 0 && (
               <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-success/10 border border-success/20">
-                <p className="text-xs text-muted-foreground">Poids total</p>
+                <p className="text-xs text-muted-foreground">{t("livestock.totalWeight")}</p>
                 <p className="text-lg font-bold text-success">{(totalWeight / 1000).toFixed(1)} t</p>
               </div>
             )}
             {alertCount > 0 && (
               <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-warning/10 border border-warning/20">
-                <p className="text-xs text-muted-foreground">Alertes santé</p>
+                <p className="text-xs text-muted-foreground">{t("livestock.healthAlerts")}</p>
                 <p className="text-lg font-bold text-warning">{alertCount}</p>
               </div>
             )}
             {upcomingAppointments > 0 && (
               <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-accent/10 border border-accent/20">
-                <p className="text-xs text-muted-foreground">RDV vétérinaire</p>
+                <p className="text-xs text-muted-foreground">{t("livestock.vetAppointment")}</p>
                 <p className="text-lg font-bold text-accent">{upcomingAppointments}</p>
               </div>
             )}
@@ -320,7 +322,7 @@ export default function Betail() {
           <Card className="animate-fade-in">
             <CardContent className="p-4">
               <h3 className="font-semibold text-foreground mb-4">
-                {editingAnimal ? "Modifier l'animal" : "Nouvel animal"}
+                {editingAnimal ? t("livestock.editAnimal") : t("livestock.newAnimal")}
               </h3>
               <LivestockForm
                 livestock={editingAnimal || undefined}
@@ -357,10 +359,10 @@ export default function Betail() {
         ) : livestock.length === 0 && !showForm ? (
           <EmptyState
             icon={<Heart className="w-8 h-8" />}
-            title="Aucun animal"
-            description="Commencez par enregistrer votre bétail"
+            title={t("livestock.noAnimals")}
+            description={t("livestock.noAnimalsDesc")}
             action={{
-              label: "Ajouter un animal",
+              label: t("livestock.addAnimal"),
               onClick: () => setShowForm(true),
             }}
           />
@@ -449,8 +451,8 @@ export default function Betail() {
                         className="flex-1"
                         onClick={() => setAddingVetRecord(animal)}
                       >
-                        <Stethoscope className="w-4 h-4 mr-1" />
-                        Suivi vétérinaire
+                         <Stethoscope className="w-4 h-4 mr-1" />
+                        {t("livestock.vetTracking")}
                       </Button>
                       <Button
                         variant="ghost"
@@ -460,8 +462,8 @@ export default function Betail() {
                           setNewWeight(animal.weight_kg?.toString() || "");
                         }}
                       >
-                        <Scale className="w-4 h-4 mr-1" />
-                        Poids
+                         <Scale className="w-4 h-4 mr-1" />
+                        {t("livestock.updateWeight")}
                       </Button>
                       {recordCount > 0 && (
                         <Button

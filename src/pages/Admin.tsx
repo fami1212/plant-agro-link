@@ -60,6 +60,7 @@ import { AdminUserModeration } from "@/components/admin/AdminUserModeration";
 import { AdminListingModeration } from "@/components/admin/AdminListingModeration";
 import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
 import { AdminServiceProviders } from "@/components/admin/AdminServiceProviders";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type Profile = DatabaseTypes["public"]["Tables"]["profiles"]["Row"];
 type Listing = DatabaseTypes["public"]["Tables"]["marketplace_listings"]["Row"];
@@ -77,6 +78,7 @@ interface UserWithRoles {
 }
 
 export default function Admin() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("overview");
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [listings, setListings] = useState<Listing[]>([]);
@@ -293,8 +295,8 @@ export default function Admin() {
   return (
     <AppLayout>
       <PageHeader
-        title="Administration"
-        subtitle="Gérer les utilisateurs et modérer le marketplace"
+        title={t("admin.title")}
+        subtitle={t("admin.subtitle")}
         action={
           <Button variant="outline" size="icon" onClick={fetchData}>
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
@@ -311,7 +313,7 @@ export default function Admin() {
                 <Users className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Utilisateurs</p>
+                <p className="text-xs text-muted-foreground">{t("admin.users")}</p>
                 <p className="text-lg font-bold">{stats.totalUsers}</p>
               </div>
             </div>
@@ -322,7 +324,7 @@ export default function Admin() {
                 <Package className="w-4 h-4 text-green-600" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Annonces</p>
+                <p className="text-xs text-muted-foreground">{t("admin.listings")}</p>
                 <p className="text-lg font-bold">{stats.totalListings}</p>
               </div>
             </div>
@@ -333,7 +335,7 @@ export default function Admin() {
                 <Activity className="w-4 h-4 text-blue-600" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Prestataires</p>
+                <p className="text-xs text-muted-foreground">{t("admin.providers")}</p>
                 <p className="text-lg font-bold">{stats.totalProviders}</p>
               </div>
             </div>
@@ -344,7 +346,7 @@ export default function Admin() {
                 <TrendingUp className="w-4 h-4 text-purple-600" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Investissements</p>
+                <p className="text-xs text-muted-foreground">{t("admin.investments")}</p>
                 <p className="text-lg font-bold">{stats.totalInvestments}</p>
               </div>
             </div>
@@ -356,31 +358,31 @@ export default function Admin() {
           <ScrollableTabsList>
             <ScrollableTabsTrigger value="overview" className="flex items-center gap-2 px-4">
               <BarChart3 className="w-4 h-4" />
-              <span className="text-sm">Vue d'ensemble</span>
+              <span className="text-sm">{t("admin.overview")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="users" className="flex items-center gap-2 px-4">
               <Users className="w-4 h-4" />
-              <span className="text-sm">Utilisateurs</span>
+              <span className="text-sm">{t("admin.users")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="marketplace" className="flex items-center gap-2 px-4">
               <ShoppingBag className="w-4 h-4" />
-              <span className="text-sm">Marketplace</span>
+              <span className="text-sm">{t("admin.marketplace")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="disputes" className="flex items-center gap-2 px-4">
               <Scale className="w-4 h-4" />
-              <span className="text-sm">Litiges</span>
+              <span className="text-sm">{t("admin.disputes")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="transactions" className="flex items-center gap-2 px-4">
               <DollarSign className="w-4 h-4" />
-              <span className="text-sm">Paiements</span>
+              <span className="text-sm">{t("admin.payments")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="system" className="flex items-center gap-2 px-4">
               <Settings className="w-4 h-4" />
-              <span className="text-sm">Système</span>
+              <span className="text-sm">{t("admin.system")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="providers" className="flex items-center gap-2 px-4">
               <Activity className="w-4 h-4" />
-              <span className="text-sm">Prestataires</span>
+              <span className="text-sm">{t("admin.providers")}</span>
             </ScrollableTabsTrigger>
           </ScrollableTabsList>
 
@@ -415,23 +417,23 @@ export default function Admin() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Database className="w-5 h-5 text-primary" />
-                  Base de données
+                  {t("admin.database")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <Cpu className="w-5 h-5 text-green-500" />
-                    <span>État du système</span>
+                    <span>{t("admin.systemStatus")}</span>
                   </div>
-                  <Badge className="bg-green-500">Opérationnel</Badge>
+                  <Badge className="bg-green-500">{t("admin.operational")}</Badge>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                  <span>Tables actives</span>
+                  <span>{t("admin.activeTables")}</span>
                   <Badge variant="secondary">15</Badge>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                  <span>Edge Functions</span>
+                  <span>{t("admin.edgeFunctions")}</span>
                   <Badge variant="secondary">5</Badge>
                 </div>
               </CardContent>

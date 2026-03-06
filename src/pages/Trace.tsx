@@ -21,6 +21,7 @@ import {
   AlertCircle,
   QrCode,
 } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface TraceData {
   lotId: string;
@@ -52,6 +53,7 @@ const qualityColors: Record<string, string> = {
 
 export default function Trace() {
   const { lotId } = useParams<{ lotId: string }>();
+  const { t } = useLanguage();
   const [traceData, setTraceData] = useState<TraceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -221,14 +223,14 @@ export default function Trace() {
             <div className="w-16 h-16 mx-auto bg-destructive/20 rounded-full flex items-center justify-center">
               <AlertCircle className="w-8 h-8 text-destructive" />
             </div>
-            <h2 className="text-xl font-semibold">Lot introuvable</h2>
+            <h2 className="text-xl font-semibold">{t("trace.notFound")}</h2>
             <p className="text-muted-foreground">
-              Le certificat de traçabilité pour ce lot n'existe pas ou a expiré.
+              {t("trace.notFoundDesc")}
             </p>
             <Link to="/">
               <Button variant="outline">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Retour à l'accueil
+                {t("trace.backHome")}
               </Button>
             </Link>
           </CardContent>
@@ -248,7 +250,7 @@ export default function Trace() {
           </div>
           <Badge className="bg-white/20 text-white border-white/30">
             <CheckCircle2 className="w-3 h-3 mr-1" />
-            Vérifié
+            {t("trace.verified")}
           </Badge>
         </div>
       </div>
@@ -259,11 +261,11 @@ export default function Trace() {
           <div className="bg-gradient-to-r from-primary to-accent p-4 text-primary-foreground">
             <div className="flex items-center gap-2 mb-2">
               <QrCode className="w-5 h-5" />
-              <span className="text-sm opacity-90">Certificat d'Origine</span>
+              <span className="text-sm opacity-90">{t("trace.certificate")}</span>
             </div>
-            <h1 className="text-2xl font-bold">Traçabilité Blockchain</h1>
+            <h1 className="text-2xl font-bold">{t("trace.blockchain")}</h1>
             <p className="text-sm opacity-90 mt-1">
-              Vérification d'authenticité et d'origine
+              {t("trace.verification")}
             </p>
           </div>
 
@@ -297,7 +299,7 @@ export default function Trace() {
             <div className="space-y-3">
               <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-primary" />
-                Origine
+                {t("trace.origin")}
               </h4>
               <div className="grid grid-cols-2 gap-3 pl-6">
                 {traceData.fieldName && (
@@ -333,7 +335,7 @@ export default function Trace() {
             <div className="space-y-3">
               <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-primary" />
-                Production
+                {t("trace.production")}
               </h4>
               <div className="grid grid-cols-2 gap-3 pl-6">
                 {traceData.sowingDate && (
@@ -374,7 +376,7 @@ export default function Trace() {
                 <div className="space-y-3">
                   <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <Droplets className="w-4 h-4 text-primary" />
-                    Données Capteurs IoT
+                    {t("trace.iotData")}
                   </h4>
                   <div className="grid grid-cols-3 gap-2 pl-6">
                     {traceData.iotData.avgHumidity !== undefined && (
@@ -416,7 +418,7 @@ export default function Trace() {
               <div className="flex items-center gap-2 mb-1">
                 <ShieldCheck className="w-4 h-4 text-success" />
                 <span className="text-xs font-medium text-success">
-                  Signature Blockchain Vérifiée
+                  {t("trace.blockchainVerified")}
                 </span>
               </div>
               <code className="text-xs font-mono text-foreground break-all block">
@@ -429,11 +431,11 @@ export default function Trace() {
               <div className="flex items-center justify-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-success" />
                 <span className="text-sm font-medium text-success">
-                  Authenticité Confirmée
+                  {t("trace.authenticity")}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                Ce certificat est émis par la plateforme Plantéra et vérifié par blockchain.
+                {t("trace.certDesc")}
               </p>
               <p className="text-xs text-muted-foreground">
                 © {new Date().getFullYear()} Plantéra - Agriculture Intelligente
@@ -447,7 +449,7 @@ export default function Trace() {
           <Link to="/">
             <Button variant="outline" size="sm">
               <ExternalLink className="w-4 h-4 mr-2" />
-              Visiter Plantéra
+              {t("trace.visitPlantera")}
             </Button>
           </Link>
         </div>

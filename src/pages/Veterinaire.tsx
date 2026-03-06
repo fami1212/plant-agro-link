@@ -28,6 +28,7 @@ import { VetPatientsList } from "@/components/veterinaire/VetPatientsList";
 import { VetMedicalRecords } from "@/components/veterinaire/VetMedicalRecords";
 import { AnimalPatientDetails } from "@/components/veterinaire/AnimalPatientDetails";
 import { VetBilling } from "@/components/veterinaire/VetBilling";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface Booking {
   id: string;
@@ -74,6 +75,7 @@ interface MedicalRecord {
 
 export default function Veterinaire() {
   const { user, profile } = useAuth();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("rdv");
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -253,8 +255,8 @@ export default function Veterinaire() {
   return (
     <AppLayout>
       <PageHeader
-        title={`Dr. ${profile?.full_name?.split(" ")[0] || "Vétérinaire"}`}
-        subtitle="Espace vétérinaire"
+        title={`Dr. ${profile?.full_name?.split(" ")[0] || t("role.veterinaire")}`}
+        subtitle={t("vet.subtitle")}
         action={
           <Button variant="ghost" size="icon" onClick={fetchData}>
             <RefreshCw className="w-5 h-5" />
@@ -274,10 +276,10 @@ export default function Veterinaire() {
       <div className="px-4 mb-6">
         <div className="grid grid-cols-4 gap-2">
           {[
-            { icon: Calendar, value: todayBookings, label: "Aujourd'hui", color: "primary" },
-            { icon: AlertCircle, value: pendingBookings, label: "En attente", color: "warning" },
-            { icon: Heart, value: sickPatients, label: "À surveiller", color: "destructive" },
-            { icon: Users, value: patients.length, label: "Patients", color: "success" },
+            { icon: Calendar, value: todayBookings, label: t("vet.today"), color: "primary" },
+            { icon: AlertCircle, value: pendingBookings, label: t("vet.pending"), color: "warning" },
+            { icon: Heart, value: sickPatients, label: t("vet.toWatch"), color: "destructive" },
+            { icon: Users, value: patients.length, label: t("vet.patients"), color: "success" },
           ].map(({ icon: Icon, value, label, color }) => (
             <Card key={label} className={cn(`bg-${color}/5 border-${color}/20`)}>
               <CardContent className="p-3 text-center">
@@ -296,23 +298,23 @@ export default function Veterinaire() {
           <TabsList className="grid w-full grid-cols-5 mb-4 h-12">
             <TabsTrigger value="rdv" className="gap-1 text-xs px-1">
               <Calendar className="w-4 h-4" />
-              <span className="hidden sm:inline">RDV</span>
+              <span className="hidden sm:inline">{t("vet.appointments")}</span>
             </TabsTrigger>
             <TabsTrigger value="patients" className="gap-1 text-xs px-1">
               <Users className="w-4 h-4" />
-              <span className="hidden sm:inline">Patients</span>
+              <span className="hidden sm:inline">{t("vet.patients")}</span>
             </TabsTrigger>
             <TabsTrigger value="dossiers" className="gap-1 text-xs px-1">
               <FolderOpen className="w-4 h-4" />
-              <span className="hidden sm:inline">Dossiers</span>
+              <span className="hidden sm:inline">{t("vet.records")}</span>
             </TabsTrigger>
             <TabsTrigger value="diagnostic" className="gap-1 text-xs px-1">
               <Stethoscope className="w-4 h-4" />
-              <span className="hidden sm:inline">IA</span>
+              <span className="hidden sm:inline">{t("vet.aiDiagnosis")}</span>
             </TabsTrigger>
             <TabsTrigger value="billing" className="gap-1 text-xs px-1">
               <Heart className="w-4 h-4" />
-              <span className="hidden sm:inline">Revenus</span>
+              <span className="hidden sm:inline">{t("vet.revenue")}</span>
             </TabsTrigger>
           </TabsList>
 

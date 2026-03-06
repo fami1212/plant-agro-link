@@ -44,6 +44,7 @@ import { AudioWaveAnimation } from "@/components/voice/AudioWaveAnimation";
 import { VolumeVisualizer } from "@/components/voice/VolumeVisualizer";
 import { VoiceConversationHistory } from "@/components/voice/VoiceConversationHistory";
 import { useVoiceConversation } from "@/hooks/useVoiceConversation";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 // Voice shortcuts with icons (no text needed for illiterate users)
 const voiceShortcuts = [
@@ -110,6 +111,7 @@ export default function VoiceAssistant() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const voiceConversation = useVoiceConversation();
   
   const [isListening, setIsListening] = useState(false);
@@ -428,8 +430,8 @@ export default function VoiceAssistant() {
       setPulseAnimation(true);
     } catch (error) {
       toast({
-        title: "Microphone requis",
-        description: "Autorisez l'accès au microphone",
+        title: t("voice.micRequired"),
+        description: t("voice.micAuth"),
         variant: "destructive",
       });
     }
@@ -483,8 +485,8 @@ export default function VoiceAssistant() {
       const { client_secret } = await tokenResponse.json();
       
       toast({
-        title: "Mode conversation",
-        description: "Parlez naturellement, je vous écoute en continu",
+        title: t("voice.conversationMode"),
+        description: t("voice.conversationDesc"),
       });
 
       // For now, fall back to regular mode since full WebRTC implementation is complex
@@ -494,8 +496,8 @@ export default function VoiceAssistant() {
     } catch (error) {
       console.error("Realtime connection error:", error);
       toast({
-        title: "Erreur connexion",
-        description: "Mode conversation non disponible",
+        title: t("voice.connectionError"),
+        description: t("voice.modeUnavailable"),
         variant: "destructive",
       });
       setIsRealtimeMode(false);
@@ -549,7 +551,7 @@ export default function VoiceAssistant() {
               <SheetHeader>
                 <SheetTitle className="flex items-center gap-2">
                   <History className="w-5 h-5" />
-                  Historique
+                  {t("voice.history")}
                 </SheetTitle>
               </SheetHeader>
               <div className="mt-4">
@@ -569,14 +571,14 @@ export default function VoiceAssistant() {
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
                 <Languages className="w-5 h-5" />
-                Paramètres vocaux
+                {t("voice.voiceSettings")}
               </SheetTitle>
             </SheetHeader>
             
             <div className="space-y-6 py-6">
               {/* Language selection */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Langue</label>
+                <label className="text-sm font-medium">{t("voice.language")}</label>
                 <div className="flex gap-2">
                   {languages.map((lang) => (
                     <Button
@@ -597,7 +599,7 @@ export default function VoiceAssistant() {
 
               {/* Voice selection */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Voix</label>
+                <label className="text-sm font-medium">{t("voice.voiceSettings")}</label>
                 <Select value={selectedVoice} onValueChange={setSelectedVoice}>
                   <SelectTrigger>
                     <SelectValue placeholder="Voix automatique" />
@@ -614,7 +616,7 @@ export default function VoiceAssistant() {
 
               {/* Speech rate */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Vitesse: {speechRate.toFixed(1)}x</label>
+                <label className="text-sm font-medium">{t("voice.speed")}: {speechRate.toFixed(1)}x</label>
                 <div className="flex gap-2">
                   {[0.75, 1.0, 1.25, 1.5].map((rate) => (
                     <Button

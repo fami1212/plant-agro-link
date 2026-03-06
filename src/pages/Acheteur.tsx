@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { BuyerCart } from "@/components/buyer/BuyerCart";
 import { BuyerOrderTracking } from "@/components/buyer/BuyerOrderTracking";
 import { GeolocatedSearch, type GeoFilters, getDistanceKm } from "@/components/buyer/GeolocatedSearch";
@@ -71,6 +72,7 @@ const statusConfig: Record<string, { label: string; color: string; icon: any }> 
 
 export default function Acheteur() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("produits");
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
@@ -228,8 +230,8 @@ export default function Acheteur() {
   return (
     <AppLayout>
       <PageHeader
-        title="Mes achats"
-        subtitle="Trouvez les meilleurs produits locaux"
+        title={t("buyer.title")}
+        subtitle={t("buyer.subtitle")}
         action={
           <Button variant="ghost" size="icon" onClick={fetchData}>
             <RefreshCw className="w-5 h-5" />
@@ -249,10 +251,10 @@ export default function Acheteur() {
       <div className="px-4 mb-6">
         <div className="grid grid-cols-4 gap-2">
           {[
-            { icon: Package, value: totalOrders, label: "Commandes", color: "primary" },
-            { icon: Clock, value: pendingOrders, label: "En attente", color: "warning" },
-            { icon: CheckCircle2, value: acceptedOrders, label: "Acceptées", color: "success" },
-            { icon: Heart, value: favorites.length, label: "Favoris", color: "destructive" },
+            { icon: Package, value: totalOrders, label: t("buyer.commands"), color: "primary" },
+            { icon: Clock, value: pendingOrders, label: t("buyer.pending"), color: "warning" },
+            { icon: CheckCircle2, value: acceptedOrders, label: t("buyer.accepted"), color: "success" },
+            { icon: Heart, value: favorites.length, label: t("buyer.favorites"), color: "destructive" },
           ].map(({ icon: Icon, value, label, color }) => (
             <Card key={label} className={cn(`bg-${color}/5 border-${color}/20`)}>
               <CardContent className="p-3 text-center">
@@ -270,7 +272,7 @@ export default function Acheteur() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Rechercher un produit..."
+            placeholder={t("buyer.searchProduct")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -285,19 +287,19 @@ export default function Acheteur() {
           <TabsList className="grid w-full grid-cols-4 mb-4 h-12">
             <TabsTrigger value="produits" className="gap-1 text-xs">
               <ShoppingBag className="w-4 h-4" />
-              Produits
+              {t("buyer.products")}
             </TabsTrigger>
             <TabsTrigger value="panier" className="gap-1 text-xs">
               <ShoppingCart className="w-4 h-4" />
-              Panier
+              {t("buyer.cart")}
             </TabsTrigger>
             <TabsTrigger value="commandes" className="gap-1 text-xs">
               <Package className="w-4 h-4" />
-              Suivi
+              {t("buyer.orders")}
             </TabsTrigger>
             <TabsTrigger value="favoris" className="gap-1 text-xs">
               <Heart className="w-4 h-4" />
-              Favoris
+              {t("buyer.favorites")}
             </TabsTrigger>
           </TabsList>
 
@@ -319,8 +321,8 @@ export default function Acheteur() {
             {filteredProducts.length === 0 ? (
               <EmptyState
                 icon={<ShoppingBag className="w-8 h-8" />}
-                title="Aucun produit"
-                description="Revenez bientôt pour découvrir des produits"
+                title={t("buyer.noProducts")}
+                description={t("buyer.noProductsDesc")}
               />
             ) : (
               <div className="grid grid-cols-2 gap-3">
@@ -392,10 +394,10 @@ export default function Acheteur() {
             {favorites.length === 0 ? (
               <EmptyState
                 icon={<Heart className="w-8 h-8" />}
-                title="Aucun favori"
-                description="Ajoutez des produits à vos favoris"
+                title={t("buyer.noFavorites")}
+                description={t("buyer.noFavoritesDesc")}
                 action={{
-                  label: "Voir produits",
+                  label: t("buyer.viewProducts"),
                   onClick: () => setActiveTab("produits"),
                 }}
               />
@@ -432,7 +434,7 @@ export default function Acheteur() {
                         onClick={() => toggleFavorite(fav.listing_id)}
                       >
                         <Heart className="w-4 h-4 fill-current mr-1" />
-                        Retirer
+                        {t("buyer.remove")}
                       </Button>
                     </div>
                   </CardContent>
