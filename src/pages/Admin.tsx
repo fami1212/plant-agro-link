@@ -429,7 +429,7 @@ export default function Admin() {
                   <Badge className="bg-green-500">{t("admin.operational")}</Badge>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                  <span>Tables actives</span>
+                  <span>{t("admin.activeTables")}</span>
                   <Badge variant="secondary">15</Badge>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
