@@ -233,7 +233,7 @@ export default function IoT() {
       <div className="px-4 mb-4">
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
           <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 dark:bg-primary/20 dark:border-primary/30">
-            <p className="text-xs text-muted-foreground font-medium">Appareils</p>
+            <p className="text-xs text-muted-foreground font-medium">{t("iot.devices")}</p>
             <p className="text-lg font-bold text-foreground">{devices.length}</p>
           </div>
           <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-success/10 border border-success/20 dark:bg-success/20 dark:border-success/30">
