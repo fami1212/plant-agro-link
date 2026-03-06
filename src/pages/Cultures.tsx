@@ -450,7 +450,7 @@ export default function Cultures() {
                             size="sm"
                             onClick={() => setViewingHarvests(crop)}
                           >
-                            {harvestCount} entrée{harvestCount > 1 ? "s" : ""}
+                            {harvestCount} {t("crops.entries")}
                           </Button>
                         )}
                         <Button
