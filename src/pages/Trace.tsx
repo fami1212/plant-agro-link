@@ -53,6 +53,7 @@ const qualityColors: Record<string, string> = {
 
 export default function Trace() {
   const { lotId } = useParams<{ lotId: string }>();
+  const { t } = useLanguage();
   const [traceData, setTraceData] = useState<TraceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
