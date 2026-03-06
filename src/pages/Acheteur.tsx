@@ -72,6 +72,7 @@ const statusConfig: Record<string, { label: string; color: string; icon: any }> 
 
 export default function Acheteur() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("produits");
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
