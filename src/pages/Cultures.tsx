@@ -495,10 +495,9 @@ export default function Cultures() {
       <AlertDialog open={!!deletingCrop} onOpenChange={() => setDeletingCrop(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer cette culture ?</AlertDialogTitle>
+            <AlertDialogTitle>{t("common.delete")} ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. La culture "{deletingCrop?.name}" et tout son historique
-              de récoltes seront supprimés définitivement.
+              {t("parcels.deleteDesc")} "{deletingCrop?.name}"
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
