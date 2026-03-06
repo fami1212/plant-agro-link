@@ -376,7 +376,7 @@ export default function Trace() {
                 <div className="space-y-3">
                   <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <Droplets className="w-4 h-4 text-primary" />
-                    Données Capteurs IoT
+                    {t("trace.iotData")}
                   </h4>
                   <div className="grid grid-cols-3 gap-2 pl-6">
                     {traceData.iotData.avgHumidity !== undefined && (
