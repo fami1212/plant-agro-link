@@ -297,7 +297,7 @@ export default function Betail() {
             ))}
             {totalWeight > 0 && (
               <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-success/10 border border-success/20">
-                <p className="text-xs text-muted-foreground">Poids total</p>
+                <p className="text-xs text-muted-foreground">{t("livestock.totalWeight")}</p>
                 <p className="text-lg font-bold text-success">{(totalWeight / 1000).toFixed(1)} t</p>
               </div>
             )}
