@@ -250,7 +250,7 @@ export default function Trace() {
           </div>
           <Badge className="bg-white/20 text-white border-white/30">
             <CheckCircle2 className="w-3 h-3 mr-1" />
-            Vérifié
+            {t("trace.verified")}
           </Badge>
         </div>
       </div>
