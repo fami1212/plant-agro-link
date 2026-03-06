@@ -293,7 +293,6 @@ export default function Acheteur() {
               <ShoppingCart className="w-4 h-4" />
               {t("buyer.cart")}
             </TabsTrigger>
-            </TabsTrigger>
             <TabsTrigger value="commandes" className="gap-1 text-xs">
               <Package className="w-4 h-4" />
               {t("buyer.orders")}
