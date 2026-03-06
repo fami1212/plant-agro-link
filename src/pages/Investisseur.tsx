@@ -267,7 +267,7 @@ export default function Investisseur() {
             <div className="relative">
               <div className="flex items-center gap-2 text-primary-foreground mb-4">
                 <Wallet className="w-5 h-5" />
-                <span className="font-semibold">Mon Portefeuille</span>
+                <span className="font-semibold">{t("investor.portfolio")}</span>
                 <Badge variant="secondary" className="bg-white/20 text-white border-0 ml-auto">
                   {activeCount} actif{activeCount > 1 ? "s" : ""}
                 </Badge>
