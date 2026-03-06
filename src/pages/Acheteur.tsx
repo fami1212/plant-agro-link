@@ -287,11 +287,12 @@ export default function Acheteur() {
           <TabsList className="grid w-full grid-cols-4 mb-4 h-12">
             <TabsTrigger value="produits" className="gap-1 text-xs">
               <ShoppingBag className="w-4 h-4" />
-              Produits
+              {t("buyer.products")}
             </TabsTrigger>
             <TabsTrigger value="panier" className="gap-1 text-xs">
               <ShoppingCart className="w-4 h-4" />
-              Panier
+              {t("buyer.cart")}
+            </TabsTrigger>
             </TabsTrigger>
             <TabsTrigger value="commandes" className="gap-1 text-xs">
               <Package className="w-4 h-4" />
