@@ -371,18 +371,18 @@ export default function Parcelles() {
       <AlertDialog open={!!deletingField} onOpenChange={() => setDeletingField(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer cette parcelle ?</AlertDialogTitle>
+            <AlertDialogTitle>{t("parcels.deleteConfirm")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. La parcelle "{deletingField?.name}" sera supprimée définitivement.
+              {t("parcels.deleteDesc")} "{deletingField?.name}"
               {(fieldCrops[deletingField?.id || ''] || []).length > 0 && (
                 <span className="block mt-2 text-destructive font-medium">
-                  ⚠️ Cette parcelle contient des cultures. Supprimez-les d'abord.
+                  ⚠️ {t("parcels.hasCrops")}
                 </span>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDelete} 
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
