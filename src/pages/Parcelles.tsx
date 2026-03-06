@@ -419,7 +419,7 @@ export default function Parcelles() {
                   <p className="font-semibold text-foreground">{viewingField.irrigation_system || 'Aucun'}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground">Statut</p>
+                  <p className="text-xs text-muted-foreground">{t("parcels.status")}</p>
                   <Badge className={statusColors[viewingField.status || 'active']}>
                     {statusLabels[viewingField.status || 'active']}
                   </Badge>
