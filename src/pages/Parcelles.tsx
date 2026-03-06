@@ -407,7 +407,7 @@ export default function Parcelles() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground">Surface</p>
+                <p className="text-xs text-muted-foreground">{t("parcels.surface")}</p>
                   <p className="font-semibold text-foreground">{viewingField.area_hectares} ha</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
