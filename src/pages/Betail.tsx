@@ -451,8 +451,8 @@ export default function Betail() {
                         className="flex-1"
                         onClick={() => setAddingVetRecord(animal)}
                       >
-                        <Stethoscope className="w-4 h-4 mr-1" />
-                        Suivi vétérinaire
+                         <Stethoscope className="w-4 h-4 mr-1" />
+                        {t("livestock.vetTracking")}
                       </Button>
                       <Button
                         variant="ghost"
