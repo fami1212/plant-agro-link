@@ -322,8 +322,8 @@ export default function Acheteur() {
             {filteredProducts.length === 0 ? (
               <EmptyState
                 icon={<ShoppingBag className="w-8 h-8" />}
-                title="Aucun produit"
-                description="Revenez bientôt pour découvrir des produits"
+                title={t("buyer.noProducts")}
+                description={t("buyer.noProductsDesc")}
               />
             ) : (
               <div className="grid grid-cols-2 gap-3">
