@@ -375,10 +375,10 @@ export default function Investisseur() {
             {investments.length === 0 ? (
               <EmptyState
                 icon={<TrendingUp className="w-8 h-8" />}
-                title="Aucun investissement"
-                description="Explorez les opportunités pour commencer"
+                title={t("investor.noInvestments")}
+                description={t("investor.exploreOpp")}
                 action={{
-                  label: "Voir opportunités",
+                  label: t("investor.viewOpp"),
                   onClick: () => setActiveTab("opportunites"),
                 }}
               />
