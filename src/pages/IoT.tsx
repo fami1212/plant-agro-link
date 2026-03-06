@@ -98,6 +98,7 @@ const generateHistoricalData = (metric: string, hours: number = 24) => {
 };
 
 export default function IoT() {
+  const { t } = useLanguage();
   const {
     devices,
     sensorData,
