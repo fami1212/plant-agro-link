@@ -359,10 +359,10 @@ export default function Betail() {
         ) : livestock.length === 0 && !showForm ? (
           <EmptyState
             icon={<Heart className="w-8 h-8" />}
-            title="Aucun animal"
-            description="Commencez par enregistrer votre bétail"
+            title={t("livestock.noAnimals")}
+            description={t("livestock.noAnimalsDesc")}
             action={{
-              label: "Ajouter un animal",
+              label: t("livestock.addAnimal"),
               onClick: () => setShowForm(true),
             }}
           />
