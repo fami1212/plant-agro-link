@@ -430,8 +430,8 @@ export default function VoiceAssistant() {
       setPulseAnimation(true);
     } catch (error) {
       toast({
-        title: "Microphone requis",
-        description: "Autorisez l'accès au microphone",
+        title: t("voice.micRequired"),
+        description: t("voice.micAuth"),
         variant: "destructive",
       });
     }
