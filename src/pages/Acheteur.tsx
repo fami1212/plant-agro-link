@@ -296,11 +296,11 @@ export default function Acheteur() {
             </TabsTrigger>
             <TabsTrigger value="commandes" className="gap-1 text-xs">
               <Package className="w-4 h-4" />
-              Suivi
+              {t("buyer.orders")}
             </TabsTrigger>
             <TabsTrigger value="favoris" className="gap-1 text-xs">
               <Heart className="w-4 h-4" />
-              Favoris
+              {t("buyer.favorites")}
             </TabsTrigger>
           </TabsList>
 
