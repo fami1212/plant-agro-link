@@ -276,10 +276,10 @@ export default function Veterinaire() {
       <div className="px-4 mb-6">
         <div className="grid grid-cols-4 gap-2">
           {[
-            { icon: Calendar, value: todayBookings, label: "Aujourd'hui", color: "primary" },
-            { icon: AlertCircle, value: pendingBookings, label: "En attente", color: "warning" },
-            { icon: Heart, value: sickPatients, label: "À surveiller", color: "destructive" },
-            { icon: Users, value: patients.length, label: "Patients", color: "success" },
+            { icon: Calendar, value: todayBookings, label: t("vet.today"), color: "primary" },
+            { icon: AlertCircle, value: pendingBookings, label: t("vet.pending"), color: "warning" },
+            { icon: Heart, value: sickPatients, label: t("vet.toWatch"), color: "destructive" },
+            { icon: Users, value: patients.length, label: t("vet.patients"), color: "success" },
           ].map(({ icon: Icon, value, label, color }) => (
             <Card key={label} className={cn(`bg-${color}/5 border-${color}/20`)}>
               <CardContent className="p-3 text-center">
