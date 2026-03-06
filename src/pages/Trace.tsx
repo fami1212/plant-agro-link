@@ -223,14 +223,14 @@ export default function Trace() {
             <div className="w-16 h-16 mx-auto bg-destructive/20 rounded-full flex items-center justify-center">
               <AlertCircle className="w-8 h-8 text-destructive" />
             </div>
-            <h2 className="text-xl font-semibold">Lot introuvable</h2>
+            <h2 className="text-xl font-semibold">{t("trace.notFound")}</h2>
             <p className="text-muted-foreground">
-              Le certificat de traçabilité pour ce lot n'existe pas ou a expiré.
+              {t("trace.notFoundDesc")}
             </p>
             <Link to="/">
               <Button variant="outline">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Retour à l'accueil
+                {t("trace.backHome")}
               </Button>
             </Link>
           </CardContent>
