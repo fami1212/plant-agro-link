@@ -431,7 +431,7 @@ export default function Trace() {
               <div className="flex items-center justify-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-success" />
                 <span className="text-sm font-medium text-success">
-                  Authenticité Confirmée
+                  {t("trace.authenticity")}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
