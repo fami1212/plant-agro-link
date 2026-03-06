@@ -242,8 +242,8 @@ export default function Investisseur() {
   return (
     <AppLayout>
       <PageHeader
-        title="Investissements"
-        subtitle="Financez l'agriculture locale"
+        title={t("investor.title")}
+        subtitle={t("investor.subtitle")}
         action={
           <Button variant="ghost" size="icon" onClick={fetchData}>
             <RefreshCw className="w-5 h-5" />
