@@ -32,6 +32,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Database } from "@/integrations/supabase/types";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type SoilType = Database["public"]["Enums"]["soil_type"];
 type FieldStatus = Database["public"]["Enums"]["field_status"];
