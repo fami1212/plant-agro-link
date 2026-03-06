@@ -437,7 +437,7 @@ export default function Parcelles() {
               <div>
                 <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
                   <Wheat className="w-4 h-4 text-accent" />
-                  Cultures sur cette parcelle
+                  {t("parcels.cropsOnField")}
                 </h4>
                 {(fieldCrops[viewingField.id] || []).length > 0 ? (
                   <div className="space-y-2">
