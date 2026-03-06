@@ -374,7 +374,7 @@ export default function Admin() {
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="transactions" className="flex items-center gap-2 px-4">
               <DollarSign className="w-4 h-4" />
-              <span className="text-sm">Paiements</span>
+              <span className="text-sm">{t("admin.payments")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="system" className="flex items-center gap-2 px-4">
               <Settings className="w-4 h-4" />
