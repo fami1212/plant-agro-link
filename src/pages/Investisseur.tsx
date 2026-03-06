@@ -284,7 +284,7 @@ export default function Investisseur() {
                   <p className="text-xs opacity-60">FCFA</p>
                 </div>
                 <div>
-                  <p className="text-sm opacity-80">Gain potentiel</p>
+                  <p className="text-sm opacity-80">{t("investor.potentialGain")}</p>
                   <div className="flex items-center gap-1">
                     <ArrowUpRight className="w-4 h-4" />
                     <p className="text-2xl font-bold text-white">+{(potentialGain / 1000).toFixed(0)}k</p>
