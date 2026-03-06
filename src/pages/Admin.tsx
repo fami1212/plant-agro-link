@@ -378,7 +378,7 @@ export default function Admin() {
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="system" className="flex items-center gap-2 px-4">
               <Settings className="w-4 h-4" />
-              <span className="text-sm">Système</span>
+              <span className="text-sm">{t("admin.system")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="providers" className="flex items-center gap-2 px-4">
               <Activity className="w-4 h-4" />
