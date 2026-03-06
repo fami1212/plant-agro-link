@@ -70,6 +70,7 @@ interface Investment {
 
 export default function Investisseur() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("opportunites");
   const [loading, setLoading] = useState(true);
   const [opportunities, setOpportunities] = useState<InvestmentOpportunity[]>([]);
