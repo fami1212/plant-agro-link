@@ -35,6 +35,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type LivestockSpecies = Database["public"]["Enums"]["livestock_species"];
 type LivestockHealthStatus = Database["public"]["Enums"]["livestock_health_status"];
