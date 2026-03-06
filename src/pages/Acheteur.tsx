@@ -251,10 +251,10 @@ export default function Acheteur() {
       <div className="px-4 mb-6">
         <div className="grid grid-cols-4 gap-2">
           {[
-            { icon: Package, value: totalOrders, label: "Commandes", color: "primary" },
-            { icon: Clock, value: pendingOrders, label: "En attente", color: "warning" },
-            { icon: CheckCircle2, value: acceptedOrders, label: "Acceptées", color: "success" },
-            { icon: Heart, value: favorites.length, label: "Favoris", color: "destructive" },
+            { icon: Package, value: totalOrders, label: t("buyer.commands"), color: "primary" },
+            { icon: Clock, value: pendingOrders, label: t("buyer.pending"), color: "warning" },
+            { icon: CheckCircle2, value: acceptedOrders, label: t("buyer.accepted"), color: "success" },
+            { icon: Heart, value: favorites.length, label: t("buyer.favorites"), color: "destructive" },
           ].map(({ icon: Icon, value, label, color }) => (
             <Card key={label} className={cn(`bg-${color}/5 border-${color}/20`)}>
               <CardContent className="p-3 text-center">
