@@ -395,10 +395,10 @@ export default function Acheteur() {
             {favorites.length === 0 ? (
               <EmptyState
                 icon={<Heart className="w-8 h-8" />}
-                title="Aucun favori"
-                description="Ajoutez des produits à vos favoris"
+                title={t("buyer.noFavorites")}
+                description={t("buyer.noFavoritesDesc")}
                 action={{
-                  label: "Voir produits",
+                  label: t("buyer.viewProducts"),
                   onClick: () => setActiveTab("produits"),
                 }}
               />
