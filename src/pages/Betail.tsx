@@ -303,7 +303,7 @@ export default function Betail() {
             )}
             {alertCount > 0 && (
               <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-warning/10 border border-warning/20">
-                <p className="text-xs text-muted-foreground">Alertes santé</p>
+                <p className="text-xs text-muted-foreground">{t("livestock.healthAlerts")}</p>
                 <p className="text-lg font-bold text-warning">{alertCount}</p>
               </div>
             )}
