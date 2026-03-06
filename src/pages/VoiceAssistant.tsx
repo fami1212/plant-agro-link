@@ -485,8 +485,8 @@ export default function VoiceAssistant() {
       const { client_secret } = await tokenResponse.json();
       
       toast({
-        title: "Mode conversation",
-        description: "Parlez naturellement, je vous écoute en continu",
+        title: t("voice.conversationMode"),
+        description: t("voice.conversationDesc"),
       });
 
       // For now, fall back to regular mode since full WebRTC implementation is complex
