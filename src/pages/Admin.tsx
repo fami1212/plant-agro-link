@@ -324,7 +324,7 @@ export default function Admin() {
                 <Package className="w-4 h-4 text-green-600" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Annonces</p>
+                <p className="text-xs text-muted-foreground">{t("admin.listings")}</p>
                 <p className="text-lg font-bold">{stats.totalListings}</p>
               </div>
             </div>
