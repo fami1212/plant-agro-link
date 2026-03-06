@@ -578,7 +578,7 @@ export default function VoiceAssistant() {
             <div className="space-y-6 py-6">
               {/* Language selection */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Langue</label>
+                <label className="text-sm font-medium">{t("voice.language")}</label>
                 <div className="flex gap-2">
                   {languages.map((lang) => (
                     <Button
