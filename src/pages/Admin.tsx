@@ -417,7 +417,7 @@ export default function Admin() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Database className="w-5 h-5 text-primary" />
-                  Base de données
+                  {t("admin.database")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
