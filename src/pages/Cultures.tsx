@@ -245,8 +245,8 @@ export default function Cultures() {
   return (
     <AppLayout>
       <PageHeader
-        title="Cultures"
-        subtitle={`${activeCrops.length} active${activeCrops.length > 1 ? "s" : ""} • ${totalArea.toFixed(1)} ha`}
+        title={t("crops.title")}
+        subtitle={`${activeCrops.length} ${activeCrops.length > 1 ? t("crops.actives") : t("crops.active")} • ${totalArea.toFixed(1)} ha`}
         action={
           <div className="flex gap-2">
             <SmartCameraButton 
