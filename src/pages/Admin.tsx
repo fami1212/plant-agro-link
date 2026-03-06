@@ -358,7 +358,7 @@ export default function Admin() {
           <ScrollableTabsList>
             <ScrollableTabsTrigger value="overview" className="flex items-center gap-2 px-4">
               <BarChart3 className="w-4 h-4" />
-              <span className="text-sm">Vue d'ensemble</span>
+              <span className="text-sm">{t("admin.overview")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="users" className="flex items-center gap-2 px-4">
               <Users className="w-4 h-4" />
