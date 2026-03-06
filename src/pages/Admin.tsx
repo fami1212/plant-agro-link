@@ -370,7 +370,7 @@ export default function Admin() {
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="disputes" className="flex items-center gap-2 px-4">
               <Scale className="w-4 h-4" />
-              <span className="text-sm">Litiges</span>
+              <span className="text-sm">{t("admin.disputes")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="transactions" className="flex items-center gap-2 px-4">
               <DollarSign className="w-4 h-4" />
