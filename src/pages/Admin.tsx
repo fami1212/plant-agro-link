@@ -60,6 +60,7 @@ import { AdminUserModeration } from "@/components/admin/AdminUserModeration";
 import { AdminListingModeration } from "@/components/admin/AdminListingModeration";
 import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
 import { AdminServiceProviders } from "@/components/admin/AdminServiceProviders";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type Profile = DatabaseTypes["public"]["Tables"]["profiles"]["Row"];
 type Listing = DatabaseTypes["public"]["Tables"]["marketplace_listings"]["Row"];
