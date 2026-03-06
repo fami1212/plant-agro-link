@@ -230,8 +230,8 @@ export default function Acheteur() {
   return (
     <AppLayout>
       <PageHeader
-        title="Mes achats"
-        subtitle="Trouvez les meilleurs produits locaux"
+        title={t("buyer.title")}
+        subtitle={t("buyer.subtitle")}
         action={
           <Button variant="ghost" size="icon" onClick={fetchData}>
             <RefreshCw className="w-5 h-5" />
