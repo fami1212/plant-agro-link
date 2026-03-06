@@ -309,7 +309,7 @@ export default function Betail() {
             )}
             {upcomingAppointments > 0 && (
               <div className="flex-shrink-0 px-4 py-3 rounded-xl bg-accent/10 border border-accent/20">
-                <p className="text-xs text-muted-foreground">RDV vétérinaire</p>
+                <p className="text-xs text-muted-foreground">{t("livestock.vetAppointment")}</p>
                 <p className="text-lg font-bold text-accent">{upcomingAppointments}</p>
               </div>
             )}
