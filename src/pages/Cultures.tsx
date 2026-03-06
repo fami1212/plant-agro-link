@@ -441,8 +441,8 @@ export default function Cultures() {
                           className="flex-1"
                           onClick={() => setHarvestingCrop(crop)}
                         >
-                          <Package className="w-4 h-4 mr-1" />
-                          Récolte
+                           <Package className="w-4 h-4 mr-1" />
+                          {t("crops.harvest")}
                         </Button>
                         {harvestCount > 0 && (
                           <Button
