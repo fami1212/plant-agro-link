@@ -362,7 +362,7 @@ export default function Admin() {
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="users" className="flex items-center gap-2 px-4">
               <Users className="w-4 h-4" />
-              <span className="text-sm">Utilisateurs</span>
+              <span className="text-sm">{t("admin.users")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="marketplace" className="flex items-center gap-2 px-4">
               <ShoppingBag className="w-4 h-4" />
