@@ -96,6 +96,7 @@ const healthStatusOrder: LivestockHealthStatus[] = ['malade', 'traitement', 'qua
 
 export default function Betail() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { isVeterinaire, isAgriculteur, isAdmin } = useRoleAccess();
   const [livestock, setLivestock] = useState<Livestock[]>([]);
   const [vetRecords, setVetRecords] = useState<Record<string, VetRecord[]>>({});
