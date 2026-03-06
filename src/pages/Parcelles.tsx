@@ -274,10 +274,10 @@ export default function Parcelles() {
         ) : fields.length === 0 && !showForm ? (
           <EmptyState
             icon={<MapPin className="w-12 h-12" />}
-            title="Aucune parcelle"
-            description="Commencez par ajouter votre première parcelle pour suivre vos cultures."
+            title={t("parcels.noParcel")}
+            description={t("parcels.noParcelDesc")}
             action={{
-              label: "Ajouter une parcelle",
+              label: t("parcels.addParcel"),
               onClick: () => setShowForm(true)
             }}
           />
