@@ -246,7 +246,7 @@ export default function IoT() {
               ? "bg-destructive/10 border border-destructive/20 dark:bg-destructive/20 dark:border-destructive/40" 
               : "bg-muted border border-border"
           )}>
-            <p className="text-xs text-muted-foreground font-medium">Alertes</p>
+            <p className="text-xs text-muted-foreground font-medium">{t("iot.alerts")}</p>
             <p className={cn("text-lg font-bold", unresolvedAlerts.length > 0 ? "text-destructive" : "text-foreground")}>
               {unresolvedAlerts.length}
             </p>
