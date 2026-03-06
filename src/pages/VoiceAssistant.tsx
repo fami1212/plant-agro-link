@@ -551,7 +551,7 @@ export default function VoiceAssistant() {
               <SheetHeader>
                 <SheetTitle className="flex items-center gap-2">
                   <History className="w-5 h-5" />
-                  Historique
+                  {t("voice.history")}
                 </SheetTitle>
               </SheetHeader>
               <div className="mt-4">
