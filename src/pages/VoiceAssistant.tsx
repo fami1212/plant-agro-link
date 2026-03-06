@@ -44,6 +44,7 @@ import { AudioWaveAnimation } from "@/components/voice/AudioWaveAnimation";
 import { VolumeVisualizer } from "@/components/voice/VolumeVisualizer";
 import { VoiceConversationHistory } from "@/components/voice/VoiceConversationHistory";
 import { useVoiceConversation } from "@/hooks/useVoiceConversation";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 // Voice shortcuts with icons (no text needed for illiterate users)
 const voiceShortcuts = [
