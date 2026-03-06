@@ -274,7 +274,7 @@ export default function Investisseur() {
               </div>
               <div className="grid grid-cols-3 gap-4 text-primary-foreground">
                 <div>
-                  <p className="text-sm opacity-80">Total investi</p>
+                  <p className="text-sm opacity-80">{t("investor.totalInvested")}</p>
                   <p className="text-2xl font-bold">{(totalInvested / 1000).toFixed(0)}k</p>
                   <p className="text-xs opacity-60">FCFA</p>
                 </div>
