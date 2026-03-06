@@ -202,8 +202,8 @@ export default function IoT() {
   return (
     <AppLayout>
       <PageHeader
-        title="Capteurs IoT"
-        subtitle={`${activeDevices.length} appareil${activeDevices.length > 1 ? "s" : ""} en ligne`}
+        title={t("iot.title")}
+        subtitle={`${activeDevices.length} ${t("iot.devices")} ${t("iot.online")}`}
         action={
           <div className="flex gap-2">
             <Button
