@@ -81,6 +81,7 @@ const statusLabels: Record<FieldStatus, string> = {
 
 export default function Parcelles() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [fields, setFields] = useState<Field[]>([]);
   const [fieldCrops, setFieldCrops] = useState<Record<string, Crop[]>>({});
   const [loading, setLoading] = useState(true);
