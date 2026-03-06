@@ -21,6 +21,7 @@ import {
   AlertCircle,
   QrCode,
 } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface TraceData {
   lotId: string;
