@@ -367,7 +367,7 @@ export default function Investisseur() {
                   <p className="text-3xl font-bold text-success">
                     {investments.filter(i => i.status === "complete" || i.status === "rembourse").length}
                   </p>
-                  <p className="text-sm text-muted-foreground">Terminés</p>
+                  <p className="text-sm text-muted-foreground">{t("investor.completed")}</p>
                 </CardContent>
               </Card>
             </div>
