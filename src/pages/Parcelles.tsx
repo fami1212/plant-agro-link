@@ -428,7 +428,7 @@ export default function Parcelles() {
               
               {viewingField.description && (
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground mb-1">Description</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t("parcels.description")}</p>
                   <p className="text-sm text-foreground">{viewingField.description}</p>
                 </div>
               )}
