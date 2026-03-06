@@ -301,21 +301,21 @@ export default function Investisseur() {
       <div className="px-4 pb-28">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4 mb-4 h-12 p-1">
-            <TabsTrigger value="opportunites" className="gap-1.5 text-xs">
+             <TabsTrigger value="opportunites" className="gap-1.5 text-xs">
               <Target className="w-4 h-4" />
-              <span className="hidden sm:inline">Opportunités</span>
+              <span className="hidden sm:inline">{t("investor.opportunities")}</span>
             </TabsTrigger>
             <TabsTrigger value="portefeuille" className="gap-1.5 text-xs">
               <PieChart className="w-4 h-4" />
-              <span className="hidden sm:inline">Portefeuille</span>
+              <span className="hidden sm:inline">{t("investor.portfolioTab")}</span>
             </TabsTrigger>
             <TabsTrigger value="rendements" className="gap-1.5 text-xs">
               <BarChart3 className="w-4 h-4" />
-              <span className="hidden sm:inline">Rendements</span>
+              <span className="hidden sm:inline">{t("investor.returns")}</span>
             </TabsTrigger>
             <TabsTrigger value="iot" className="gap-1.5 text-xs">
               <Activity className="w-4 h-4" />
-              <span className="hidden sm:inline">Suivi IoT</span>
+              <span className="hidden sm:inline">{t("investor.iotTracking")}</span>
             </TabsTrigger>
           </TabsList>
 
