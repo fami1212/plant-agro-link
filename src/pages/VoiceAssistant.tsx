@@ -599,7 +599,7 @@ export default function VoiceAssistant() {
 
               {/* Voice selection */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Voix</label>
+                <label className="text-sm font-medium">{t("voice.voiceSettings")}</label>
                 <Select value={selectedVoice} onValueChange={setSelectedVoice}>
                   <SelectTrigger>
                     <SelectValue placeholder="Voix automatique" />
