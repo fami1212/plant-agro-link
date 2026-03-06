@@ -496,8 +496,8 @@ export default function VoiceAssistant() {
     } catch (error) {
       console.error("Realtime connection error:", error);
       toast({
-        title: "Erreur connexion",
-        description: "Mode conversation non disponible",
+        title: t("voice.connectionError"),
+        description: t("voice.modeUnavailable"),
         variant: "destructive",
       });
       setIsRealtimeMode(false);
