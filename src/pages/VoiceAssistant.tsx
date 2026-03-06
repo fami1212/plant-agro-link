@@ -571,7 +571,7 @@ export default function VoiceAssistant() {
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
                 <Languages className="w-5 h-5" />
-                Paramètres vocaux
+                {t("voice.voiceSettings")}
               </SheetTitle>
             </SheetHeader>
             
