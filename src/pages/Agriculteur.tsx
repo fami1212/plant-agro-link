@@ -10,6 +10,7 @@ import {
   Wallet,
   Settings,
   CloudSun,
+  FileDown,
 } from "lucide-react";
 import { FarmOverview } from "@/components/farmer/FarmOverview";
 import { FarmCalendar } from "@/components/farmer/FarmCalendar";
@@ -17,6 +18,10 @@ import { FarmerFinanceSimple } from "@/components/farmer/FarmerFinanceSimple";
 import { WeatherWidget } from "@/components/farmer/WeatherWidget";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { generateAgriculturalReportPDF } from "@/services/pdfService";
+import { toast } from "sonner";
 
 export default function Agriculteur() {
   const [activeTab, setActiveTab] = useState("overview");
