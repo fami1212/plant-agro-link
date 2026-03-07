@@ -10,6 +10,7 @@ import {
   Wallet,
   Settings,
   CloudSun,
+  FileDown,
 } from "lucide-react";
 import { FarmOverview } from "@/components/farmer/FarmOverview";
 import { FarmCalendar } from "@/components/farmer/FarmCalendar";
@@ -17,11 +18,44 @@ import { FarmerFinanceSimple } from "@/components/farmer/FarmerFinanceSimple";
 import { WeatherWidget } from "@/components/farmer/WeatherWidget";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { generateAgriculturalReportPDF } from "@/services/pdfService";
+import { toast } from "sonner";
 
 export default function Agriculteur() {
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
   const { t } = useLanguage();
+
+  const { user, profile } = useAuth();
+
+  const handleExportReport = async () => {
+    if (!user) return;
+    try {
+      const [fieldsRes, cropsRes, livestockRes, harvestRes] = await Promise.all([
+        supabase.from("fields").select("name, area_hectares, soil_type, status").eq("user_id", user.id),
+        supabase.from("crops").select("name, crop_type, status, sowing_date, expected_yield_kg, fields:field_id(name)").eq("user_id", user.id),
+        supabase.from("livestock").select("identifier, species, breed, health_status, weight_kg").eq("user_id", user.id),
+        supabase.from("harvest_records").select("quantity_kg, quality_grade").eq("user_id", user.id),
+      ]);
+      generateAgriculturalReportPDF({
+        farmerName: profile?.full_name || "Agriculteur",
+        fields: (fieldsRes.data || []).map(f => ({ name: f.name, area: f.area_hectares, soilType: f.soil_type, status: f.status || "active" })),
+        crops: (cropsRes.data || []).map(c => ({ name: c.name, type: c.crop_type, field: (c.fields as any)?.name || "-", status: c.status, sowingDate: c.sowing_date || undefined, expectedYield: c.expected_yield_kg || undefined })),
+        livestock: (livestockRes.data || []).map(l => ({ identifier: l.identifier, species: l.species, breed: l.breed || undefined, health: l.health_status, weight: l.weight_kg || undefined })),
+        harvestSummary: {
+          totalKg: (harvestRes.data || []).reduce((s, h) => s + (h.quantity_kg || 0), 0),
+          avgQuality: (harvestRes.data || [])[0]?.quality_grade || "N/A",
+          recordCount: (harvestRes.data || []).length,
+        },
+      });
+      toast.success(t("pdf.agriculturalReport"));
+    } catch (err) {
+      console.error(err);
+      toast.error("Erreur export PDF");
+    }
+  };
 
   return (
     <AppLayout>
@@ -29,9 +63,14 @@ export default function Agriculteur() {
         title={t("farmer.title")}
         subtitle={t("farmer.subtitle")}
         action={
-          <Button variant="ghost" size="icon" onClick={() => navigate("/settings")}>
-            <Settings className="w-5 h-5" />
-          </Button>
+          <div className="flex gap-1">
+            <Button variant="ghost" size="icon" onClick={handleExportReport} title={t("pdf.agriculturalReport")}>
+              <FileDown className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => navigate("/settings")}>
+              <Settings className="w-5 h-5" />
+            </Button>
+          </div>
         }
       />
 

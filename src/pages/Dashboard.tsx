@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
 import { HarvestChart } from "@/components/dashboard/HarvestChart";
 import { AIContextualTip } from "@/components/ai/AIContextualTip";
+import { InteractiveTutorial } from "@/components/onboarding/InteractiveTutorial";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,6 +25,9 @@ export default function Dashboard() {
   const { isAgriculteur, isVeterinaire, isAcheteur, isInvestisseur, isAdmin } = useRoleAccess();
   const { stats, harvestTrend, alerts, isLoading } = useDashboardData();
   const { t } = useLanguage();
+  const [showTutorial, setShowTutorial] = useState(() => {
+    return !localStorage.getItem("plantera-tutorial-completed");
+  });
 
   const userName = profile?.full_name?.split(" ")[0] || t("common.user");
   
@@ -43,6 +48,7 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
+      {showTutorial && <InteractiveTutorial onComplete={() => setShowTutorial(false)} />}
       <div className="min-h-screen bg-background">
         <PageHeader
           title={`${getGreeting()}, ${userName}`}
