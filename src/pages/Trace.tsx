@@ -446,8 +446,16 @@ export default function Trace() {
           </CardContent>
         </Card>
 
-        {/* Back to home */}
-        <div className="text-center">
+        {/* PDF Download & Back */}
+        <div className="flex gap-2 justify-center">
+          <Button 
+            variant="default" 
+            size="sm"
+            onClick={() => generateTraceabilityCertificatePDF(traceData)}
+          >
+            <FileDown className="w-4 h-4 mr-2" />
+            {t("pdf.certificate")}
+          </Button>
           <Link to="/">
             <Button variant="outline" size="sm">
               <ExternalLink className="w-4 h-4 mr-2" />
