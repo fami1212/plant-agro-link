@@ -531,4 +531,36 @@ export const wo = {
   "offline.indicator": "Amul Internet",
   "offline.pendingOps": "jëf yi ngi xaar",
   "offline.syncing": "Sync naa...",
+
+  // Tutorial
+  "tutorial.welcome.title": "Dalal jàmm ci Plantéra! 🌱",
+  "tutorial.welcome.desc": "Sa plateforme bu xam-xam ngir saytu sa tool. Ñu gis jëf yi am ci biir.",
+  "tutorial.parcels.title": "Saytu sa Parcelles",
+  "tutorial.parcels.desc": "Sos te topp sa parcelles ak GPS, xeetu suuf, ak arrosage.",
+  "tutorial.crops.title": "Topp sa Mbey",
+  "tutorial.crops.desc": "Bind sa béy, topp yokk bi, te planifie sa mbaxx ak ndimbal IA.",
+  "tutorial.livestock.title": "Saytu sa Rab",
+  "tutorial.livestock.desc": "Topp wér gi rab yi, piqûres, te jokko ak doktoor rab.",
+  "tutorial.marketplace.title": "Jaay ci Marse bi",
+  "tutorial.marketplace.desc": "Wone sa yën, waxtaan ak jëndkat yi, te jot xaalis bu aar.",
+  "tutorial.ai.title": "Xam-xam Artificiel",
+  "tutorial.ai.desc": "Fàttaliku feebar yi ci nataal, xam-xam rendement, te jot ndimbal.",
+  "tutorial.ready.title": "Pare nga! 🚀",
+  "tutorial.ready.desc": "Tàmbalee sos sa parcelle bi njëk walla gis marse bi. Plantéra nekk na ak yow!",
+  "tutorial.next": "Ci kanam",
+  "tutorial.prev": "Ci ginnaaw",
+  "tutorial.skip": "Wàcc tutoriel bi",
+  "tutorial.start": "Dem ñu!",
+
+  // PDF
+  "pdf.download": "Wàcce PDF",
+  "pdf.certificate": "Certificat PDF",
+  "pdf.financialReport": "Rapport xaalis",
+  "pdf.agriculturalReport": "Rapport tool",
+
+  // Listing Form
+  "listing.addImages": "Yokk nataal",
+  "listing.uploadImages": "Nataal yën bi",
+  "listing.maxImages": "Maximum 5 nataal",
+  "listing.uploading": "Yónne ngi...",
 };

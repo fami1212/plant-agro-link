@@ -531,4 +531,36 @@ export const en = {
   "offline.indicator": "Offline",
   "offline.pendingOps": "pending operations",
   "offline.syncing": "Syncing...",
+
+  // Tutorial
+  "tutorial.welcome.title": "Welcome to Plantéra! 🌱",
+  "tutorial.welcome.desc": "Your smart platform to manage your farm. Let's discover the main features together.",
+  "tutorial.parcels.title": "Manage your Fields",
+  "tutorial.parcels.desc": "Create and track your agricultural fields with GPS location, soil type, and irrigation system.",
+  "tutorial.crops.title": "Track your Crops",
+  "tutorial.crops.desc": "Record your sowings, track growth, and plan your harvests with AI assistance.",
+  "tutorial.livestock.title": "Manage your Livestock",
+  "tutorial.livestock.desc": "Track animal health, vaccinations, and connect with veterinarians.",
+  "tutorial.marketplace.title": "Sell on the Marketplace",
+  "tutorial.marketplace.desc": "Publish your products, negotiate with buyers, and receive secure payments.",
+  "tutorial.ai.title": "Artificial Intelligence",
+  "tutorial.ai.desc": "Detect diseases by photo, predict yields, and receive personalized advice.",
+  "tutorial.ready.title": "You're ready! 🚀",
+  "tutorial.ready.desc": "Start by creating your first field or explore the marketplace. Plantéra is with you!",
+  "tutorial.next": "Next",
+  "tutorial.prev": "Previous",
+  "tutorial.skip": "Skip tutorial",
+  "tutorial.start": "Let's go!",
+
+  // PDF
+  "pdf.download": "Download PDF",
+  "pdf.certificate": "Certificate PDF",
+  "pdf.financialReport": "Financial report",
+  "pdf.agriculturalReport": "Agricultural report",
+
+  // Listing Form
+  "listing.addImages": "Add photos",
+  "listing.uploadImages": "Product photos",
+  "listing.maxImages": "Maximum 5 photos",
+  "listing.uploading": "Uploading...",
 };
