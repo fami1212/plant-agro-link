@@ -20,8 +20,10 @@ import {
   ArrowLeft,
   AlertCircle,
   QrCode,
+  FileDown,
 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { generateTraceabilityCertificatePDF } from "@/services/pdfService";
 
 interface TraceData {
   lotId: string;
