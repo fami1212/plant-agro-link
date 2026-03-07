@@ -531,4 +531,36 @@ export const fr = {
   "offline.indicator": "Hors ligne",
   "offline.pendingOps": "opérations en attente",
   "offline.syncing": "Synchronisation...",
+
+  // Tutorial
+  "tutorial.welcome.title": "Bienvenue sur Plantéra ! 🌱",
+  "tutorial.welcome.desc": "Votre plateforme intelligente pour gérer votre exploitation agricole. Découvrons ensemble les fonctionnalités principales.",
+  "tutorial.parcels.title": "Gérez vos Parcelles",
+  "tutorial.parcels.desc": "Créez et suivez vos parcelles agricoles avec localisation GPS, type de sol, et système d'irrigation.",
+  "tutorial.crops.title": "Suivez vos Cultures",
+  "tutorial.crops.desc": "Enregistrez vos semis, suivez la croissance, et planifiez vos récoltes avec l'aide de l'IA.",
+  "tutorial.livestock.title": "Gérez votre Bétail",
+  "tutorial.livestock.desc": "Suivez la santé de vos animaux, les vaccinations, et connectez-vous avec des vétérinaires.",
+  "tutorial.marketplace.title": "Vendez sur le Marketplace",
+  "tutorial.marketplace.desc": "Publiez vos produits, négociez avec les acheteurs, et recevez des paiements sécurisés.",
+  "tutorial.ai.title": "Intelligence Artificielle",
+  "tutorial.ai.desc": "Détectez les maladies par photo, prédisez vos rendements, et recevez des conseils personnalisés.",
+  "tutorial.ready.title": "Vous êtes prêt ! 🚀",
+  "tutorial.ready.desc": "Commencez par créer votre première parcelle ou explorez le marketplace. Plantéra vous accompagne !",
+  "tutorial.next": "Suivant",
+  "tutorial.prev": "Précédent",
+  "tutorial.skip": "Passer le tutoriel",
+  "tutorial.start": "C'est parti !",
+
+  // PDF
+  "pdf.download": "Télécharger PDF",
+  "pdf.certificate": "Certificat PDF",
+  "pdf.financialReport": "Rapport financier",
+  "pdf.agriculturalReport": "Rapport agricole",
+
+  // Listing Form
+  "listing.addImages": "Ajouter des photos",
+  "listing.uploadImages": "Photos du produit",
+  "listing.maxImages": "Maximum 5 photos",
+  "listing.uploading": "Envoi en cours...",
 };
