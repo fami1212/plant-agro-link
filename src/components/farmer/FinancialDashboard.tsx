@@ -230,10 +230,30 @@ export function FinancialDashboard() {
     ? ((data.netProfit / (data.totalRevenue + data.investmentsReceived)) * 100).toFixed(1)
     : 0;
 
+  const { t } = useLanguage();
+
+  const handleExportPDF = () => {
+    generateFinancialReportPDF({
+      period: period === "6m" ? "6 mois" : "12 mois",
+      totalRevenue: data.totalRevenue,
+      totalExpenses: data.totalExpenses,
+      netProfit: data.netProfit,
+      investmentsReceived: data.investmentsReceived,
+      pendingPayments: data.pendingPayments,
+      monthlyData: data.monthlyData,
+      recentTransactions: data.recentTransactions,
+    });
+    toast.success(t("pdf.financialReport"));
+  };
+
   return (
     <div className="space-y-4">
-      {/* Period Selector */}
-      <div className="flex justify-end">
+      {/* Period Selector + PDF Export */}
+      <div className="flex justify-between items-center">
+        <Button variant="outline" size="sm" onClick={handleExportPDF}>
+          <FileDown className="w-4 h-4 mr-1" />
+          PDF
+        </Button>
         <Tabs value={period} onValueChange={(v) => setPeriod(v as "6m" | "12m")}>
           <TabsList className="h-8">
             <TabsTrigger value="6m" className="text-xs px-3">6 mois</TabsTrigger>
