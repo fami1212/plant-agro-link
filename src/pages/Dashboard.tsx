@@ -48,6 +48,7 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
+      {showTutorial && <InteractiveTutorial onComplete={() => setShowTutorial(false)} />}
       <div className="min-h-screen bg-background">
         <PageHeader
           title={`${getGreeting()}, ${userName}`}
