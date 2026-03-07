@@ -15,9 +15,11 @@ import {
   Calendar,
   ChevronRight,
   Loader2,
+  FileDown,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -31,12 +33,12 @@ import {
   XAxis,
   YAxis,
   ResponsiveContainer,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
 } from "recharts";
+import { generateFinancialReportPDF } from "@/services/pdfService";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface FinancialData {
   totalRevenue: number;
