@@ -148,6 +148,23 @@ export default function Settings() {
           </div>
           <Separator className="mb-4" />
           <div className="space-y-4">
+            {supported && (
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Notifications push</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {permission === "granted" ? "Activées ✓" : "Recevez des alertes même en arrière-plan"}
+                  </p>
+                </div>
+                <Switch
+                  checked={permission === "granted"}
+                  onCheckedChange={async (checked) => {
+                    if (checked) await requestPermission();
+                  }}
+                  disabled={permission === "denied"}
+                />
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>{t("settings.iotAlerts")}</Label>
