@@ -18,6 +18,8 @@ import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AIAssistant } from "@/components/ai/AIAssistant";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import Index from "./pages/Index";
 import Onboarding from "./pages/Onboarding";
 import Auth from "./pages/Auth";
@@ -32,187 +34,198 @@ import MarketplaceInvestor from "./pages/marketplace/MarketplaceInvestor";
 import IoT from "./pages/IoT";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="light" storageKey="plantera-theme">
-      <LanguageProvider>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner position="top-center" />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/auth" element={<Auth />} />
-              {/* Public Traceability Page */}
-              <Route path="/trace/:lotId" element={<Trace />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Agriculteur Routes */}
-              <Route
-                path="/agriculteur"
-                element={
-                  <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
-                    <Agriculteur />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/parcelles"
-                element={
-                  <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
-                    <Parcelles />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/cultures"
-                element={
-                  <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
-                    <Cultures />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Shared: Agriculteur & Veterinaire */}
-              <Route
-                path="/betail"
-                element={
-                  <ProtectedRoute allowedRoles={['agriculteur', 'veterinaire', 'admin']}>
-                    <Betail />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Marketplace - role-specific pages */}
-              <Route
-                path="/marketplace"
-                element={
-                  <ProtectedRoute>
-                    <Marketplace />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/marketplace/farmer"
-                element={
-                  <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
-                    <MarketplaceFarmer />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/marketplace/buyer"
-                element={
-                  <ProtectedRoute allowedRoles={['acheteur', 'admin']}>
-                    <MarketplaceBuyer />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/marketplace/investor"
-                element={
-                  <ProtectedRoute allowedRoles={['investisseur', 'admin']}>
-                    <MarketplaceInvestor />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Agriculteur IoT */}
-              <Route
-                path="/iot"
-                element={
-                  <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
-                    <IoT />
-                  </ProtectedRoute>
-                }
-              />
-              {/* IA Module - agriculteur only */}
-              <Route
-                path="/ia"
-                element={
-                  <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
-                    <IA />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Voice Assistant - agriculteur only */}
-              <Route
-                path="/voice"
-                element={
-                  <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
-                    <VoiceAssistant />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Investisseur */}
-              <Route
-                path="/investisseur"
-                element={
-                  <ProtectedRoute allowedRoles={['investisseur', 'admin']}>
-                    <Investisseur />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Veterinaire */}
-              <Route
-                path="/veterinaire"
-                element={
-                  <ProtectedRoute allowedRoles={['veterinaire', 'admin']}>
-                    <Veterinaire />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Acheteur */}
-              <Route
-                path="/acheteur"
-                element={
-                  <ProtectedRoute allowedRoles={['acheteur', 'admin']}>
-                    <Acheteur />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/farmer-investments"
-                element={
-                  <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
-                    <FarmerInvestments />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Settings */}
-              <Route
-                path="/settings"
-                element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Admin */}
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <Admin />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <AIAssistant />
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-      </LanguageProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="light" storageKey="plantera-theme">
+        <LanguageProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner position="top-center" />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/auth" element={<Auth />} />
+                {/* Public Traceability Page */}
+                <Route path="/trace/:lotId" element={<Trace />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Agriculteur Routes */}
+                <Route
+                  path="/agriculteur"
+                  element={
+                    <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
+                      <Agriculteur />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/parcelles"
+                  element={
+                    <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
+                      <Parcelles />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/cultures"
+                  element={
+                    <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
+                      <Cultures />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Shared: Agriculteur & Veterinaire */}
+                <Route
+                  path="/betail"
+                  element={
+                    <ProtectedRoute allowedRoles={['agriculteur', 'veterinaire', 'admin']}>
+                      <Betail />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Marketplace - role-specific pages */}
+                <Route
+                  path="/marketplace"
+                  element={
+                    <ProtectedRoute>
+                      <Marketplace />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/marketplace/farmer"
+                  element={
+                    <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
+                      <MarketplaceFarmer />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/marketplace/buyer"
+                  element={
+                    <ProtectedRoute allowedRoles={['acheteur', 'admin']}>
+                      <MarketplaceBuyer />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/marketplace/investor"
+                  element={
+                    <ProtectedRoute allowedRoles={['investisseur', 'admin']}>
+                      <MarketplaceInvestor />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Agriculteur IoT */}
+                <Route
+                  path="/iot"
+                  element={
+                    <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
+                      <IoT />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* IA Module - agriculteur only */}
+                <Route
+                  path="/ia"
+                  element={
+                    <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
+                      <IA />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Voice Assistant - agriculteur only */}
+                <Route
+                  path="/voice"
+                  element={
+                    <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
+                      <VoiceAssistant />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Investisseur */}
+                <Route
+                  path="/investisseur"
+                  element={
+                    <ProtectedRoute allowedRoles={['investisseur', 'admin']}>
+                      <Investisseur />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Veterinaire */}
+                <Route
+                  path="/veterinaire"
+                  element={
+                    <ProtectedRoute allowedRoles={['veterinaire', 'admin']}>
+                      <Veterinaire />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Acheteur */}
+                <Route
+                  path="/acheteur"
+                  element={
+                    <ProtectedRoute allowedRoles={['acheteur', 'admin']}>
+                      <Acheteur />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/farmer-investments"
+                  element={
+                    <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
+                      <FarmerInvestments />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Settings */}
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Admin */}
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <Admin />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <AIAssistant />
+              <InstallPrompt />
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
