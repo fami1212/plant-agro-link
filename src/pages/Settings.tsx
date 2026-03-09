@@ -18,6 +18,7 @@ export default function Settings() {
   const { profile, roles } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const [outdoorMode, setOutdoorMode] = useState(false);
+  const { permission, supported, requestPermission } = usePushNotifications();
 
   const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
 
