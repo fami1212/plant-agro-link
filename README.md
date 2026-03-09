@@ -1,73 +1,168 @@
-# Welcome to your Lovable project
+# 🌱 Plantéra - Plateforme Agricole Intelligente
 
-## Project info
+> Plateforme intégrée pour l'agriculture en Afrique de l'Ouest : IoT, IA, Marketplace, Blockchain & Traçabilité.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 🏗 Architecture
 
-## How can I edit this code?
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Frontend (React/Vite)                 │
+│  TypeScript · Tailwind CSS · shadcn/ui · PWA            │
+├─────────────────────────────────────────────────────────┤
+│                  Supabase Backend                        │
+│  PostgreSQL · Auth · Storage · Edge Functions · Realtime │
+├─────────────────────────────────────────────────────────┤
+│              Services & Intégrations                     │
+│  IA (Gemini/GPT) · Blockchain · Mobile Money · IoT      │
+└─────────────────────────────────────────────────────────┘
+```
 
-There are several ways of editing your application.
+## 🚀 Installation locale
 
-**Use Lovable**
+```bash
+# Cloner le dépôt
+git clone <REPO_URL>
+cd plantera
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+# Installer les dépendances
+npm install
 
-Changes made via Lovable will be committed automatically to this repo.
+# Configurer les variables d'environnement
+cp .env.example .env
+# Remplir VITE_SUPABASE_URL et VITE_SUPABASE_PUBLISHABLE_KEY
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Lancer le serveur de développement
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 🔑 Variables d'environnement
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+| Variable | Description |
+|---|---|
+| `VITE_SUPABASE_URL` | URL du projet Supabase |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Clé publique (anon) Supabase |
+| `VITE_SUPABASE_PROJECT_ID` | ID du projet |
 
-**Use GitHub Codespaces**
+### Secrets Edge Functions (côté serveur)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+| Secret | Usage |
+|---|---|
+| `LOVABLE_API_KEY` | Accès IA Lovable (Gemini, GPT) |
+| `OPENAI_API_KEY` | OpenAI Realtime / fallback |
+| `ELEVENLABS_API_KEY` | Text-to-Speech |
+| `SUPABASE_SERVICE_ROLE_KEY` | Opérations admin |
 
-## What technologies are used for this project?
+## 👥 Rôles utilisateurs
 
-This project is built with:
+| Rôle | Accès |
+|---|---|
+| `agriculteur` | Parcelles, Cultures, Bétail, IoT, IA, Marketplace, Investissements |
+| `veterinaire` | Patients, Consultations, Dossiers médicaux, Marketplace services |
+| `acheteur` | Marketplace (achat), Panier, Suivi commandes |
+| `investisseur` | Opportunités, Portfolio, Rendements, IoT monitoring |
+| `admin` | Console admin complète, Modération, Analytics |
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 📱 Pages & Routes
 
-## How can I deploy this project?
+| Route | Page | Accès |
+|---|---|---|
+| `/` | Landing page | Public |
+| `/auth` | Authentification | Public |
+| `/trace/:lotId` | Certificat traçabilité | Public |
+| `/dashboard` | Tableau de bord | Authentifié |
+| `/parcelles` | Gestion parcelles | Agriculteur |
+| `/cultures` | Gestion cultures | Agriculteur |
+| `/betail` | Gestion bétail | Agriculteur, Vétérinaire |
+| `/marketplace` | Marketplace | Authentifié |
+| `/iot` | Capteurs IoT | Agriculteur |
+| `/ia` | Modules IA | Agriculteur |
+| `/voice` | Assistant vocal | Agriculteur |
+| `/investisseur` | Dashboard investisseur | Investisseur |
+| `/veterinaire` | Dashboard vétérinaire | Vétérinaire |
+| `/acheteur` | Dashboard acheteur | Acheteur |
+| `/admin` | Console admin | Admin |
+| `/settings` | Paramètres | Authentifié |
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## 🗄 Schéma base de données
 
-## Can I connect a custom domain to my Lovable project?
+### Tables principales
+- `profiles` - Profils utilisateurs
+- `user_roles` - Rôles (RBAC sécurisé)
+- `fields` - Parcelles agricoles (géospatial)
+- `crops` - Cultures
+- `harvest_records` - Enregistrements de récolte
+- `livestock` - Bétail
+- `veterinary_records` - Dossiers vétérinaires
 
-Yes, you can!
+### Marketplace
+- `marketplace_listings` - Annonces
+- `marketplace_offers` - Offres d'achat
+- `marketplace_messages` - Messages
+- `marketplace_conversations` - Conversations
+- `marketplace_reviews` - Avis
+- `marketplace_inputs` - Intrants agricoles
+- `marketplace_favorites` - Favoris
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Finance & Escrow
+- `investments` - Investissements
+- `investment_opportunities` - Opportunités
+- `escrow_contracts` - Contrats escrow blockchain
+- `escrow_events` - Événements escrow
+- `escrow_disputes` - Litiges
+- `blockchain_transactions` - Transactions blockchain
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### IoT
+- `iot_devices` - Capteurs connectés
+- `device_data` - Données capteurs (timeseries)
+- `iot_alerts` - Alertes capteurs
+- `iot_alert_configs` - Configuration seuils
+
+### Services
+- `service_providers` - Prestataires
+- `service_bookings` - Réservations
+
+### Autres
+- `farm_tasks` - Tâches agricoles
+- `scan_history` - Historique scans IA
+- `voice_conversations` - Conversations vocales
+- `notifications` - Notifications in-app
+
+## ⚡ Edge Functions
+
+| Fonction | Description |
+|---|---|
+| `ai-assistant` | Assistant IA contextuel |
+| `ai-contextual-tip` | Conseils IA contextuels |
+| `ai-farm-sentinel` | Alertes intelligentes |
+| `detect-disease` | Détection maladies (caméra IA) |
+| `predict-yield` | Prédiction de rendement |
+| `irrigation-recommendations` | Recommandations irrigation |
+| `smart-planner` | Planification intelligente |
+| `market-prices` | Prix du marché |
+| `smart-camera-analyze` | Analyse caméra intelligente |
+| `voice-to-text` | Transcription vocale |
+| `elevenlabs-tts` | Synthèse vocale |
+| `weather-data` | Données météo |
+| `ussd-sms-gateway` | Passerelle USSD/SMS |
+
+## 🌍 Internationalisation
+
+3 langues supportées :
+- 🇫🇷 Français (par défaut)
+- 🇬🇧 Anglais
+- 🇸🇳 Wolof
+
+## 📦 Stack technique
+
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS
+- **UI**: shadcn/ui, Radix UI, Lucide Icons, Recharts
+- **State**: TanStack React Query, React Context
+- **Backend**: Supabase (PostgreSQL, Auth, Storage, Edge Functions, Realtime)
+- **IA**: Google Gemini, OpenAI GPT (via Lovable AI)
+- **Paiements**: Orange Money, Wave, MTN (simulation)
+- **PDF**: jsPDF + jspdf-autotable
+- **Routing**: React Router v6
+
+## 📄 Licence
+
+Propriétaire - Tous droits réservés © 2026 Plantéra
