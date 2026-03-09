@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  MapPin, Wheat, PawPrint, Plus, TrendingUp, Bell, Scale,
+  MapPin, Wheat, PawPrint, Plus, TrendingUp, Scale,
   ShoppingBag, Stethoscope, DollarSign, ArrowRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +18,7 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoleAccess } from "@/hooks/useRoleAccess";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -53,14 +54,7 @@ export default function Dashboard() {
         <PageHeader
           title={`${getGreeting()}, ${userName}`}
           subtitle={getRoleSubtitle()}
-          action={
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="w-5 h-5" />
-              {(alerts?.length || 0) > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
-              )}
-            </Button>
-          }
+          action={<NotificationCenter />}
         />
 
         <div className="px-4 space-y-5 pb-28">
