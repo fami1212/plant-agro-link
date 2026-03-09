@@ -54,14 +54,7 @@ export default function Dashboard() {
         <PageHeader
           title={`${getGreeting()}, ${userName}`}
           subtitle={getRoleSubtitle()}
-          action={
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="w-5 h-5" />
-              {(alerts?.length || 0) > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
-              )}
-            </Button>
-          }
+          action={<NotificationCenter />}
         />
 
         <div className="px-4 space-y-5 pb-28">
