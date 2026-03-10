@@ -344,8 +344,7 @@ export default function Acheteur() {
                   return (
                     <Card
                       key={product.id}
-                      className={cn("overflow-hidden animate-fade-in", `stagger-${(index % 5) + 1}`)}
-                      style={{ opacity: 0 }}
+                      className="overflow-hidden"
                     >
                       <div className="aspect-square bg-muted relative">
                         {product.images?.[0] ? (
