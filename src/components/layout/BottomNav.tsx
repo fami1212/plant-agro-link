@@ -17,13 +17,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 
 const allNavItems = [
-  { icon: Home, labelKey: "nav.home", path: "/dashboard", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
-  { icon: Tractor, labelKey: "nav.farm", path: "/agriculteur", roles: ['agriculteur'] },
-  { icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/farmer", roles: ['agriculteur'] },
-  { icon: Stethoscope, labelKey: "nav.cabinet", path: "/veterinaire", roles: ['veterinaire'] },
-  { icon: ShoppingBag, labelKey: "nav.catalog", path: "/marketplace/buyer", roles: ['acheteur'] },
-  { icon: TrendingUp, labelKey: "nav.invest", path: "/marketplace/investor", roles: ['investisseur'] },
-  { icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/farmer", roles: ['admin'] },
+  { id: "home", icon: Home, labelKey: "nav.home", path: "/dashboard", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
+  { id: "farm", icon: Tractor, labelKey: "nav.farm", path: "/agriculteur", roles: ['agriculteur'] },
+  { id: "market-farmer", icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/farmer", roles: ['agriculteur'] },
+  { id: "vet-cabinet", icon: Stethoscope, labelKey: "nav.cabinet", path: "/veterinaire", roles: ['veterinaire'] },
+  { id: "vet-market", icon: ShoppingBag, labelKey: "nav.catalog", path: "/marketplace/buyer", roles: ['veterinaire'] },
+  { id: "buyer-catalog", icon: ShoppingBag, labelKey: "nav.catalog", path: "/marketplace/buyer", roles: ['acheteur'] },
+  { id: "investor-market", icon: TrendingUp, labelKey: "nav.invest", path: "/marketplace/investor", roles: ['investisseur'] },
+  { id: "admin-market", icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/farmer", roles: ['admin'] },
 ];
 
 const allMenuItems = [
@@ -77,7 +78,7 @@ export function BottomNav() {
           
           return (
             <button
-              key={item.path}
+              key={item.id}
               onClick={() => navigate(item.path)}
               className={cn(
                 "flex flex-col items-center justify-center flex-1 h-14 rounded-2xl transition-all duration-200",

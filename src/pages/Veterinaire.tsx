@@ -275,20 +275,34 @@ export default function Veterinaire() {
       {/* Stats */}
       <div className="px-4 mb-6">
         <div className="grid grid-cols-4 gap-2">
-          {[
-            { icon: Calendar, value: todayBookings, label: t("vet.today"), color: "primary" },
-            { icon: AlertCircle, value: pendingBookings, label: t("vet.pending"), color: "warning" },
-            { icon: Heart, value: sickPatients, label: t("vet.toWatch"), color: "destructive" },
-            { icon: Users, value: patients.length, label: t("vet.patients"), color: "success" },
-          ].map(({ icon: Icon, value, label, color }) => (
-            <Card key={label} className={cn(`bg-${color}/5 border-${color}/20`)}>
-              <CardContent className="p-3 text-center">
-                <Icon className={cn("w-4 h-4 mx-auto mb-1", `text-${color}`)} />
-                <p className={cn("text-lg font-bold", `text-${color}`)}>{value}</p>
-                <p className="text-[10px] text-muted-foreground">{label}</p>
-              </CardContent>
-            </Card>
-          ))}
+          <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="p-3 text-center">
+              <Calendar className="w-4 h-4 mx-auto mb-1 text-primary" />
+              <p className="text-lg font-bold text-primary">{todayBookings}</p>
+              <p className="text-[10px] text-muted-foreground">{t("vet.today")}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-warning/5 border-warning/20">
+            <CardContent className="p-3 text-center">
+              <AlertCircle className="w-4 h-4 mx-auto mb-1 text-warning" />
+              <p className="text-lg font-bold text-warning">{pendingBookings}</p>
+              <p className="text-[10px] text-muted-foreground">{t("vet.pending")}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-destructive/5 border-destructive/20">
+            <CardContent className="p-3 text-center">
+              <Heart className="w-4 h-4 mx-auto mb-1 text-destructive" />
+              <p className="text-lg font-bold text-destructive">{sickPatients}</p>
+              <p className="text-[10px] text-muted-foreground">{t("vet.toWatch")}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-success/5 border-success/20">
+            <CardContent className="p-3 text-center">
+              <Users className="w-4 h-4 mx-auto mb-1 text-success" />
+              <p className="text-lg font-bold text-success">{patients.length}</p>
+              <p className="text-[10px] text-muted-foreground">{t("vet.patients")}</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
 

@@ -151,9 +151,9 @@ export default function Settings() {
             {supported && (
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>Notifications push</Label>
+                  <Label>{t("settings.pushNotifications")}</Label>
                   <p className="text-sm text-muted-foreground">
-                    {permission === "granted" ? "Activées ✓" : "Recevez des alertes même en arrière-plan"}
+                    {permission === "granted" ? t("settings.pushEnabled") : t("settings.pushDesc")}
                   </p>
                 </div>
                 <Switch
