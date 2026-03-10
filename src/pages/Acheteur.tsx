@@ -249,20 +249,34 @@ export default function Acheteur() {
       {/* Stats */}
       <div className="px-4 mb-6">
         <div className="grid grid-cols-4 gap-2">
-          {[
-            { icon: Package, value: totalOrders, label: t("buyer.commands"), color: "primary" },
-            { icon: Clock, value: pendingOrders, label: t("buyer.pending"), color: "warning" },
-            { icon: CheckCircle2, value: acceptedOrders, label: t("buyer.accepted"), color: "success" },
-            { icon: Heart, value: favorites.length, label: t("buyer.favorites"), color: "destructive" },
-          ].map(({ icon: Icon, value, label, color }) => (
-            <Card key={label} className={cn(`bg-${color}/5 border-${color}/20`)}>
-              <CardContent className="p-3 text-center">
-                <Icon className={cn("w-4 h-4 mx-auto mb-1", `text-${color}`)} />
-                <p className={cn("text-lg font-bold", `text-${color}`)}>{value}</p>
-                <p className="text-[10px] text-muted-foreground">{label}</p>
-              </CardContent>
-            </Card>
-          ))}
+          <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="p-3 text-center">
+              <Package className="w-4 h-4 mx-auto mb-1 text-primary" />
+              <p className="text-lg font-bold text-primary">{totalOrders}</p>
+              <p className="text-[10px] text-muted-foreground">{t("buyer.commands")}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-warning/5 border-warning/20">
+            <CardContent className="p-3 text-center">
+              <Clock className="w-4 h-4 mx-auto mb-1 text-warning" />
+              <p className="text-lg font-bold text-warning">{pendingOrders}</p>
+              <p className="text-[10px] text-muted-foreground">{t("buyer.pending")}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-success/5 border-success/20">
+            <CardContent className="p-3 text-center">
+              <CheckCircle2 className="w-4 h-4 mx-auto mb-1 text-success" />
+              <p className="text-lg font-bold text-success">{acceptedOrders}</p>
+              <p className="text-[10px] text-muted-foreground">{t("buyer.accepted")}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-destructive/5 border-destructive/20">
+            <CardContent className="p-3 text-center">
+              <Heart className="w-4 h-4 mx-auto mb-1 text-destructive" />
+              <p className="text-lg font-bold text-destructive">{favorites.length}</p>
+              <p className="text-[10px] text-muted-foreground">{t("buyer.favorites")}</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
