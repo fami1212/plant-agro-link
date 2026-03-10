@@ -17,8 +17,8 @@ const roleConfigs: Record<AppRole, RoleConfig> = {
     dashboardType: 'agriculteur',
   },
   veterinaire: {
-    allowedRoutes: ['/dashboard', '/betail', '/marketplace', '/veterinaire', '/settings'],
-    navItems: ['/dashboard', '/veterinaire', '/betail', '/marketplace'],
+    allowedRoutes: ['/dashboard', '/betail', '/marketplace', '/marketplace/buyer', '/veterinaire', '/settings'],
+    navItems: ['/dashboard', '/veterinaire', '/betail', '/marketplace/buyer'],
     menuItems: ['/settings'],
     dashboardType: 'veterinaire',
   },

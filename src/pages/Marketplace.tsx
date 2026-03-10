@@ -24,7 +24,7 @@ export default function Marketplace() {
     } else if (isInvestisseur) {
       navigate("/marketplace/investor", { replace: true });
     } else if (isVeterinaire) {
-      navigate("/marketplace/farmer", { replace: true });
+      navigate("/marketplace/buyer", { replace: true });
     } else if (isAcheteur) {
       navigate("/marketplace/buyer", { replace: true });
     } else {

@@ -122,7 +122,7 @@ const App = () => (
                 <Route
                   path="/marketplace/buyer"
                   element={
-                    <ProtectedRoute allowedRoles={['acheteur', 'admin']}>
+                    <ProtectedRoute allowedRoles={['acheteur', 'veterinaire', 'admin']}>
                       <MarketplaceBuyer />
                     </ProtectedRoute>
                   }

@@ -78,7 +78,7 @@ export function BottomNav() {
           
           return (
             <button
-              key={item.path}
+              key={item.id}
               onClick={() => navigate(item.path)}
               className={cn(
                 "flex flex-col items-center justify-center flex-1 h-14 rounded-2xl transition-all duration-200",

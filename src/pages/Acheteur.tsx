@@ -417,8 +417,7 @@ export default function Acheteur() {
               favorites.map((fav, index) => (
                 <Card
                   key={fav.id}
-                  className={cn("animate-fade-in", `stagger-${(index % 5) + 1}`)}
-                  style={{ opacity: 0 }}
+                  className="animate-fade-in"
                 >
                   <CardContent className="p-4 flex gap-4">
                     <div className="w-20 h-20 rounded-lg bg-muted overflow-hidden shrink-0">
