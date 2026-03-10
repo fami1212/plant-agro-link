@@ -25,7 +25,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { BuyerCart } from "@/components/buyer/BuyerCart";
