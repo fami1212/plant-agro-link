@@ -112,7 +112,8 @@ export default function VoiceAssistant() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { primaryRole } = useRoleAccess();
   const voiceConversation = useVoiceConversation();
   
   const [isListening, setIsListening] = useState(false);
