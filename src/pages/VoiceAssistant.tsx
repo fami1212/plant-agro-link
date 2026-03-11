@@ -284,7 +284,7 @@ export default function VoiceAssistant() {
           },
           body: JSON.stringify({
             messages: [{ role: "user", content: message }],
-            userRole: "agriculteur",
+            userRole: primaryRole,
             userId: user?.id,
           }),
         }
