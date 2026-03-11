@@ -35,6 +35,18 @@ function processBase64Chunks(base64String: string, chunkSize = 32768): Uint8Arra
   return result;
 }
 
+// Map language codes to ISO 639-3 for ElevenLabs
+function mapLanguageCode(lang: string): string {
+  const map: Record<string, string> = {
+    fr: "fra",
+    en: "eng",
+    wo: "wol",
+    "fr-FR": "fra",
+    "en-US": "eng",
+  };
+  return map[lang] || "fra";
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -47,40 +59,36 @@ serve(async (req) => {
       throw new Error("No audio data provided");
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
+    if (!ELEVENLABS_API_KEY) {
+      throw new Error("ELEVENLABS_API_KEY is not configured");
     }
 
-    console.log(`Processing voice-to-text, language hint: ${language || "auto"}`);
+    console.log(`Processing voice-to-text with ElevenLabs, language: ${language || "fr"}`);
 
-    // Process audio in chunks to handle large files
     const binaryAudio = processBase64Chunks(audio);
     
-    // Prepare form data for OpenAI Whisper
     const formData = new FormData();
     const arrayBuffer = binaryAudio.buffer.slice(0) as ArrayBuffer;
     const blob = new Blob([arrayBuffer], { type: "audio/webm" });
     formData.append("file", blob, "audio.webm");
-    formData.append("model", "whisper-1");
+    formData.append("model_id", "scribe_v2");
     
-    // Language hint for better accuracy (optional - Whisper auto-detects)
-    if (language && language !== "auto") {
-      formData.append("language", language);
-    }
+    // Set language code for ElevenLabs
+    const langCode = mapLanguageCode(language || "fr");
+    formData.append("language_code", langCode);
 
-    // Use OpenAI Whisper for transcription (supports 99+ languages including French, Wolof)
-    const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    const response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY") || LOVABLE_API_KEY}`,
+        "xi-api-key": ELEVENLABS_API_KEY,
       },
       body: formData,
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Whisper API error:", response.status, errorText);
+      console.error("ElevenLabs STT error:", response.status, errorText);
       throw new Error(`Transcription API error: ${response.status}`);
     }
 
