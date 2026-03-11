@@ -13,7 +13,7 @@ interface AIContextualTipProps {
   className?: string;
 }
 
-export function AIContextualTip({ context, data, className }: AIContextualTipProps) {
+export function AIContextualTip({ context, userRole, data, className }: AIContextualTipProps) {
   const { user } = useAuth();
   const [tip, setTip] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
