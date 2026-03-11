@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Lightbulb, X, RefreshCw, Loader2, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useRoleAccess } from "@/hooks/useRoleAccess";
 import { cn } from "@/lib/utils";
 
 interface AIContextualTipProps {
@@ -15,6 +16,8 @@ interface AIContextualTipProps {
 
 export function AIContextualTip({ context, userRole, data, className }: AIContextualTipProps) {
   const { user } = useAuth();
+  const { primaryRole } = useRoleAccess();
+  const effectiveRole = userRole || primaryRole;
   const [tip, setTip] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState(false);
