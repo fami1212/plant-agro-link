@@ -353,7 +353,9 @@ export default function VoiceAssistant() {
             }
           }
 
-          setLiveTranscript(finalTranscript || interimTranscript);
+          const text = finalTranscript || interimTranscript;
+          setLiveTranscript(text);
+          liveTranscriptRef.current = text;
         };
 
         recognition.onerror = (event: Event) => {
