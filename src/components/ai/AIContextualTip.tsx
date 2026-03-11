@@ -38,7 +38,7 @@ export function AIContextualTip({ context, userRole, data, className }: AIContex
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ context, data }),
+          body: JSON.stringify({ context, data, userRole }),
         }
       );
 

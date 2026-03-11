@@ -62,7 +62,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `Tu es un conseiller agricole expert au Sénégal. Tu donnes des conseils courts, pratiques et adaptés au contexte local. Réponds en français, de manière engageante avec un emoji si pertinent.`,
+            content: `Tu es un conseiller agricole expert au Sénégal. ${roleHint} Tu donnes des conseils courts, pratiques et adaptés au contexte local et au profil de l'utilisateur. Réponds en français, de manière engageante avec un emoji si pertinent.`,
           },
           {
             role: "user",
