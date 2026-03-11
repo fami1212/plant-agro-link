@@ -122,6 +122,7 @@ export default function VoiceAssistant() {
   const [liveTranscript, setLiveTranscript] = useState<string>("");
   const [showHistory, setShowHistory] = useState(false);
   const recognitionRef = useRef<any>(null);
+  const liveTranscriptRef = useRef<string>("");
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -352,7 +353,9 @@ export default function VoiceAssistant() {
             }
           }
 
-          setLiveTranscript(finalTranscript || interimTranscript);
+          const text = finalTranscript || interimTranscript;
+          setLiveTranscript(text);
+          liveTranscriptRef.current = text;
         };
 
         recognition.onerror = (event: Event) => {
@@ -378,42 +381,16 @@ export default function VoiceAssistant() {
       mediaRecorder.onstop = async () => {
         stream.getTracks().forEach(track => track.stop());
         setCurrentStream(null);
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         
-        if (audioBlob.size > 0) {
+        // Use the transcript captured by Web Speech API (real-time, no server needed)
+        const finalText = liveTranscriptRef.current?.trim();
+        if (finalText) {
           setIsProcessing(true);
           setStatusMessage("⏳");
-          
-          // Transcribe
-          const reader = new FileReader();
-          reader.readAsDataURL(audioBlob);
-          reader.onloadend = async () => {
-            const base64 = (reader.result as string).split(",")[1];
-            
-            try {
-              const response = await fetch(
-                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-to-text`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-                  },
-                  body: JSON.stringify({ audio: base64, language: selectedLanguage === "wo" ? "fr" : selectedLanguage.split("-")[0] }),
-                }
-              );
-
-              if (response.ok) {
-                const { text } = await response.json();
-                if (text) {
-                  await sendToAI(text);
-                }
-              }
-            } catch (error) {
-              console.error("Transcription error:", error);
-              setIsProcessing(false);
-            }
-          };
+          await sendToAI(finalText);
+        } else {
+          setIsProcessing(false);
+          setStatusMessage("");
         }
       };
 
