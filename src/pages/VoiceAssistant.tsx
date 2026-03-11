@@ -407,7 +407,7 @@ export default function VoiceAssistant() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
                   },
-                  body: JSON.stringify({ audio: base64, language: "fr" }),
+                  body: JSON.stringify({ audio: base64, language: selectedLanguage === "wo" ? "fr" : selectedLanguage.split("-")[0] }),
                 }
               );
 
