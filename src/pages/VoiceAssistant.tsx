@@ -277,6 +277,7 @@ export default function VoiceAssistant() {
             messages: [{ role: "user", content: message }],
             userRole: primaryRole,
             userId: user?.id,
+            language: selectedLanguage === "wo" ? "wo" : selectedLanguage.split("-")[0],
           }),
         }
       );

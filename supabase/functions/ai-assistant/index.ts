@@ -49,9 +49,17 @@ serve(async (req) => {
       admin: `Tu es un assistant administrateur de la plateforme Plantéra. Tu peux aider sur tous les aspects de la plateforme agricole.`,
     };
 
+    const languageInstructions: Record<string, string> = {
+      fr: "Tu réponds toujours en français, de manière claire et concise.",
+      en: "You always respond in English, clearly and concisely.",
+      wo: "Tu réponds en wolof quand c'est possible, sinon en français simple. Utilise des termes wolof courants comme 'beykat' (agriculteur), 'mbay' (culture), 'mala' (bétail).",
+    };
+
+    const langInstruction = languageInstructions[language || "fr"] || languageInstructions.fr;
+
     const systemPrompt = `${roleContext[userRole] || roleContext.agriculteur}
 
-Tu réponds toujours en français, de manière claire et concise. Tu utilises un langage simple et accessible.
+${langInstruction} Tu utilises un langage simple et accessible.
 Tu peux utiliser des emojis pour rendre tes réponses plus engageantes.
 Tu donnes des conseils pratiques et actionnables adaptés au contexte agricole sénégalais.
 Si tu ne connais pas la réponse, tu le dis honnêtement et suggères de consulter un expert.
