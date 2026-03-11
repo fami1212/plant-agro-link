@@ -122,6 +122,7 @@ export default function VoiceAssistant() {
   const [liveTranscript, setLiveTranscript] = useState<string>("");
   const [showHistory, setShowHistory] = useState(false);
   const recognitionRef = useRef<any>(null);
+  const liveTranscriptRef = useRef<string>("");
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
