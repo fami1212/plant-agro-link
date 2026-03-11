@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 interface AIContextualTipProps {
   context: string;
+  userRole?: string;
   data?: Record<string, any>;
   className?: string;
 }
