@@ -38,6 +38,16 @@ serve(async (req) => {
       iot: `Donne un conseil sur l'utilisation des capteurs IoT en agriculture: interprétation des données, seuils d'alerte, ou optimisation. Maximum 2 phrases.`,
     };
 
+    // Build role-specific context
+    const roleHints: Record<string, string> = {
+      agriculteur: "L'utilisateur est un agriculteur/fermier.",
+      veterinaire: "L'utilisateur est un vétérinaire professionnel.",
+      investisseur: "L'utilisateur est un investisseur dans l'agriculture.",
+      acheteur: "L'utilisateur est un acheteur de produits agricoles.",
+      admin: "L'utilisateur est un administrateur de la plateforme.",
+    };
+    const roleHint = roleHints[userRole] || roleHints.agriculteur;
+
     const prompt = contextPrompts[context] || contextPrompts.dashboard;
     const dataContext = data ? `\nDonnées disponibles: ${JSON.stringify(data)}` : "";
 
