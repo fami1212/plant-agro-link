@@ -279,13 +279,18 @@ export function YieldPredictionModule() {
         </Card>
       )}
 
-      {!crops?.length && (
-        <Card>
-          <CardContent className="text-center py-8">
-            <Sprout className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              Aucune culture en cours. Ajoutez des cultures pour obtenir des prédictions de rendement.
-            </p>
+      {!crops?.length && !isAnalyzing && (
+        <Card className="border-dashed">
+          <CardContent className="text-center py-8 space-y-3">
+            <div className="w-14 h-14 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+              <Sprout className="w-7 h-7 text-primary" />
+            </div>
+            <div>
+              <p className="font-medium text-sm">Aucune culture active</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Ajoutez des cultures en cours (semées, en croissance, floraison ou maturation) pour obtenir des prédictions de rendement par l'IA.
+              </p>
+            </div>
           </CardContent>
         </Card>
       )}
