@@ -324,7 +324,12 @@ export default function VoiceAssistant() {
     } catch (error) {
       console.error("AI error:", error);
       setIsProcessing(false);
-      await speakText("Désolé, une erreur s'est produite. Réessayez.");
+      const errorMsgs: Record<string, string> = {
+        "fr-FR": "Désolé, une erreur s'est produite. Réessayez.",
+        "en-US": "Sorry, an error occurred. Please try again.",
+        "wo": "Baal ma, am na njuumte. Jéemaatal.",
+      };
+      await speakText(errorMsgs[selectedLanguage] || errorMsgs["fr-FR"]);
     }
   };
 
