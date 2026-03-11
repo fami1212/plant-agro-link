@@ -114,7 +114,10 @@ export default function VoiceAssistant() {
   const [isRealtimeMode, setIsRealtimeMode] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [pulseAnimation, setPulseAnimation] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState("fr-FR");
+  const [selectedLanguage, setSelectedLanguage] = useState(() => {
+    const langMap: Record<string, string> = { fr: "fr-FR", en: "en-US", wo: "wo" };
+    return langMap[language] || "fr-FR";
+  });
   const [selectedVoice, setSelectedVoice] = useState<string>("");
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [speechRate, setSpeechRate] = useState(1.0);
