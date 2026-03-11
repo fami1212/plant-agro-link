@@ -118,45 +118,15 @@ export function useVoiceRecorder({
           recognitionRef.current = null;
         }
 
-        const audioBlob = new Blob(chunksRef.current, { type: "audio/webm" });
         stream.getTracks().forEach((track) => track.stop());
 
-        if (onTranscription && audioBlob.size > 0) {
-          setIsProcessing(true);
-          try {
-            const reader = new FileReader();
-            reader.readAsDataURL(audioBlob);
-            
-            reader.onloadend = async () => {
-              const base64 = (reader.result as string).split(",")[1];
-              
-              const response = await fetch(
-                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-to-text`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-                  },
-                  body: JSON.stringify({ audio: base64, language }),
-                }
-              );
-
-              if (response.ok) {
-                const { text } = await response.json();
-                if (text) {
-                  onTranscription(text);
-                }
-              }
-              setIsProcessing(false);
-              setPartialTranscript("");
-            };
-          } catch (error) {
-            console.error("Transcription error:", error);
-            setIsProcessing(false);
-            setPartialTranscript("");
-          }
+        // Use Web Speech API transcript (no server call needed)
+        const finalText = partialTranscript.trim();
+        if (finalText && onTranscription) {
+          onTranscription(finalText);
         }
+        setIsProcessing(false);
+        setPartialTranscript("");
       };
 
       mediaRecorderRef.current = mediaRecorder;
