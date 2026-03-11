@@ -5,11 +5,12 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bug, Sprout, Droplets, Mic, Sparkles, MessageCircle, History } from "lucide-react";
+import { Bug, Sprout, Droplets, Mic, Sparkles, MessageCircle, History, Camera, ArrowRight } from "lucide-react";
 import { PlantDiseaseDetector } from "@/components/ai/PlantDiseaseDetector";
 import { YieldPredictionModule } from "@/components/ai/YieldPredictionModule";
 import { IrrigationRecommendationsModule } from "@/components/ai/IrrigationRecommendationsModule";
 import { ScanHistory } from "@/components/ai/ScanHistory";
+import { AIContextualTip } from "@/components/ai/AIContextualTip";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function IA() {
@@ -25,58 +26,37 @@ export default function IA() {
       />
 
       <div className="px-4 pb-28 space-y-4">
-        {/* Voice Assistant CTA */}
-        <Card className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground overflow-hidden">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                <Mic className="w-8 h-8" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-lg">{t("ai.voiceAssistant")}</h3>
-                <p className="text-sm text-primary-foreground/80 mb-2">
-                  {t("ai.voiceDesc")}
-                </p>
-                <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="secondary"
-                    className="gap-1"
-                    onClick={() => navigate("/voice")}
-                  >
-                    <Mic className="w-4 h-4" />
-                    {t("ai.open")}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* AI Contextual Tip */}
+        <AIContextualTip context="iot" />
 
-        {/* Quick AI Actions */}
+        {/* Quick Actions Row */}
         <div className="grid grid-cols-2 gap-3">
           <Card 
-            className="cursor-pointer hover:bg-muted/50 transition-colors"
+            className="cursor-pointer hover:bg-muted/50 transition-colors border-primary/20"
             onClick={() => navigate("/voice")}
           >
-            <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-              <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
-                <MessageCircle className="w-6 h-6 text-blue-500" />
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Mic className="w-5 h-5 text-primary" />
               </div>
-              <span className="text-sm font-medium">{t("ai.chatIA")}</span>
-              <span className="text-xs text-muted-foreground">{t("ai.chatDesc")}</span>
+              <div className="min-w-0">
+                <span className="text-sm font-medium block">{t("ai.voiceAssistant")}</span>
+                <span className="text-xs text-muted-foreground">{t("ai.open")}</span>
+              </div>
             </CardContent>
           </Card>
           <Card 
-            className="cursor-pointer hover:bg-muted/50 transition-colors"
+            className="cursor-pointer hover:bg-muted/50 transition-colors border-primary/20"
             onClick={() => navigate("/voice")}
           >
-            <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-              <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-green-500" />
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <MessageCircle className="w-5 h-5 text-primary" />
               </div>
-              <span className="text-sm font-medium">{t("ai.adviceIA")}</span>
-              <span className="text-xs text-muted-foreground">{t("ai.adviceDesc")}</span>
+              <div className="min-w-0">
+                <span className="text-sm font-medium block">{t("ai.chatIA")}</span>
+                <span className="text-xs text-muted-foreground">{t("ai.chatDesc")}</span>
+              </div>
             </CardContent>
           </Card>
         </div>

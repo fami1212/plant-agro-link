@@ -4,16 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Lightbulb, X, RefreshCw, Loader2, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useRoleAccess } from "@/hooks/useRoleAccess";
 import { cn } from "@/lib/utils";
 
 interface AIContextualTipProps {
   context: string;
+  userRole?: string;
   data?: Record<string, any>;
   className?: string;
 }
 
-export function AIContextualTip({ context, data, className }: AIContextualTipProps) {
+export function AIContextualTip({ context, userRole, data, className }: AIContextualTipProps) {
   const { user } = useAuth();
+  const { primaryRole } = useRoleAccess();
+  const effectiveRole = userRole || primaryRole;
   const [tip, setTip] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState(false);
@@ -37,7 +41,7 @@ export function AIContextualTip({ context, data, className }: AIContextualTipPro
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ context, data }),
+          body: JSON.stringify({ context, data, userRole: effectiveRole }),
         }
       );
 

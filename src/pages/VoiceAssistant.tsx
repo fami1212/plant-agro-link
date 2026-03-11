@@ -45,46 +45,38 @@ import { VolumeVisualizer } from "@/components/voice/VolumeVisualizer";
 import { VoiceConversationHistory } from "@/components/voice/VoiceConversationHistory";
 import { useVoiceConversation } from "@/hooks/useVoiceConversation";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useRoleAccess } from "@/hooks/useRoleAccess";
 
-// Voice shortcuts with icons (no text needed for illiterate users)
-const voiceShortcuts = [
-  { 
-    icon: TrendingUp, 
-    color: "bg-green-500", 
-    command: "Donne-moi les prix du marché pour le maïs et le mil",
-    label: "Prix"
-  },
-  { 
-    icon: CloudSun, 
-    color: "bg-blue-500", 
-    command: "Quelle est la météo prévue pour demain et cette semaine ?",
-    label: "Météo"
-  },
-  { 
-    icon: Wheat, 
-    color: "bg-amber-500", 
-    command: "Quel est l'état de mes cultures actuellement ?",
-    label: "Cultures"
-  },
-  { 
-    icon: Stethoscope, 
-    color: "bg-red-500", 
-    command: "Y a-t-il des alertes santé pour mon bétail ?",
-    label: "Santé"
-  },
-  { 
-    icon: ShoppingCart, 
-    color: "bg-purple-500", 
-    command: "Quelles sont mes offres en attente sur le marketplace ?",
-    label: "Offres"
-  },
-  { 
-    icon: Home, 
-    color: "bg-gray-500", 
-    command: "Donne-moi un résumé de mon exploitation",
-    label: "Résumé"
-  },
-];
+// Voice shortcuts with icons - localized
+const getVoiceShortcuts = (lang: string) => {
+  const shortcuts: Record<string, { icon: typeof TrendingUp; color: string; command: string; label: string }[]> = {
+    fr: [
+      { icon: TrendingUp, color: "bg-green-500", command: "Donne-moi les prix du marché pour le maïs et le mil", label: "Prix" },
+      { icon: CloudSun, color: "bg-blue-500", command: "Quelle est la météo prévue pour demain et cette semaine ?", label: "Météo" },
+      { icon: Wheat, color: "bg-amber-500", command: "Quel est l'état de mes cultures actuellement ?", label: "Cultures" },
+      { icon: Stethoscope, color: "bg-red-500", command: "Y a-t-il des alertes santé pour mon bétail ?", label: "Santé" },
+      { icon: ShoppingCart, color: "bg-purple-500", command: "Quelles sont mes offres en attente sur le marketplace ?", label: "Offres" },
+      { icon: Home, color: "bg-gray-500", command: "Donne-moi un résumé de mon exploitation", label: "Résumé" },
+    ],
+    en: [
+      { icon: TrendingUp, color: "bg-green-500", command: "Give me the market prices for corn and millet", label: "Prices" },
+      { icon: CloudSun, color: "bg-blue-500", command: "What is the weather forecast for tomorrow and this week?", label: "Weather" },
+      { icon: Wheat, color: "bg-amber-500", command: "What is the current state of my crops?", label: "Crops" },
+      { icon: Stethoscope, color: "bg-red-500", command: "Are there any health alerts for my livestock?", label: "Health" },
+      { icon: ShoppingCart, color: "bg-purple-500", command: "What are my pending offers on the marketplace?", label: "Offers" },
+      { icon: Home, color: "bg-gray-500", command: "Give me a summary of my farm", label: "Summary" },
+    ],
+    wo: [
+      { icon: TrendingUp, color: "bg-green-500", command: "Joxal ma njëgu mbay yi ci maaro ak dugub", label: "Njëg" },
+      { icon: CloudSun, color: "bg-blue-500", command: "Nan la jawwu suba ak bés yi ci diggante?", label: "Jaww" },
+      { icon: Wheat, color: "bg-amber-500", command: "Nan lañu samay toolu mbay di dox?", label: "Mbay" },
+      { icon: Stethoscope, color: "bg-red-500", command: "Am na ay alerte ci wéru samay mala?", label: "Wér" },
+      { icon: ShoppingCart, color: "bg-purple-500", command: "Lan mooy samay offres ci marketplace bi?", label: "Jaay" },
+      { icon: Home, color: "bg-gray-500", command: "Joxal ma résumé bu samay mbay", label: "Résumé" },
+    ],
+  };
+  return shortcuts[lang] || shortcuts.fr;
+};
 
 // Available languages
 const languages = [
@@ -111,7 +103,8 @@ export default function VoiceAssistant() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { primaryRole } = useRoleAccess();
   const voiceConversation = useVoiceConversation();
   
   const [isListening, setIsListening] = useState(false);
@@ -282,8 +275,9 @@ export default function VoiceAssistant() {
           },
           body: JSON.stringify({
             messages: [{ role: "user", content: message }],
-            userRole: "agriculteur",
+            userRole: primaryRole,
             userId: user?.id,
+            language: selectedLanguage === "wo" ? "wo" : selectedLanguage.split("-")[0],
           }),
         }
       );
@@ -405,7 +399,7 @@ export default function VoiceAssistant() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
                   },
-                  body: JSON.stringify({ audio: base64, language: "fr" }),
+                  body: JSON.stringify({ audio: base64, language: selectedLanguage === "wo" ? "fr" : selectedLanguage.split("-")[0] }),
                 }
               );
 
@@ -765,7 +759,7 @@ export default function VoiceAssistant() {
 
         {/* Voice shortcuts grid - icons only */}
         <div className="grid grid-cols-3 gap-4 w-full mt-4">
-          {voiceShortcuts.map((shortcut, i) => (
+          {getVoiceShortcuts(language).map((shortcut, i) => (
             <button
               key={i}
               onClick={() => handleShortcut(shortcut.command)}

@@ -469,13 +469,18 @@ export function IrrigationRecommendationsModule() {
         </>
       )}
 
-      {!fields?.length && (
-        <Card>
-          <CardContent className="text-center py-8">
-            <Droplets className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              Aucune parcelle active. Ajoutez des parcelles pour obtenir des recommandations.
-            </p>
+      {!fields?.length && !isAnalyzing && (
+        <Card className="border-dashed">
+          <CardContent className="text-center py-8 space-y-3">
+            <div className="w-14 h-14 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+              <Droplets className="w-7 h-7 text-primary" />
+            </div>
+            <div>
+              <p className="font-medium text-sm">Aucune parcelle active</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Ajoutez des parcelles actives pour obtenir des recommandations d'irrigation et de fertilisation personnalisées par l'IA.
+              </p>
+            </div>
           </CardContent>
         </Card>
       )}

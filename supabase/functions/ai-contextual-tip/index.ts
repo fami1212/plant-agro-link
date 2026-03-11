@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { context, data } = await req.json();
+    const { context, data, userRole } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
@@ -38,6 +38,16 @@ serve(async (req) => {
       iot: `Donne un conseil sur l'utilisation des capteurs IoT en agriculture: interprétation des données, seuils d'alerte, ou optimisation. Maximum 2 phrases.`,
     };
 
+    // Build role-specific context
+    const roleHints: Record<string, string> = {
+      agriculteur: "L'utilisateur est un agriculteur/fermier.",
+      veterinaire: "L'utilisateur est un vétérinaire professionnel.",
+      investisseur: "L'utilisateur est un investisseur dans l'agriculture.",
+      acheteur: "L'utilisateur est un acheteur de produits agricoles.",
+      admin: "L'utilisateur est un administrateur de la plateforme.",
+    };
+    const roleHint = roleHints[userRole] || roleHints.agriculteur;
+
     const prompt = contextPrompts[context] || contextPrompts.dashboard;
     const dataContext = data ? `\nDonnées disponibles: ${JSON.stringify(data)}` : "";
 
@@ -52,7 +62,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `Tu es un conseiller agricole expert au Sénégal. Tu donnes des conseils courts, pratiques et adaptés au contexte local. Réponds en français, de manière engageante avec un emoji si pertinent.`,
+            content: `Tu es un conseiller agricole expert au Sénégal. ${roleHint} Tu donnes des conseils courts, pratiques et adaptés au contexte local et au profil de l'utilisateur. Réponds en français, de manière engageante avec un emoji si pertinent.`,
           },
           {
             role: "user",
