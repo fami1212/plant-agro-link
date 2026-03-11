@@ -758,7 +758,7 @@ export default function VoiceAssistant() {
 
         {/* Voice shortcuts grid - icons only */}
         <div className="grid grid-cols-3 gap-4 w-full mt-4">
-          {voiceShortcuts.map((shortcut, i) => (
+          {getVoiceShortcuts(language).map((shortcut, i) => (
             <button
               key={i}
               onClick={() => handleShortcut(shortcut.command)}
