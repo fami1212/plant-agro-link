@@ -9,6 +9,9 @@ import Agriculteur from "./pages/Agriculteur";
 import Acheteur from "./pages/Acheteur";
 import IA from "./pages/IA";
 import VoiceAssistant from "./pages/VoiceAssistant";
+import Communaute from "./pages/Communaute";
+import ELearning from "./pages/ELearning";
+import Logistique from "./pages/Logistique";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -194,6 +197,33 @@ const App = () => (
                   element={
                     <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
                       <FarmerInvestments />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Community */}
+                <Route
+                  path="/communaute"
+                  element={
+                    <ProtectedRoute>
+                      <Communaute />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* E-Learning */}
+                <Route
+                  path="/elearning"
+                  element={
+                    <ProtectedRoute>
+                      <ELearning />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Logistics */}
+                <Route
+                  path="/logistique"
+                  element={
+                    <ProtectedRoute allowedRoles={['agriculteur', 'acheteur', 'admin']}>
+                      <Logistique />
                     </ProtectedRoute>
                   }
                 />

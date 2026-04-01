@@ -2,8 +2,8 @@ import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-interface EmptyStateProps {
-  icon: ReactNode;
+export interface EmptyStateProps {
+  icon?: ReactNode;
   title: string;
   description: string;
   action?: {
@@ -27,9 +27,11 @@ export function EmptyState({
         className
       )}
     >
-      <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-5">
-        {icon}
-      </div>
+      {icon && (
+        <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-5">
+          {icon}
+        </div>
+      )}
       <h3 className="text-lg font-semibold text-foreground mb-1.5">{title}</h3>
       <p className="text-sm text-muted-foreground max-w-xs mb-5">{description}</p>
       {action && (
