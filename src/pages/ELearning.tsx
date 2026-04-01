@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { CourseCard } from "@/components/elearning/CourseCard";
 import { QuizModule } from "@/components/elearning/QuizModule";
 import { Button } from "@/components/ui/button";
