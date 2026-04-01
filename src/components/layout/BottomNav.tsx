@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Home, MapPin, Wheat, PawPrint, ShoppingBag, Menu,
   User, LogOut, Settings, Activity, Stethoscope,
-  TrendingUp, Shield, Tractor, Brain, X,
+  TrendingUp, Shield, Tractor, Brain, Users, GraduationCap, Truck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
