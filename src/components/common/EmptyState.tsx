@@ -2,8 +2,8 @@ import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-interface EmptyStateProps {
-  icon: ReactNode;
+export interface EmptyStateProps {
+  icon?: ReactNode;
   title: string;
   description: string;
   action?: {
