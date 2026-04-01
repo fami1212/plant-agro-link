@@ -5,8 +5,6 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { CourseCard } from "@/components/elearning/CourseCard";
 import { QuizModule } from "@/components/elearning/QuizModule";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/i18n/LanguageContext";
