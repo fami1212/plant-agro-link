@@ -200,6 +200,33 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
+                {/* Community */}
+                <Route
+                  path="/communaute"
+                  element={
+                    <ProtectedRoute>
+                      <Communaute />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* E-Learning */}
+                <Route
+                  path="/elearning"
+                  element={
+                    <ProtectedRoute>
+                      <ELearning />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Logistics */}
+                <Route
+                  path="/logistique"
+                  element={
+                    <ProtectedRoute allowedRoles={['agriculteur', 'acheteur', 'admin']}>
+                      <Logistique />
+                    </ProtectedRoute>
+                  }
+                />
                 {/* Settings */}
                 <Route
                   path="/settings"

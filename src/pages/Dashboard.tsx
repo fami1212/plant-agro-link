@@ -126,6 +126,18 @@ export default function Dashboard() {
             )}
           </div>
 
+          {/* New modules quick access */}
+          <div className="space-y-3">
+            <h2 className="text-sm font-semibold text-foreground">{t("nav.community")} & {t("nav.elearning")}</h2>
+            <div className="grid grid-cols-3 gap-3">
+              <QuickActionCard icon={<Users className="w-4 h-4" />} title={t("nav.community")} description={t("community.subtitle")} onClick={() => navigate("/communaute")} />
+              <QuickActionCard icon={<GraduationCap className="w-4 h-4" />} title={t("nav.elearning")} description={t("elearning.subtitle")} onClick={() => navigate("/elearning")} />
+              {(isAgriculteur || isAcheteur || isAdmin) && (
+                <QuickActionCard icon={<Truck className="w-4 h-4" />} title={t("nav.logistics")} description={t("logistics.subtitle")} onClick={() => navigate("/logistique")} />
+              )}
+            </div>
+          </div>
+
           <Card className="overflow-hidden cursor-pointer border-0 shadow-soft hover:shadow-elevated transition-shadow" onClick={() => navigate("/marketplace")}>
             <CardContent className="p-0">
               <div className="gradient-accent p-4 flex items-center justify-between">
