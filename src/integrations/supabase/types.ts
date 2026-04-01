@@ -55,6 +55,220 @@ export type Database = {
           },
         ]
       }
+      community_comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_group_messages: {
+        Row: {
+          attachments: string[] | null
+          content: string
+          created_at: string | null
+          group_id: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          attachments?: string[] | null
+          content: string
+          created_at?: string | null
+          group_id: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          attachments?: string[] | null
+          content?: string
+          created_at?: string | null
+          group_id?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_group_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_groups: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          description: string | null
+          group_type: string
+          id: string
+          image_url: string | null
+          is_public: boolean | null
+          member_count: number | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          group_type?: string
+          id?: string
+          image_url?: string | null
+          is_public?: boolean | null
+          member_count?: number | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          group_type?: string
+          id?: string
+          image_url?: string | null
+          is_public?: boolean | null
+          member_count?: number | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      community_likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string | null
+          member_role: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string | null
+          member_role?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string | null
+          member_role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_posts: {
+        Row: {
+          comments_count: number | null
+          content: string
+          created_at: string | null
+          group_id: string | null
+          id: string
+          images: string[] | null
+          likes_count: number | null
+          post_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          comments_count?: number | null
+          content: string
+          created_at?: string | null
+          group_id?: string | null
+          id?: string
+          images?: string[] | null
+          likes_count?: number | null
+          post_type?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          comments_count?: number | null
+          content?: string
+          created_at?: string | null
+          group_id?: string | null
+          id?: string
+          images?: string[] | null
+          likes_count?: number | null
+          post_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crops: {
         Row: {
           actual_harvest_date: string | null
@@ -192,6 +406,181 @@ export type Database = {
             columns: ["dispute_id"]
             isOneToOne: false
             referencedRelation: "escrow_disputes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elearning_courses: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          difficulty: string
+          duration_minutes: number | null
+          id: string
+          instructor_name: string | null
+          language: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+          video_url: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string
+          duration_minutes?: number | null
+          id?: string
+          instructor_name?: string | null
+          language?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string
+          duration_minutes?: number | null
+          id?: string
+          instructor_name?: string | null
+          language?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      elearning_modules: {
+        Row: {
+          content_type: string
+          course_id: string
+          created_at: string | null
+          duration_minutes: number | null
+          id: string
+          order_index: number
+          text_content: string | null
+          title: string
+          video_url: string | null
+        }
+        Insert: {
+          content_type?: string
+          course_id: string
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          order_index?: number
+          text_content?: string | null
+          title: string
+          video_url?: string | null
+        }
+        Update: {
+          content_type?: string
+          course_id?: string
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          order_index?: number
+          text_content?: string | null
+          title?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elearning_modules_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "elearning_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elearning_progress: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          course_id: string
+          created_at: string | null
+          id: string
+          module_id: string | null
+          score: number | null
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          course_id: string
+          created_at?: string | null
+          id?: string
+          module_id?: string | null
+          score?: number | null
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          course_id?: string
+          created_at?: string | null
+          id?: string
+          module_id?: string | null
+          score?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elearning_progress_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "elearning_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "elearning_progress_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "elearning_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elearning_quiz_questions: {
+        Row: {
+          correct_answer: string
+          created_at: string | null
+          explanation: string | null
+          id: string
+          module_id: string
+          options: Json
+          question: string
+        }
+        Insert: {
+          correct_answer: string
+          created_at?: string | null
+          explanation?: string | null
+          id?: string
+          module_id: string
+          options?: Json
+          question: string
+        }
+        Update: {
+          correct_answer?: string
+          created_at?: string | null
+          explanation?: string | null
+          id?: string
+          module_id?: string
+          options?: Json
+          question?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elearning_quiz_questions_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "elearning_modules"
             referencedColumns: ["id"]
           },
         ]
@@ -871,6 +1260,168 @@ export type Database = {
           updated_at?: string
           user_id?: string
           weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      logistics_shipments: {
+        Row: {
+          buyer_id: string
+          created_at: string | null
+          delivery_date: string | null
+          destination: string
+          distance_km: number | null
+          estimated_delivery: string | null
+          id: string
+          listing_id: string | null
+          offer_id: string | null
+          origin: string
+          pickup_date: string | null
+          price: number | null
+          seller_id: string
+          status: string
+          tracking_notes: Json | null
+          transporter_id: string | null
+          updated_at: string | null
+          weight_kg: number | null
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string | null
+          delivery_date?: string | null
+          destination: string
+          distance_km?: number | null
+          estimated_delivery?: string | null
+          id?: string
+          listing_id?: string | null
+          offer_id?: string | null
+          origin: string
+          pickup_date?: string | null
+          price?: number | null
+          seller_id: string
+          status?: string
+          tracking_notes?: Json | null
+          transporter_id?: string | null
+          updated_at?: string | null
+          weight_kg?: number | null
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string | null
+          delivery_date?: string | null
+          destination?: string
+          distance_km?: number | null
+          estimated_delivery?: string | null
+          id?: string
+          listing_id?: string | null
+          offer_id?: string | null
+          origin?: string
+          pickup_date?: string | null
+          price?: number | null
+          seller_id?: string
+          status?: string
+          tracking_notes?: Json | null
+          transporter_id?: string | null
+          updated_at?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logistics_shipments_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "logistics_shipments_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      logistics_stock: {
+        Row: {
+          created_at: string | null
+          id: string
+          location: string | null
+          min_threshold: number | null
+          product_name: string
+          quantity: number
+          unit: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          location?: string | null
+          min_threshold?: number | null
+          product_name: string
+          quantity?: number
+          unit?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          location?: string | null
+          min_threshold?: number | null
+          product_name?: string
+          quantity?: number
+          unit?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      logistics_transporters: {
+        Row: {
+          capacity_kg: number | null
+          company_name: string
+          created_at: string | null
+          id: string
+          is_available: boolean | null
+          phone: string | null
+          price_per_km: number | null
+          rating: number | null
+          service_areas: string[] | null
+          updated_at: string | null
+          user_id: string
+          vehicle_type: string
+          whatsapp: string | null
+        }
+        Insert: {
+          capacity_kg?: number | null
+          company_name: string
+          created_at?: string | null
+          id?: string
+          is_available?: boolean | null
+          phone?: string | null
+          price_per_km?: number | null
+          rating?: number | null
+          service_areas?: string[] | null
+          updated_at?: string | null
+          user_id: string
+          vehicle_type?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          capacity_kg?: number | null
+          company_name?: string
+          created_at?: string | null
+          id?: string
+          is_available?: boolean | null
+          phone?: string | null
+          price_per_km?: number | null
+          rating?: number | null
+          service_areas?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+          vehicle_type?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
