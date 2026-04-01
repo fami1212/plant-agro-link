@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   MapPin, Wheat, PawPrint, Plus, TrendingUp, Scale,
   ShoppingBag, Stethoscope, DollarSign, ArrowRight,
+  Users, GraduationCap, Truck,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDashboardData } from "@/hooks/useDashboardData";
