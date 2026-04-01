@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { EmptyState } from "@/components/common/EmptyState";
-import { ArrowLeft, Play, BookOpen, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Play, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ELearning() {

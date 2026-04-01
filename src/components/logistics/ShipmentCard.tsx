@@ -1,5 +1,5 @@
 import { Package, MapPin, Truck, CheckCircle2, Clock } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 
