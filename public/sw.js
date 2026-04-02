@@ -1,4 +1,4 @@
-const CACHE_NAME = 'plantera-v1';
+const CACHE_NAME = 'plantera-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -26,10 +26,11 @@ self.addEventListener('activate', (event) => {
 // Fetch - network first, fallback to cache
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  
-  // Skip non-HTTP requests
   if (!event.request.url.startsWith('http')) return;
-  
+
+  // Never cache OAuth redirects
+  if (event.request.url.includes('/~oauth')) return;
+
   // For navigation requests, always try network first
   if (event.request.mode === 'navigate') {
     event.respondWith(
@@ -53,7 +54,6 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       }).catch(() => cached);
-      
       return cached || fetched;
     })
   );
@@ -74,16 +74,13 @@ self.addEventListener('push', (event) => {
       { action: 'dismiss', title: 'Fermer' },
     ],
   };
-
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
 // Notification click handler
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  
   if (event.action === 'dismiss') return;
-  
   const url = event.notification.data?.url || '/dashboard';
   event.waitUntil(
     self.clients.matchAll({ type: 'window' }).then((clients) => {
