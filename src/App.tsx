@@ -253,6 +253,7 @@ const App = () => (
               <InstallPrompt />
             </BrowserRouter>
           </TooltipProvider>
+          </NativePlatformProvider>
         </AuthProvider>
         </LanguageProvider>
       </ThemeProvider>
