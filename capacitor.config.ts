@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.8c273a738e064d85a90e9fc04d834ff5',
-  appName: 'Plantéra',
+  appId: 'app.lovable.plantera',
+  appName: 'Plantera',
   webDir: 'dist',
   server: {
     url: 'https://8c273a73-8e06-4d85-a90e-9fc04d834ff5.lovableproject.com?forceHideBadge=true',
