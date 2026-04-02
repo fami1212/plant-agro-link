@@ -54,6 +54,7 @@ const App = () => (
       <ThemeProvider defaultTheme="light" storageKey="plantera-theme">
         <LanguageProvider>
         <AuthProvider>
+          <NativePlatformProvider>
           <TooltipProvider>
             <Toaster />
             <Sonner position="top-center" />
