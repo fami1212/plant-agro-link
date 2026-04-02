@@ -23,6 +23,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AIAssistant } from "@/components/ai/AIAssistant";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { NativePlatformProvider } from "@/components/native/NativePlatformProvider";
 import Index from "./pages/Index";
 import Onboarding from "./pages/Onboarding";
 import Auth from "./pages/Auth";
