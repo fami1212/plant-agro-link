@@ -4,10 +4,6 @@ const config: CapacitorConfig = {
   appId: 'app.lovable.plantera',
   appName: 'Plantera',
   webDir: 'dist',
-  server: {
-    url: 'https://8c273a73-8e06-4d85-a90e-9fc04d834ff5.lovableproject.com?forceHideBadge=true',
-    cleartext: true,
-  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
