@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PostCard } from "@/components/community/PostCard";
 import { PostForm } from "@/components/community/PostForm";
 import { GroupCard } from "@/components/community/GroupCard";
-import { GroupChat } from "@/components/community/GroupChat";
+import { GroupDetail } from "@/components/community/GroupDetail";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -19,13 +19,13 @@ import { Plus, ArrowLeft } from "lucide-react";
 import { EmptyState } from "@/components/common/EmptyState";
 
 export default function Communaute() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { t } = useLanguage();
   const [posts, setPosts] = useState<any[]>([]);
   const [groups, setGroups] = useState<any[]>([]);
   const [myGroups, setMyGroups] = useState<any[]>([]);
   const [memberGroupIds, setMemberGroupIds] = useState<string[]>([]);
-  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<any>(null);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [newGroup, setNewGroup] = useState({ name: "", description: "", group_type: "cooperative" });
 
@@ -76,7 +76,7 @@ export default function Communaute() {
     await supabase.from("community_members").delete().eq("group_id", groupId).eq("user_id", user.id);
     toast.success(t("community.left"));
     fetchMyMemberships();
-    if (selectedGroup === groupId) setSelectedGroup(null);
+    if (selectedGroup?.id === groupId) setSelectedGroup(null);
   };
 
   const handleCreateGroup = async () => {
@@ -95,17 +95,21 @@ export default function Communaute() {
     fetchMyMemberships();
   };
 
+  const handleOpenGroup = (groupId: string) => {
+    const group = [...myGroups, ...groups].find(g => g.id === groupId);
+    if (group) setSelectedGroup(group);
+  };
+
   if (selectedGroup) {
-    const group = myGroups.find(g => g.id === selectedGroup);
     return (
       <AppLayout>
         <div className="min-h-screen bg-background">
-          <PageHeader title={group?.name || t("community.group")} subtitle={t("community.groupChat")} />
+          <PageHeader title={selectedGroup.name} subtitle={t("community.group")} />
           <div className="px-4 pb-24">
             <Button variant="ghost" size="sm" className="mb-3 gap-1" onClick={() => setSelectedGroup(null)}>
               <ArrowLeft className="w-4 h-4" /> {t("common.back")}
             </Button>
-            <GroupChat groupId={selectedGroup} />
+            <GroupDetail group={selectedGroup} />
           </div>
         </div>
       </AppLayout>
@@ -156,7 +160,7 @@ export default function Communaute() {
                 </DialogContent>
               </Dialog>
               {groups.map(g => (
-                <GroupCard key={g.id} group={g} isMember={memberGroupIds.includes(g.id)} onJoin={handleJoin} onLeave={handleLeave} onOpen={setSelectedGroup} />
+                <GroupCard key={g.id} group={g} isMember={memberGroupIds.includes(g.id)} onJoin={handleJoin} onLeave={handleLeave} onOpen={handleOpenGroup} />
               ))}
             </TabsContent>
 
@@ -165,7 +169,7 @@ export default function Communaute() {
                 <EmptyState title={t("community.noGroups")} description={t("community.noGroupsDesc")} />
               ) : (
                 myGroups.map(g => (
-                  <GroupCard key={g.id} group={g} isMember onLeave={handleLeave} onOpen={setSelectedGroup} />
+                  <GroupCard key={g.id} group={g} isMember onLeave={handleLeave} onOpen={handleOpenGroup} />
                 ))
               )}
             </TabsContent>
