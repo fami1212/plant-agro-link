@@ -657,4 +657,28 @@ export const fr = {
   "logistics.status.en_transit": "En transit",
   "logistics.status.livre": "Livré",
   "logistics.status.annule": "Annulé",
+  "logistics.tracking": "Suivi de l'expédition",
+  "logistics.pickup": "Enlèvement",
+  "logistics.created": "Créé le",
+  "logistics.registerTransporter": "Devenir transporteur",
+  "logistics.transporterCreated": "Transporteur enregistré !",
+  "logistics.companyName": "Nom de l'entreprise",
+  "logistics.vehicleType.camion": "Camion",
+  "logistics.vehicleType.camionnette": "Camionnette",
+  "logistics.vehicleType.moto": "Moto",
+  "logistics.vehicleType.tricycle": "Tricycle",
+  "logistics.capacityKg": "Capacité (kg)",
+  "logistics.phone": "Téléphone",
+  "logistics.pricePerKm": "Prix par km (FCFA)",
+  "logistics.serviceAreas": "Zones desservies (séparées par des virgules)",
+
+  // Community extras
+  "community.chat": "Discussion",
+  "community.admin": "Admin",
+  "community.membersList": "Membres",
+
+  // Common extras
+  "common.create": "Créer",
+  "common.error": "Une erreur est survenue",
+  "common.all": "Tout",
 };
