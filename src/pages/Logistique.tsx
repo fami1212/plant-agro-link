@@ -3,7 +3,9 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShipmentCard } from "@/components/logistics/ShipmentCard";
+import { ShipmentTracker } from "@/components/logistics/ShipmentTracker";
 import { TransporterCard } from "@/components/logistics/TransporterCard";
+import { TransporterForm } from "@/components/logistics/TransporterForm";
 import { StockManager } from "@/components/logistics/StockManager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { EmptyState } from "@/components/common/EmptyState";
-import { Plus } from "lucide-react";
+import { Plus, ArrowLeft, Truck } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Logistique() {
@@ -21,6 +23,8 @@ export default function Logistique() {
   const [shipments, setShipments] = useState<any[]>([]);
   const [transporters, setTransporters] = useState<any[]>([]);
   const [showCreate, setShowCreate] = useState(false);
+  const [showTransporterForm, setShowTransporterForm] = useState(false);
+  const [selectedShipment, setSelectedShipment] = useState<any>(null);
   const [form, setForm] = useState({ origin: "", destination: "", weight_kg: "", buyer_id: "" });
 
   const fetchShipments = async () => {
@@ -38,7 +42,6 @@ export default function Logistique() {
 
   useEffect(() => { fetchShipments(); fetchTransporters(); }, [user]);
 
-  // Realtime subscription for shipments
   useEffect(() => {
     if (!user) return;
     const channel = supabase
@@ -63,6 +66,23 @@ export default function Logistique() {
     setForm({ origin: "", destination: "", weight_kg: "", buyer_id: "" });
     fetchShipments();
   };
+
+  // Shipment detail view
+  if (selectedShipment) {
+    return (
+      <AppLayout>
+        <div className="min-h-screen bg-background">
+          <PageHeader title={t("logistics.tracking")} subtitle={`${selectedShipment.origin} → ${selectedShipment.destination}`} />
+          <div className="px-4 pb-24">
+            <Button variant="ghost" size="sm" className="mb-3 gap-1" onClick={() => setSelectedShipment(null)}>
+              <ArrowLeft className="w-4 h-4" /> {t("common.back")}
+            </Button>
+            <ShipmentTracker shipment={selectedShipment} />
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -94,11 +114,22 @@ export default function Logistique() {
               {shipments.length === 0 ? (
                 <EmptyState title={t("logistics.noShipments")} description={t("logistics.noShipmentsDesc")} />
               ) : (
-                shipments.map(s => <ShipmentCard key={s.id} shipment={s} />)
+                shipments.map(s => <ShipmentCard key={s.id} shipment={s} onClick={() => setSelectedShipment(s)} />)
               )}
             </TabsContent>
 
             <TabsContent value="transporters" className="space-y-3">
+              <Dialog open={showTransporterForm} onOpenChange={setShowTransporterForm}>
+                <DialogTrigger asChild>
+                  <Button className="w-full rounded-xl gap-2" variant="outline">
+                    <Truck className="w-4 h-4" />{t("logistics.registerTransporter")}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader><DialogTitle>{t("logistics.registerTransporter")}</DialogTitle></DialogHeader>
+                  <TransporterForm onSuccess={() => { setShowTransporterForm(false); fetchTransporters(); }} />
+                </DialogContent>
+              </Dialog>
               {transporters.length === 0 ? (
                 <EmptyState title={t("logistics.noTransporters")} description={t("logistics.noTransportersDesc")} />
               ) : (
