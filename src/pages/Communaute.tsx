@@ -6,6 +6,7 @@ import { PostCard } from "@/components/community/PostCard";
 import { PostForm } from "@/components/community/PostForm";
 import { GroupCard } from "@/components/community/GroupCard";
 import { GroupDetail } from "@/components/community/GroupDetail";
+import { CommentDialog } from "@/components/community/CommentDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -15,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { toast } from "sonner";
-import { Plus, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, Search } from "lucide-react";
 import { EmptyState } from "@/components/common/EmptyState";
 
 export default function Communaute() {
@@ -28,6 +29,9 @@ export default function Communaute() {
   const [selectedGroup, setSelectedGroup] = useState<any>(null);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [newGroup, setNewGroup] = useState({ name: "", description: "", group_type: "cooperative" });
+  const [commentPostId, setCommentPostId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
 
   const fetchPosts = async () => {
     const { data } = await supabase
@@ -42,6 +46,12 @@ export default function Communaute() {
       const nameMap = Object.fromEntries((profiles || []).map(p => [p.user_id, p.full_name]));
       setPosts(data.map(p => ({ ...p, author_name: nameMap[p.user_id] })));
     }
+  };
+
+  const fetchLikedPosts = async () => {
+    if (!user) return;
+    const { data } = await supabase.from("community_likes").select("post_id").eq("user_id", user.id);
+    if (data) setLikedPosts(new Set(data.map(l => l.post_id)));
   };
 
   const fetchGroups = async () => {
@@ -62,13 +72,14 @@ export default function Communaute() {
     }
   };
 
-  useEffect(() => { fetchPosts(); fetchGroups(); fetchMyMemberships(); }, [user]);
+  useEffect(() => { fetchPosts(); fetchLikedPosts(); fetchGroups(); fetchMyMemberships(); }, [user]);
 
   const handleJoin = async (groupId: string) => {
     if (!user) return;
     await supabase.from("community_members").insert({ group_id: groupId, user_id: user.id });
     toast.success(t("community.joined"));
     fetchMyMemberships();
+    fetchGroups();
   };
 
   const handleLeave = async (groupId: string) => {
@@ -76,6 +87,7 @@ export default function Communaute() {
     await supabase.from("community_members").delete().eq("group_id", groupId).eq("user_id", user.id);
     toast.success(t("community.left"));
     fetchMyMemberships();
+    fetchGroups();
     if (selectedGroup?.id === groupId) setSelectedGroup(null);
   };
 
@@ -99,6 +111,10 @@ export default function Communaute() {
     const group = [...myGroups, ...groups].find(g => g.id === groupId);
     if (group) setSelectedGroup(group);
   };
+
+  const filteredGroups = searchQuery
+    ? groups.filter(g => g.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : groups;
 
   if (selectedGroup) {
     return (
@@ -133,11 +149,28 @@ export default function Communaute() {
               {posts.length === 0 ? (
                 <EmptyState title={t("community.noPosts")} description={t("community.noPostsDesc")} />
               ) : (
-                posts.map(post => <PostCard key={post.id} post={post} onRefresh={fetchPosts} />)
+                posts.map(post => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onRefresh={fetchPosts}
+                    onComment={(id) => setCommentPostId(id)}
+                    initialLiked={likedPosts.has(post.id)}
+                  />
+                ))
               )}
             </TabsContent>
 
             <TabsContent value="groups" className="space-y-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder={t("community.searchGroups")}
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="pl-9 rounded-xl"
+                />
+              </div>
               <Dialog open={showCreateGroup} onOpenChange={setShowCreateGroup}>
                 <DialogTrigger asChild>
                   <Button className="w-full rounded-xl gap-2"><Plus className="w-4 h-4" />{t("community.createGroup")}</Button>
@@ -159,9 +192,13 @@ export default function Communaute() {
                   </div>
                 </DialogContent>
               </Dialog>
-              {groups.map(g => (
-                <GroupCard key={g.id} group={g} isMember={memberGroupIds.includes(g.id)} onJoin={handleJoin} onLeave={handleLeave} onOpen={handleOpenGroup} />
-              ))}
+              {filteredGroups.length === 0 ? (
+                <EmptyState title={t("community.noGroups")} description={t("community.noGroupsDesc")} />
+              ) : (
+                filteredGroups.map(g => (
+                  <GroupCard key={g.id} group={g} isMember={memberGroupIds.includes(g.id)} onJoin={handleJoin} onLeave={handleLeave} onOpen={handleOpenGroup} />
+                ))
+              )}
             </TabsContent>
 
             <TabsContent value="mygroups" className="space-y-3">
@@ -176,6 +213,13 @@ export default function Communaute() {
           </Tabs>
         </div>
       </div>
+
+      <CommentDialog
+        postId={commentPostId}
+        open={!!commentPostId}
+        onOpenChange={(open) => { if (!open) setCommentPostId(null); }}
+        onCommentAdded={fetchPosts}
+      />
     </AppLayout>
   );
 }

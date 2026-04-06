@@ -22,12 +22,13 @@ interface PostCardProps {
   };
   onComment?: (postId: string) => void;
   onRefresh?: () => void;
+  initialLiked?: boolean;
 }
 
-export function PostCard({ post, onComment, onRefresh }: PostCardProps) {
+export function PostCard({ post, onComment, onRefresh, initialLiked = false }: PostCardProps) {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(initialLiked);
   const [likesCount, setLikesCount] = useState(post.likes_count);
 
   const handleLike = async () => {
@@ -42,6 +43,17 @@ export function PostCard({ post, onComment, onRefresh }: PostCardProps) {
       }
       setLiked(!liked);
     } catch { toast.error("Erreur"); }
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: post.author_name || "Plantéra", text: post.content.slice(0, 100) });
+      } catch { /* user cancelled */ }
+    } else {
+      await navigator.clipboard.writeText(post.content);
+      toast.success(t("community.copied"));
+    }
   };
 
   const typeColors: Record<string, string> = {
@@ -103,7 +115,7 @@ export function PostCard({ post, onComment, onRefresh }: PostCardProps) {
           <MessageCircle className="w-4 h-4" />
           {post.comments_count}
         </Button>
-        <Button variant="ghost" size="sm" className="gap-1.5 text-xs ml-auto">
+        <Button variant="ghost" size="sm" className="gap-1.5 text-xs ml-auto" onClick={handleShare}>
           <Share2 className="w-4 h-4" />
         </Button>
       </div>

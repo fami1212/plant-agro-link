@@ -676,9 +676,27 @@ export const fr = {
   "community.chat": "Discussion",
   "community.admin": "Admin",
   "community.membersList": "Membres",
+  "community.comments": "Commentaires",
+  "community.noComments": "Aucun commentaire",
+  "community.writeComment": "Écrire un commentaire...",
+  "community.copied": "Copié dans le presse-papier",
+  "community.searchGroups": "Rechercher un groupe...",
 
-  // Common extras
-  "common.create": "Créer",
-  "common.error": "Une erreur est survenue",
-  "common.all": "Tout",
+  // E-Learning extras
+  "elearning.myProgress": "Ma progression",
+  "elearning.coursesCompleted": "cours terminés",
+  "elearning.modulesCompleted": "modules",
+  "elearning.allComplete": "Parcours terminé !",
+  "elearning.courseProgress": "Progression du cours",
+  "elearning.courseComplete": "Cours terminé ! Félicitations 🎉",
+
+  // Logistics extras
+  "logistics.markAs.en_transit": "Marquer en transit",
+  "logistics.markAs.livre": "Marquer comme livré",
+  "logistics.cancelShipment": "Annuler l'expédition",
+  "logistics.estimatedDelivery": "Date de livraison estimée",
+  "logistics.searchTransporters": "Rechercher un transporteur...",
+  "logistics.editStock": "Modifier le stock",
+  "logistics.stockUpdated": "Stock mis à jour",
+  "logistics.stockDeleted": "Stock supprimé",
 };

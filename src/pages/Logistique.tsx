@@ -9,12 +9,13 @@ import { TransporterForm } from "@/components/logistics/TransporterForm";
 import { StockManager } from "@/components/logistics/StockManager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { EmptyState } from "@/components/common/EmptyState";
-import { Plus, ArrowLeft, Truck } from "lucide-react";
+import { Plus, ArrowLeft, Truck, Search } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Logistique() {
@@ -25,7 +26,9 @@ export default function Logistique() {
   const [showCreate, setShowCreate] = useState(false);
   const [showTransporterForm, setShowTransporterForm] = useState(false);
   const [selectedShipment, setSelectedShipment] = useState<any>(null);
-  const [form, setForm] = useState({ origin: "", destination: "", weight_kg: "", buyer_id: "" });
+  const [form, setForm] = useState({ origin: "", destination: "", weight_kg: "", estimated_delivery: "" });
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [transporterSearch, setTransporterSearch] = useState("");
 
   const fetchShipments = async () => {
     if (!user) return;
@@ -55,29 +58,81 @@ export default function Logistique() {
     if (!user || !form.origin || !form.destination) return;
     const { error } = await supabase.from("logistics_shipments").insert({
       seller_id: user.id,
-      buyer_id: form.buyer_id || user.id,
+      buyer_id: user.id,
       origin: form.origin,
       destination: form.destination,
       weight_kg: form.weight_kg ? parseFloat(form.weight_kg) : null,
+      estimated_delivery: form.estimated_delivery || null,
     });
     if (error) { toast.error(t("common.error")); return; }
     toast.success(t("logistics.shipmentCreated"));
     setShowCreate(false);
-    setForm({ origin: "", destination: "", weight_kg: "", buyer_id: "" });
+    setForm({ origin: "", destination: "", weight_kg: "", estimated_delivery: "" });
     fetchShipments();
   };
 
+  const handleUpdateStatus = async (shipmentId: string, newStatus: string) => {
+    const updates: any = { status: newStatus };
+    if (newStatus === "en_transit") updates.pickup_date = new Date().toISOString().split("T")[0];
+    if (newStatus === "livre") updates.delivery_date = new Date().toISOString().split("T")[0];
+
+    const { error } = await supabase.from("logistics_shipments").update(updates).eq("id", shipmentId);
+    if (error) { toast.error(t("common.error")); return; }
+    toast.success(t(`logistics.status.${newStatus}`));
+    fetchShipments();
+    if (selectedShipment?.id === shipmentId) {
+      setSelectedShipment({ ...selectedShipment, ...updates });
+    }
+  };
+
+  const handleContactTransporter = (transporter: any) => {
+    if (transporter.phone) {
+      window.open(`tel:${transporter.phone}`);
+    } else if (transporter.whatsapp) {
+      window.open(`https://wa.me/${transporter.whatsapp}`);
+    }
+  };
+
+  const filteredShipments = statusFilter === "all"
+    ? shipments
+    : shipments.filter(s => s.status === statusFilter);
+
+  const filteredTransporters = transporterSearch
+    ? transporters.filter(t =>
+        t.company_name.toLowerCase().includes(transporterSearch.toLowerCase()) ||
+        (t.service_areas || []).some((a: string) => a.toLowerCase().includes(transporterSearch.toLowerCase()))
+      )
+    : transporters;
+
   // Shipment detail view
   if (selectedShipment) {
+    const nextStatus: Record<string, string> = {
+      en_preparation: "en_transit",
+      en_transit: "livre",
+    };
+    const canAdvance = nextStatus[selectedShipment.status] && selectedShipment.seller_id === user?.id;
+
     return (
       <AppLayout>
         <div className="min-h-screen bg-background">
           <PageHeader title={t("logistics.tracking")} subtitle={`${selectedShipment.origin} → ${selectedShipment.destination}`} />
-          <div className="px-4 pb-24">
-            <Button variant="ghost" size="sm" className="mb-3 gap-1" onClick={() => setSelectedShipment(null)}>
+          <div className="px-4 pb-24 space-y-4">
+            <Button variant="ghost" size="sm" className="gap-1" onClick={() => setSelectedShipment(null)}>
               <ArrowLeft className="w-4 h-4" /> {t("common.back")}
             </Button>
             <ShipmentTracker shipment={selectedShipment} />
+
+            {canAdvance && (
+              <Button className="w-full rounded-xl" onClick={() => handleUpdateStatus(selectedShipment.id, nextStatus[selectedShipment.status])}>
+                {t(`logistics.markAs.${nextStatus[selectedShipment.status]}`)}
+              </Button>
+            )}
+
+            {selectedShipment.status !== "annule" && selectedShipment.status !== "livre" && selectedShipment.seller_id === user?.id && (
+              <Button variant="outline" className="w-full rounded-xl text-destructive" onClick={() => handleUpdateStatus(selectedShipment.id, "annule")}>
+                {t("logistics.cancelShipment")}
+              </Button>
+            )}
           </div>
         </div>
       </AppLayout>
@@ -107,18 +162,39 @@ export default function Logistique() {
                     <Input placeholder={t("logistics.origin")} value={form.origin} onChange={e => setForm({ ...form, origin: e.target.value })} />
                     <Input placeholder={t("logistics.destination")} value={form.destination} onChange={e => setForm({ ...form, destination: e.target.value })} />
                     <Input type="number" placeholder={t("logistics.weightKg")} value={form.weight_kg} onChange={e => setForm({ ...form, weight_kg: e.target.value })} />
+                    <Input type="date" placeholder={t("logistics.estimatedDelivery")} value={form.estimated_delivery} onChange={e => setForm({ ...form, estimated_delivery: e.target.value })} />
                     <Button className="w-full" onClick={handleCreateShipment}>{t("common.create")}</Button>
                   </div>
                 </DialogContent>
               </Dialog>
-              {shipments.length === 0 ? (
+
+              {/* Status filter */}
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                {["all", "en_preparation", "en_transit", "livre", "annule"].map(status => (
+                  <Button key={status} size="sm" variant={statusFilter === status ? "default" : "outline"} className="rounded-full text-xs shrink-0"
+                    onClick={() => setStatusFilter(status)}>
+                    {status === "all" ? t("common.all") : t(`logistics.status.${status}`)}
+                  </Button>
+                ))}
+              </div>
+
+              {filteredShipments.length === 0 ? (
                 <EmptyState title={t("logistics.noShipments")} description={t("logistics.noShipmentsDesc")} />
               ) : (
-                shipments.map(s => <ShipmentCard key={s.id} shipment={s} onClick={() => setSelectedShipment(s)} />)
+                filteredShipments.map(s => <ShipmentCard key={s.id} shipment={s} onClick={() => setSelectedShipment(s)} />)
               )}
             </TabsContent>
 
             <TabsContent value="transporters" className="space-y-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder={t("logistics.searchTransporters")}
+                  value={transporterSearch}
+                  onChange={e => setTransporterSearch(e.target.value)}
+                  className="pl-9 rounded-xl"
+                />
+              </div>
               <Dialog open={showTransporterForm} onOpenChange={setShowTransporterForm}>
                 <DialogTrigger asChild>
                   <Button className="w-full rounded-xl gap-2" variant="outline">
@@ -130,10 +206,12 @@ export default function Logistique() {
                   <TransporterForm onSuccess={() => { setShowTransporterForm(false); fetchTransporters(); }} />
                 </DialogContent>
               </Dialog>
-              {transporters.length === 0 ? (
+              {filteredTransporters.length === 0 ? (
                 <EmptyState title={t("logistics.noTransporters")} description={t("logistics.noTransportersDesc")} />
               ) : (
-                transporters.map(tr => <TransporterCard key={tr.id} transporter={tr} />)
+                filteredTransporters.map(tr => (
+                  <TransporterCard key={tr.id} transporter={tr} onContact={() => handleContactTransporter(tr)} />
+                ))
               )}
             </TabsContent>
 
