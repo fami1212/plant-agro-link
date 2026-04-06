@@ -699,11 +699,4 @@ export const fr = {
   "logistics.editStock": "Modifier le stock",
   "logistics.stockUpdated": "Stock mis à jour",
   "logistics.stockDeleted": "Stock supprimé",
-
-  // Common extras
-  "common.create": "Créer",
-  "common.save": "Enregistrer",
-  "common.error": "Une erreur est survenue",
-  "common.all": "Tout",
-  "common.user": "Utilisateur",
 };

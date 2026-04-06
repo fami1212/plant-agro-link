@@ -692,10 +692,4 @@ export const en = {
   "logistics.editStock": "Edit stock",
   "logistics.stockUpdated": "Stock updated",
   "logistics.stockDeleted": "Stock deleted",
-
-  "common.create": "Create",
-  "common.save": "Save",
-  "common.error": "An error occurred",
-  "common.all": "All",
-  "common.user": "User",
 };
