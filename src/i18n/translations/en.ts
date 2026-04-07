@@ -491,6 +491,9 @@ export const en = {
   "index.readyToStart": "Ready to start?",
   "index.joinFarmers": "Join thousands of farmers",
   "index.startNow": "Start now",
+  "index.statFarmers": "Farmers",
+  "index.statSatisfaction": "Satisfaction",
+  "index.statSupport": "AI Support",
 
   // Buyer
   "buyer.title": "My purchases",
