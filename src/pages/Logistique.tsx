@@ -54,20 +54,8 @@ export default function Logistique() {
     return () => { supabase.removeChannel(channel); };
   }, [user]);
 
-  const handleCreateShipment = async () => {
-    if (!user || !form.origin || !form.destination) return;
-    const { error } = await supabase.from("logistics_shipments").insert({
-      seller_id: user.id,
-      buyer_id: user.id,
-      origin: form.origin,
-      destination: form.destination,
-      weight_kg: form.weight_kg ? parseFloat(form.weight_kg) : null,
-      estimated_delivery: form.estimated_delivery || null,
-    });
-    if (error) { toast.error(t("common.error")); return; }
-    toast.success(t("logistics.shipmentCreated"));
+  const handleCreateShipment = () => {
     setShowCreate(false);
-    setForm({ origin: "", destination: "", weight_kg: "", estimated_delivery: "" });
     fetchShipments();
   };
 
