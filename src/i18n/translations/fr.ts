@@ -491,6 +491,9 @@ export const fr = {
   "index.readyToStart": "Prêt à commencer ?",
   "index.joinFarmers": "Rejoignez des milliers d'agriculteurs",
   "index.startNow": "Démarrer maintenant",
+  "index.statFarmers": "Agriculteurs",
+  "index.statSatisfaction": "Satisfaction",
+  "index.statSupport": "Support IA",
 
   // Buyer
   "buyer.title": "Mes achats",
