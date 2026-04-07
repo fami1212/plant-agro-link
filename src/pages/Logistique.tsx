@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShipmentCard } from "@/components/logistics/ShipmentCard";
 import { ShipmentTracker } from "@/components/logistics/ShipmentTracker";
+import { ShipmentForm } from "@/components/logistics/ShipmentForm";
 import { TransporterCard } from "@/components/logistics/TransporterCard";
 import { TransporterForm } from "@/components/logistics/TransporterForm";
 import { StockManager } from "@/components/logistics/StockManager";
