@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShipmentCard } from "@/components/logistics/ShipmentCard";
 import { ShipmentTracker } from "@/components/logistics/ShipmentTracker";
+import { ShipmentForm } from "@/components/logistics/ShipmentForm";
 import { TransporterCard } from "@/components/logistics/TransporterCard";
 import { TransporterForm } from "@/components/logistics/TransporterForm";
 import { StockManager } from "@/components/logistics/StockManager";
@@ -26,7 +27,6 @@ export default function Logistique() {
   const [showCreate, setShowCreate] = useState(false);
   const [showTransporterForm, setShowTransporterForm] = useState(false);
   const [selectedShipment, setSelectedShipment] = useState<any>(null);
-  const [form, setForm] = useState({ origin: "", destination: "", weight_kg: "", estimated_delivery: "" });
   const [statusFilter, setStatusFilter] = useState("all");
   const [transporterSearch, setTransporterSearch] = useState("");
 
@@ -54,20 +54,8 @@ export default function Logistique() {
     return () => { supabase.removeChannel(channel); };
   }, [user]);
 
-  const handleCreateShipment = async () => {
-    if (!user || !form.origin || !form.destination) return;
-    const { error } = await supabase.from("logistics_shipments").insert({
-      seller_id: user.id,
-      buyer_id: user.id,
-      origin: form.origin,
-      destination: form.destination,
-      weight_kg: form.weight_kg ? parseFloat(form.weight_kg) : null,
-      estimated_delivery: form.estimated_delivery || null,
-    });
-    if (error) { toast.error(t("common.error")); return; }
-    toast.success(t("logistics.shipmentCreated"));
+  const handleCreateShipment = () => {
     setShowCreate(false);
-    setForm({ origin: "", destination: "", weight_kg: "", estimated_delivery: "" });
     fetchShipments();
   };
 
@@ -158,13 +146,7 @@ export default function Logistique() {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader><DialogTitle>{t("logistics.newShipment")}</DialogTitle></DialogHeader>
-                  <div className="space-y-3">
-                    <Input placeholder={t("logistics.origin")} value={form.origin} onChange={e => setForm({ ...form, origin: e.target.value })} />
-                    <Input placeholder={t("logistics.destination")} value={form.destination} onChange={e => setForm({ ...form, destination: e.target.value })} />
-                    <Input type="number" placeholder={t("logistics.weightKg")} value={form.weight_kg} onChange={e => setForm({ ...form, weight_kg: e.target.value })} />
-                    <Input type="date" placeholder={t("logistics.estimatedDelivery")} value={form.estimated_delivery} onChange={e => setForm({ ...form, estimated_delivery: e.target.value })} />
-                    <Button className="w-full" onClick={handleCreateShipment}>{t("common.create")}</Button>
-                  </div>
+                  <ShipmentForm onSuccess={handleCreateShipment} />
                 </DialogContent>
               </Dialog>
 

@@ -699,4 +699,10 @@ export const fr = {
   "logistics.editStock": "Modifier le stock",
   "logistics.stockUpdated": "Stock mis à jour",
   "logistics.stockDeleted": "Stock supprimé",
+  "logistics.fillRequired": "Veuillez remplir les champs obligatoires",
+  "logistics.createShipment": "Créer l'expédition",
+  "logistics.distanceKm": "Distance (km)",
+  "logistics.notes": "Notes",
+  "logistics.notesPlaceholder": "Instructions spéciales, détails de la marchandise...",
+  "elearning.nextModule": "Module suivant",
 };
