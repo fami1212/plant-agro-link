@@ -692,4 +692,10 @@ export const en = {
   "logistics.editStock": "Edit stock",
   "logistics.stockUpdated": "Stock updated",
   "logistics.stockDeleted": "Stock deleted",
+  "logistics.fillRequired": "Please fill in the required fields",
+  "logistics.createShipment": "Create shipment",
+  "logistics.distanceKm": "Distance (km)",
+  "logistics.notes": "Notes",
+  "logistics.notesPlaceholder": "Special instructions, cargo details...",
+  "elearning.nextModule": "Next module",
 };
