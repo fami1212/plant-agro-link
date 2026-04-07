@@ -146,13 +146,7 @@ export default function Logistique() {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader><DialogTitle>{t("logistics.newShipment")}</DialogTitle></DialogHeader>
-                  <div className="space-y-3">
-                    <Input placeholder={t("logistics.origin")} value={form.origin} onChange={e => setForm({ ...form, origin: e.target.value })} />
-                    <Input placeholder={t("logistics.destination")} value={form.destination} onChange={e => setForm({ ...form, destination: e.target.value })} />
-                    <Input type="number" placeholder={t("logistics.weightKg")} value={form.weight_kg} onChange={e => setForm({ ...form, weight_kg: e.target.value })} />
-                    <Input type="date" placeholder={t("logistics.estimatedDelivery")} value={form.estimated_delivery} onChange={e => setForm({ ...form, estimated_delivery: e.target.value })} />
-                    <Button className="w-full" onClick={handleCreateShipment}>{t("common.create")}</Button>
-                  </div>
+                  <ShipmentForm onSuccess={handleCreateShipment} />
                 </DialogContent>
               </Dialog>
 
