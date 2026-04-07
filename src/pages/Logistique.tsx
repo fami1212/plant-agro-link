@@ -27,7 +27,6 @@ export default function Logistique() {
   const [showCreate, setShowCreate] = useState(false);
   const [showTransporterForm, setShowTransporterForm] = useState(false);
   const [selectedShipment, setSelectedShipment] = useState<any>(null);
-  const [form, setForm] = useState({ origin: "", destination: "", weight_kg: "", estimated_delivery: "" });
   const [statusFilter, setStatusFilter] = useState("all");
   const [transporterSearch, setTransporterSearch] = useState("");
 
