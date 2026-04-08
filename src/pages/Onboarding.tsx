@@ -12,7 +12,7 @@ export default function Onboarding() {
   const { t } = useLanguage();
 
   const slides = [
-    { icon: Sprout, titleKey: "onboarding.slide1.title", descKey: "onboarding.slide1.desc", color: "primary" },
+    { icon: Leaf, titleKey: "onboarding.slide1.title", descKey: "onboarding.slide1.desc", color: "primary" },
     { icon: MapPin, titleKey: "onboarding.slide2.title", descKey: "onboarding.slide2.desc", color: "secondary" },
     { icon: BarChart3, titleKey: "onboarding.slide3.title", descKey: "onboarding.slide3.desc", color: "accent" },
     { icon: ShoppingBag, titleKey: "onboarding.slide4.title", descKey: "onboarding.slide4.desc", color: "success" },
