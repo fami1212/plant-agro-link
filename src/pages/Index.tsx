@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Wifi, ArrowRight, Check, TrendingUp, PawPrint, ShoppingBag, Star, Shield, Zap, ChevronRight, Users, BarChart3, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
-import planteraLogo from "@/assets/plantera-logo.png";
+import planteraIcon from "@/assets/plantera-icon.png";
 
 export default function Index() {
   const navigate = useNavigate();
