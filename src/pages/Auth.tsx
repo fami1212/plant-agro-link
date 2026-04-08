@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Sprout, Mail, Lock, ArrowRight, Eye, EyeOff, User, Loader2 } from "lucide-react";
+import { Mail, Lock, ArrowRight, Eye, EyeOff, User, Loader2 } from "lucide-react";
+import planteraIcon from "@/assets/plantera-icon.png";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { RoleSelector } from "@/components/auth/RoleSelector";
@@ -74,8 +75,8 @@ export default function Auth() {
   return (
     <div className="min-h-screen bg-gradient-soft flex flex-col">
       <div className="flex flex-col items-center pt-16 pb-6 px-6 safe-top">
-        <div className="w-16 h-16 rounded-2xl gradient-hero flex items-center justify-center mb-4 shadow-glow">
-          <Sprout className="w-8 h-8 text-primary-foreground" />
+        <div className="w-16 h-16 rounded-2xl gradient-hero flex items-center justify-center mb-4 shadow-glow p-2">
+          <img src={planteraIcon} alt="Plantéra" width={40} height={40} className="drop-shadow-md" />
         </div>
         <h1 className="text-2xl font-bold text-foreground">Plantéra</h1>
         <p className="text-muted-foreground text-sm mt-1">

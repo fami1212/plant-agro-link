@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Wifi, ArrowRight, Check, TrendingUp, PawPrint, ShoppingBag, Star, Shield, Zap, ChevronRight, Users, BarChart3, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
-import planteraLogo from "@/assets/plantera-logo.png";
+import planteraIcon from "@/assets/plantera-icon.png";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -48,13 +48,15 @@ export default function Index() {
             "flex items-center justify-center mb-6 transition-all duration-700",
             mounted ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-8 scale-90"
           )}>
-            <img
-              src={planteraLogo}
-              alt="Plantéra Logo"
-              width={100}
-              height={100}
-              className="drop-shadow-lg"
-            />
+            <div className="w-[88px] h-[88px] rounded-[28px] gradient-hero flex items-center justify-center shadow-glow p-3">
+              <img
+                src={planteraIcon}
+                alt="Plantéra Logo"
+                width={56}
+                height={56}
+                className="drop-shadow-md"
+              />
+            </div>
           </div>
 
           {/* Title & Subtitle */}
