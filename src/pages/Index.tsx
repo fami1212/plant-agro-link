@@ -55,7 +55,8 @@ export default function Index() {
                 width={56}
                 height={56}
                 className="drop-shadow-md"
-            />
+              />
+            </div>
           </div>
 
           {/* Title & Subtitle */}
