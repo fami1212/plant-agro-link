@@ -48,12 +48,13 @@ export default function Index() {
             "flex items-center justify-center mb-6 transition-all duration-700",
             mounted ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-8 scale-90"
           )}>
-            <img
-              src={planteraLogo}
-              alt="Plantéra Logo"
-              width={100}
-              height={100}
-              className="drop-shadow-lg"
+            <div className="w-[88px] h-[88px] rounded-[28px] gradient-hero flex items-center justify-center shadow-glow p-3">
+              <img
+                src={planteraIcon}
+                alt="Plantéra Logo"
+                width={56}
+                height={56}
+                className="drop-shadow-md"
             />
           </div>
 
