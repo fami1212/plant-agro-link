@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { MapPin, BarChart3, ShoppingBag, ChevronRight, Check } from "lucide-react";
+import { Leaf, MapPin, BarChart3, ShoppingBag, ChevronRight, Check } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import planteraIcon from "@/assets/plantera-icon.png";
 
