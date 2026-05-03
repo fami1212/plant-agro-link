@@ -286,7 +286,7 @@ export function BuyerCart({ onCheckout }: BuyerCartProps) {
                     </a>
                   </Button>
                   <Button variant="ghost" size="icon" asChild>
-                    <a href={`https://wa.me/${group.seller_phone.replace(/\D/g, '')}`} target="_blank">
+                    <a href={`https://wa.me/${group.seller_phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
                       <MessageCircle className="w-4 h-4" />
                     </a>
                   </Button>
