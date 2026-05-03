@@ -1,99 +1,70 @@
+## Audit de sécurité réalisé
 
+J'ai analysé l'application et identifié plusieurs vulnérabilités à corriger :
 
-# Plan : Modules Communauté, E-Learning et Logistique
+### Vulnérabilités identifiées
 
-## Vue d'ensemble
-
-Ajout de 3 nouveaux modules majeurs à Plantéra, accessibles depuis la navigation et le dashboard, avec tables de données, pages dédiées et intégration IA.
-
----
-
-## 1. Module Communauté (`/communaute`)
-
-**Tables à créer (migration) :**
-- `community_posts` : id, user_id, content, images[], post_type (actualite/question/conseil/annonce), likes_count, comments_count, group_id (nullable), created_at
-- `community_comments` : id, post_id, user_id, content, created_at
-- `community_likes` : id, post_id, user_id, created_at (unique user_id+post_id)
-- `community_groups` : id, name, description, type (cooperative/region/culture), image_url, created_by, member_count, is_public, created_at
-- `community_members` : id, group_id, user_id, role (admin/membre), joined_at
-- `community_group_messages` : id, group_id, sender_id, content, attachments[], created_at
-
-RLS : les posts publics sont visibles par tous les authentifiés ; les posts de groupe uniquement par les membres ; messagerie de groupe réservée aux membres. Realtime activé sur `community_group_messages`.
-
-**Pages et composants :**
-- `src/pages/Communaute.tsx` : page principale avec 3 onglets (Fil d'actualité, Groupes, Mes Groupes)
-- `src/components/community/PostCard.tsx` : carte de post avec like, commentaire, partage
-- `src/components/community/PostForm.tsx` : formulaire de création (texte + images)
-- `src/components/community/GroupCard.tsx` : carte de groupe avec rejoindre/quitter
-- `src/components/community/GroupChat.tsx` : messagerie de groupe temps réel
-- `src/components/community/GroupDetail.tsx` : détail du groupe avec fil + membres + chat
-
-**Accès :** Tous les rôles authentifiés.
+1. **XSS critique dans `CourseDetail.tsx`** : utilisation directe de `dangerouslySetInnerHTML={{ __html: activeModule.text_content }}` sans assainissement → un contenu de cours malveillant exécuterait du JS arbitraire chez tous les utilisateurs.
+2. **Aucune validation côté client** des entrées utilisateur (formulaires d'auth, posts communauté, listings marketplace, commentaires, profil, etc.) malgré la présence de `zod` dans les dépendances.
+3. **Absence d'en-têtes de sécurité HTTP** (CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy) dans `index.html`.
+4. **Pas de limite de longueur** sur les champs texte → risque de DoS et de payloads volumineux.
+5. **Absence de protection contre les mots de passe compromis** (HIBP) côté Supabase Auth.
+6. **Pas d'audit RLS récent** ni de scan de sécurité Supabase.
+7. **Liens externes** potentiellement sans `rel="noopener noreferrer"`.
 
 ---
 
-## 2. Module E-Learning (`/elearning`)
+## Plan d'action
 
-**Tables à créer (migration) :**
-- `elearning_courses` : id, title, description, category (culture/elevage/business/tech), difficulty (debutant/intermediaire/avance), duration_minutes, thumbnail_url, video_url, instructor_name, language, created_at
-- `elearning_modules` : id, course_id, title, order_index, content_type (video/texte/quiz), video_url, text_content, duration_minutes
-- `elearning_progress` : id, user_id, course_id, module_id, completed, score, completed_at, created_at
-- `elearning_quiz_questions` : id, module_id, question, options (jsonb), correct_answer, explanation
+### 1. Corriger la XSS dans le E-Learning
+- Installer `dompurify` + `@types/dompurify`.
+- Créer un helper `src/lib/sanitize.ts` qui assainit le HTML (whitelist de balises sûres : `p, b, i, ul, ol, li, h1-h4, br, strong, em, a, img` avec attributs filtrés).
+- Remplacer `dangerouslySetInnerHTML` dans `CourseDetail.tsx` par `__html: sanitize(text_content)`.
 
-RLS : cours visibles par tous les authentifiés ; progression liée au user_id.
+### 2. Validation centralisée avec Zod
+- Créer `src/lib/validation.ts` avec des schémas réutilisables :
+  - `emailSchema`, `passwordSchema` (min 8, force minimale), `nameSchema` (trim, max 100)
+  - `postContentSchema` (max 2000), `commentSchema` (max 1000)
+  - `phoneSchema`, `priceSchema`, `quantitySchema`
+  - `urlSchema` (https uniquement)
+- Appliquer la validation dans :
+  - `src/pages/Auth.tsx` (login + signup)
+  - `src/components/community/PostForm.tsx` et `CommentDialog.tsx`
+  - `src/components/marketplace/ListingForm.tsx`
+  - `src/components/crops/CropForm.tsx`, `FieldForm.tsx`, `LivestockForm.tsx`
+- Afficher les erreurs via `toast.error` avec messages clairs.
+- Limiter `maxLength` sur tous les `<Input>` et `<Textarea>` correspondants.
 
-**Pages et composants :**
-- `src/pages/ELearning.tsx` : catalogue avec filtres par catégorie/difficulté
-- `src/components/elearning/CourseCard.tsx` : carte de cours avec progression
-- `src/components/elearning/CourseDetail.tsx` : vue détaillée avec liste de modules
-- `src/components/elearning/VideoPlayer.tsx` : lecteur vidéo intégré (YouTube embed)
-- `src/components/elearning/QuizModule.tsx` : quiz interactif avec correction IA via edge function `ai-assistant`
-- `src/components/elearning/ProgressTracker.tsx` : barre de progression par parcours
+### 3. En-têtes de sécurité HTTP
+Ajouter dans `index.html` (balises `<meta http-equiv>`) :
+- `Content-Security-Policy` adaptée (autorise Supabase, Lovable AI, YouTube embed pour les vidéos de cours, self pour scripts/styles).
+- `X-Content-Type-Options: nosniff`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Permissions-Policy` (caméra/micro autorisés uniquement pour self).
 
-**Données initiales :** Insertion de 6-8 cours de démarrage avec vidéos YouTube agricoles francophones, couvrant les catégories principales.
+### 4. Renforcer l'authentification
+- Augmenter le minimum de mot de passe à **8 caractères** (au lieu de 6) avec règle de force (chiffre + lettre).
+- Activer la **protection HIBP** (Have I Been Pwned) sur Supabase Auth via `configure_auth`.
+- Ne plus exposer `error.message` brut dans les toasts (déjà partiellement fait, à généraliser).
 
-**Accès :** Tous les rôles (priorité agriculteur).
+### 5. Sécurisation des liens et médias externes
+- Audit rapide des `<a target="_blank">` → ajout systématique de `rel="noopener noreferrer"`.
+- Le composant `VideoPlayer` accepte une URL arbitraire : valider qu'il s'agit bien d'un domaine YouTube/Vimeo autorisé avant d'embarquer l'iframe.
 
----
+### 6. Audit Supabase
+- Lancer `supabase--linter` pour détecter RLS manquantes / policies trop permissives.
+- Lancer `security--run_security_scan` pour un audit complet des tables et policies.
+- Corriger les findings critiques découverts (RLS manquantes, policies `true`, colonnes sensibles exposées).
 
-## 3. Module Logistique (`/logistique`)
-
-**Tables à créer (migration) :**
-- `logistics_shipments` : id, seller_id, buyer_id, listing_id, offer_id, origin, destination, distance_km, weight_kg, status (en_preparation/en_transit/livre/annule), pickup_date, delivery_date, estimated_delivery, tracking_notes (jsonb), created_at, updated_at
-- `logistics_transporters` : id, user_id, company_name, vehicle_type (camion/camionnette/moto/triporteur), capacity_kg, service_areas[], phone, whatsapp, rating, is_available, price_per_km, created_at
-- `logistics_stock` : id, user_id, product_name, quantity, unit, location, min_threshold, created_at, updated_at
-
-RLS : vendeurs/acheteurs voient leurs expéditions ; transporteurs voient les demandes de leur zone ; stock lié au user_id. Realtime sur `logistics_shipments`.
-
-**Pages et composants :**
-- `src/pages/Logistique.tsx` : page avec 3 onglets (Expéditions, Transporteurs, Stock)
-- `src/components/logistics/ShipmentCard.tsx` : carte d'expédition avec statut visuel (stepper)
-- `src/components/logistics/ShipmentForm.tsx` : créer une expédition depuis une commande
-- `src/components/logistics/TransporterCard.tsx` : carte transporteur avec notation
-- `src/components/logistics/TransporterForm.tsx` : inscription transporteur
-- `src/components/logistics/StockManager.tsx` : gestion des stocks avec alertes seuil bas
-- `src/components/logistics/ShipmentTracker.tsx` : suivi pas-à-pas avec timeline
-
-**Accès :** Agriculteurs, acheteurs et admin.
-
----
-
-## 4. Intégration Navigation et Routing
-
-**Fichiers modifiés :**
-- `src/App.tsx` : ajout des 3 routes protégées `/communaute`, `/elearning`, `/logistique`
-- `src/components/layout/BottomNav.tsx` : ajout des items dans `allMenuItems` (icônes Users, GraduationCap, Truck)
-- `src/hooks/useRoleAccess.tsx` : ajout des routes aux `allowedRoutes` de chaque rôle
-- `src/i18n/translations/fr.ts`, `en.ts`, `wo.ts` : ajout des traductions pour les 3 modules
-- `src/pages/Dashboard.tsx` : ajout de QuickActionCards pour les nouveaux modules
+### 7. Documentation
+- Mettre à jour `@security-memory` avec la posture de sécurité finale (XSS protégée via DOMPurify, validation zod systématique, CSP active, HIBP activé, etc.).
 
 ---
 
-## 5. Ordre d'exécution
+## Fichiers impactés (estimation)
 
-1. Migration DB : créer toutes les tables + RLS + realtime en une seule migration
-2. Créer les pages et composants Communauté
-3. Créer les pages et composants E-Learning + données de démarrage
-4. Créer les pages et composants Logistique
-5. Intégrer navigation, routing et traductions
+**Nouveaux** : `src/lib/sanitize.ts`, `src/lib/validation.ts`
+**Modifiés** : `index.html`, `src/components/elearning/CourseDetail.tsx`, `src/pages/Auth.tsx`, `src/components/community/PostForm.tsx`, `src/components/community/CommentDialog.tsx`, `src/components/marketplace/ListingForm.tsx`, `src/components/elearning/VideoPlayer.tsx`, plus formulaires crops/fields/livestock.
+**Backend** : configuration Auth (HIBP), éventuelles migrations RLS selon résultats du scan.
 
+Souhaitez-vous que je procède avec ce plan ?
