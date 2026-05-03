@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { ArrowLeft, Play, BookOpen, CheckCircle2, Award, Clock, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface CourseDetailProps {
   course: any;
@@ -91,7 +92,7 @@ export function CourseDetail({ course, progress, completedModuleIds, onBack, onP
 
         {activeModule.content_type === "texte" && activeModule.text_content && (
           <div className="prose prose-sm dark:prose-invert max-w-none bg-card rounded-2xl p-4 border border-border/30"
-            dangerouslySetInnerHTML={{ __html: activeModule.text_content }} />
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(activeModule.text_content) }} />
         )}
 
         {activeModule.content_type === "quiz" && quizQuestions.length > 0 && (

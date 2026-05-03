@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { postContentSchema, firstError } from "@/lib/validation";
 
 interface PostFormProps {
   groupId?: string;
@@ -22,11 +23,16 @@ export function PostForm({ groupId, onSuccess }: PostFormProps) {
 
   const handleSubmit = async () => {
     if (!user || !content.trim()) return;
+    const parsed = postContentSchema.safeParse(content);
+    if (!parsed.success) {
+      toast.error(firstError(parsed.error));
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.from("community_posts").insert({
         user_id: user.id,
-        content: content.trim(),
+        content: parsed.data,
         post_type: postType,
         group_id: groupId || null,
       });
@@ -47,6 +53,7 @@ export function PostForm({ groupId, onSuccess }: PostFormProps) {
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder={t("community.writeSomething")}
+        maxLength={2000}
         className="min-h-[80px] resize-none border-0 bg-muted/30 rounded-xl"
       />
       <div className="flex items-center gap-2">
