@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { toast } from "sonner";
+import { commentSchema, firstError } from "@/lib/validation";
 
 interface CommentDialogProps {
   postId: string | null;
@@ -48,11 +49,16 @@ export function CommentDialog({ postId, open, onOpenChange, onCommentAdded }: Co
 
   const handleSend = async () => {
     if (!user || !postId || !input.trim()) return;
+    const parsed = commentSchema.safeParse(input);
+    if (!parsed.success) {
+      toast.error(firstError(parsed.error));
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.from("community_comments").insert({
       post_id: postId,
       user_id: user.id,
-      content: input.trim(),
+      content: parsed.data,
     });
     setLoading(false);
     if (error) { toast.error(t("common.error")); return; }
@@ -103,6 +109,7 @@ export function CommentDialog({ postId, open, onOpenChange, onCommentAdded }: Co
             value={input}
             onChange={e => setInput(e.target.value)}
             placeholder={t("community.writeComment")}
+            maxLength={1000}
             className="rounded-xl"
             onKeyDown={e => e.key === "Enter" && handleSend()}
           />

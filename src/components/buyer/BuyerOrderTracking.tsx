@@ -388,7 +388,7 @@ export function BuyerOrderTracking() {
                       </a>
                     </Button>
                     <Button variant="outline" size="sm" className="flex-1" asChild>
-                      <a href={`https://wa.me/${selectedOrder.seller_phone.replace(/\D/g, '')}`} target="_blank">
+                      <a href={`https://wa.me/${selectedOrder.seller_phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
                         <MessageCircle className="w-4 h-4 mr-2" />
                         WhatsApp
                       </a>

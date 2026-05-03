@@ -23,6 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { titleSchema, descriptionSchema, priceSchema, firstError } from "@/lib/validation";
 
 interface ListingFormProps {
   open: boolean;
@@ -126,17 +127,33 @@ export function ListingForm({ open, onOpenChange, onSuccess, prefilledData }: Li
 
   const handleSubmit = async () => {
     if (!user) { toast.error("Vous devez être connecté"); return; }
-    if (!formData.title || !formData.price) { toast.error("Veuillez remplir les champs obligatoires"); return; }
+
+    const titleCheck = titleSchema.safeParse(formData.title);
+    if (!titleCheck.success) { toast.error(firstError(titleCheck.error)); return; }
+
+    const descCheck = descriptionSchema.safeParse(formData.description);
+    if (!descCheck.success) { toast.error(firstError(descCheck.error)); return; }
+
+    const priceNum = parseFloat(formData.price);
+    const priceCheck = priceSchema.safeParse(priceNum);
+    if (!priceCheck.success) { toast.error(firstError(priceCheck.error)); return; }
+
+    if (formData.quantity && formData.quantity.length > 50) {
+      toast.error("Quantité trop longue"); return;
+    }
+    if (formData.location && formData.location.length > 100) {
+      toast.error("Localisation trop longue"); return;
+    }
 
     setLoading(true);
     try {
       const { error } = await supabase.from("marketplace_listings").insert({
         user_id: user.id,
         listing_type: "produit",
-        title: formData.title,
-        description: formData.description || null,
+        title: titleCheck.data,
+        description: descCheck.data || null,
         category: formData.category || null,
-        price: parseFloat(formData.price),
+        price: priceCheck.data,
         price_negotiable: formData.price_negotiable,
         quantity: formData.quantity || null,
         location: formData.location || null,

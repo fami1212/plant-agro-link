@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Play } from "lucide-react";
+import { isSafeVideoUrl } from "@/lib/sanitize";
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -21,6 +22,14 @@ export function VideoPlayer({ videoUrl, title }: VideoPlayerProps) {
   };
 
   const embedUrl = getEmbedUrl(videoUrl);
+
+  if (!isSafeVideoUrl(embedUrl)) {
+    return (
+      <div className="aspect-video rounded-2xl bg-muted flex items-center justify-center text-sm text-muted-foreground p-4 text-center">
+        Source vidéo non autorisée.
+      </div>
+    );
+  }
 
   return (
     <div className="relative aspect-video rounded-2xl overflow-hidden bg-black group">

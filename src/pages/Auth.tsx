@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { RoleSelector } from "@/components/auth/RoleSelector";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { signupSchema, loginSchema, firstError } from "@/lib/validation";
 
 type AuthMode = "login" | "register";
 type AppRole = 'agriculteur' | 'veterinaire' | 'acheteur' | 'investisseur' | 'admin';
@@ -41,16 +42,28 @@ export default function Auth() {
     setLoading(true);
     try {
       if (mode === "login") {
-        const { error } = await signIn(formData.email, formData.password);
+        const parsed = loginSchema.safeParse({ email: formData.email, password: formData.password });
+        if (!parsed.success) {
+          toast.error(firstError(parsed.error));
+          return;
+        }
+        const { error } = await signIn(parsed.data.email, parsed.data.password);
         if (error) {
           toast.error(error.message.includes("Invalid login credentials") ? t("auth.wrongCredentials") : error.message);
           return;
         }
         toast.success(t("auth.loginSuccess"));
       } else {
-        if (!formData.name.trim()) { toast.error(t("auth.enterName")); return; }
-        if (formData.password.length < 6) { toast.error(t("auth.passwordTooShort")); return; }
-        const { error } = await signUp(formData.email, formData.password, { full_name: formData.name, role: formData.role });
+        const parsed = signupSchema.safeParse({
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+        });
+        if (!parsed.success) {
+          toast.error(firstError(parsed.error));
+          return;
+        }
+        const { error } = await signUp(parsed.data.email, parsed.data.password, { full_name: parsed.data.name, role: formData.role });
         if (error) {
           toast.error(error.message.includes("already registered") ? t("auth.emailAlreadyUsed") : error.message);
           return;
