@@ -15,6 +15,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { MobileMoneyPayment } from "@/components/payment/MobileMoneyPayment";
+import { SimpleHub } from "@/components/marketplace/SimpleHub";
+import { ViewModeToggle } from "@/components/marketplace/ViewModeToggle";
+import { useViewMode } from "@/hooks/useViewMode";
 import type { Database } from "@/integrations/supabase/types";
 
 type InvestmentOpportunity = Database["public"]["Tables"]["investment_opportunities"]["Row"];
@@ -22,6 +25,7 @@ type Investment = Database["public"]["Tables"]["investments"]["Row"];
 
 export default function MarketplaceInvestor() {
   const { user } = useAuth();
+  const { isSimple } = useViewMode();
   const [activeTab, setActiveTab] = useState("opportunites");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -144,9 +148,70 @@ export default function MarketplaceInvestor() {
     <AppLayout>
       <PageHeader
         title="Investissements"
-        subtitle="Financez l'agriculture sénégalaise"
+        subtitle={isSimple ? "Que voulez-vous faire ?" : "Financez l'agriculture sénégalaise"}
+        showLogo
       />
 
+      <div className="px-4 mb-3 flex justify-end">
+        <ViewModeToggle />
+      </div>
+
+      {isSimple && (
+        <div className="px-4 pb-24 space-y-4">
+          <SimpleHub
+            greeting="Bonjour 👋"
+            helperText="Découvrez de nouvelles opportunités ou suivez votre portefeuille."
+            actions={[
+              {
+                id: "opps",
+                icon: TrendingUp,
+                title: "Voir les opportunités",
+                description: `${opportunities.length} projet(s) ouvert(s) au financement`,
+                color: "primary",
+                badge: opportunities.length || undefined,
+                onClick: () => setActiveTab("opportunites"),
+              },
+              {
+                id: "portfolio",
+                icon: Briefcase,
+                title: "Mon portefeuille",
+                description: stats.total > 0
+                  ? `${stats.total.toLocaleString()} FCFA investis · +${stats.gains.toLocaleString()} gains prévus`
+                  : "Vos investissements et leur rendement",
+                color: "accent",
+                onClick: () => setActiveTab("portfolio"),
+              },
+            ]}
+          />
+
+          {/* Mini portfolio summary */}
+          {stats.total > 0 && (
+            <Card className="p-4 bg-gradient-to-br from-primary/10 to-transparent border-primary/20">
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div>
+                  <p className="text-base font-bold text-primary">{stats.total.toLocaleString()}</p>
+                  <p className="text-[10px] text-muted-foreground">FCFA investis</p>
+                </div>
+                <div className="border-x border-border/30">
+                  <p className="text-base font-bold text-green-600">+{stats.gains.toLocaleString()}</p>
+                  <p className="text-[10px] text-muted-foreground">Gains prévus</p>
+                </div>
+                <div>
+                  <p className="text-base font-bold text-primary">{stats.active}</p>
+                  <p className="text-[10px] text-muted-foreground">Actifs</p>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          <p className="text-center text-xs text-muted-foreground pt-2">
+            Besoin de plus d'options ? Passez en mode <strong>Avancé</strong> ↑
+          </p>
+        </div>
+      )}
+
+      {!isSimple && (
+        <>
       {/* Portfolio Summary */}
       <div className="px-4 mb-4">
         <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20 overflow-hidden relative">
