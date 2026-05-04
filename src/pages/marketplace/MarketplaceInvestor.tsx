@@ -429,6 +429,8 @@ export default function MarketplaceInvestor() {
           onSuccess={handlePaymentSuccess}
         />
       )}
+        </>
+      )}
     </AppLayout>
   );
 }
