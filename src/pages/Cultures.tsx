@@ -244,7 +244,7 @@ export default function Cultures() {
 
   return (
     <AppLayout>
-      <PageHeader
+      <PageHeader showLogo
         title={t("crops.title")}
         subtitle={`${activeCrops.length} ${activeCrops.length > 1 ? t("crops.actives") : t("crops.active")} • ${totalArea.toFixed(1)} ha`}
         action={

@@ -61,7 +61,7 @@ export default function ELearning() {
     return (
       <AppLayout>
         <div className="min-h-screen bg-background">
-          <PageHeader title={selectedCourse.title} subtitle={selectedCourse.instructor_name || ""} />
+          <PageHeader showLogo title={selectedCourse.title} subtitle={selectedCourse.instructor_name || ""} />
           <div className="px-4 pb-24">
             <CourseDetail
               course={selectedCourse}

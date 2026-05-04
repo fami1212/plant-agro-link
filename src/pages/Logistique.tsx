@@ -103,7 +103,7 @@ export default function Logistique() {
     return (
       <AppLayout>
         <div className="min-h-screen bg-background">
-          <PageHeader title={t("logistics.tracking")} subtitle={`${selectedShipment.origin} → ${selectedShipment.destination}`} />
+          <PageHeader showLogo title={t("logistics.tracking")} subtitle={`${selectedShipment.origin} → ${selectedShipment.destination}`} />
           <div className="px-4 pb-24 space-y-4">
             <Button variant="ghost" size="sm" className="gap-1" onClick={() => setSelectedShipment(null)}>
               <ArrowLeft className="w-4 h-4" /> {t("common.back")}

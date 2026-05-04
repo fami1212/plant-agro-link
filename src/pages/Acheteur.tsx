@@ -228,7 +228,7 @@ export default function Acheteur() {
 
   return (
     <AppLayout>
-      <PageHeader
+      <PageHeader showLogo
         title={t("buyer.title")}
         subtitle={t("buyer.subtitle")}
         action={

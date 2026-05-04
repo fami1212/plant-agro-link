@@ -18,6 +18,9 @@ import { MessagingButton } from "@/components/marketplace/MessagingButton";
 import { MessagesIndicator } from "@/components/marketplace/MessagesIndicator";
 import { SellerRating } from "@/components/marketplace/SellerRating";
 import { ReviewDialog } from "@/components/marketplace/ReviewDialog";
+import { SimpleHub } from "@/components/marketplace/SimpleHub";
+import { ViewModeToggle } from "@/components/marketplace/ViewModeToggle";
+import { useViewMode } from "@/hooks/useViewMode";
 import type { Database } from "@/integrations/supabase/types";
 
 type Listing = Database["public"]["Tables"]["marketplace_listings"]["Row"];
@@ -36,6 +39,7 @@ const categories = [
 
 export default function MarketplaceBuyer() {
   const { user } = useAuth();
+  const { isSimple } = useViewMode();
   const [activeTab, setActiveTab] = useState("catalogue");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -193,10 +197,60 @@ export default function MarketplaceBuyer() {
     <AppLayout>
       <PageHeader
         title="Marketplace"
-        subtitle="Achetez les meilleurs produits agricoles"
+        subtitle={isSimple ? "Que voulez-vous faire ?" : "Achetez les meilleurs produits agricoles"}
+        showLogo
         action={<MessagesIndicator />}
       />
 
+      <div className="px-4 mb-3 flex justify-end">
+        <ViewModeToggle />
+      </div>
+
+      {isSimple && (
+        <div className="px-4 pb-24 space-y-4">
+          <SimpleHub
+            greeting="Bonjour 👋"
+            helperText="Que souhaitez-vous faire aujourd'hui ?"
+            actions={[
+              {
+                id: "browse",
+                icon: Package,
+                title: "Acheter des produits",
+                description: "Parcourez le catalogue de produits frais",
+                color: "primary",
+                onClick: () => setActiveTab("catalogue"),
+              },
+              {
+                id: "orders",
+                icon: ShoppingCart,
+                title: "Mes commandes",
+                description: myOrders.length > 0
+                  ? `${myOrders.length} commande(s) en cours`
+                  : "Suivez l'avancement de vos achats",
+                color: "accent",
+                badge: myOrders.length || undefined,
+                onClick: () => setActiveTab("commandes"),
+              },
+              {
+                id: "favs",
+                icon: Heart,
+                title: "Mes favoris",
+                description: favorites.length > 0
+                  ? `${favorites.length} produit(s) sauvegardé(s)`
+                  : "Gardez sous la main vos produits préférés",
+                color: "primary",
+                onClick: () => setActiveTab("favoris"),
+              },
+            ]}
+          />
+
+          <p className="text-center text-xs text-muted-foreground pt-2">
+            Besoin de plus d'options ? Passez en mode <strong>Avancé</strong> ↑
+          </p>
+        </div>
+      )}
+
+      {!isSimple && (
       <div className="px-4 pb-24">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3 h-12">
@@ -399,6 +453,7 @@ export default function MarketplaceBuyer() {
           </TabsContent>
         </Tabs>
       </div>
+      )}
 
       {/* Mobile Money Payment */}
       {selectedListing && (

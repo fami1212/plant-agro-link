@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
+import logoIcon from "@/assets/plantera-icon.png";
 
 const allNavItems = [
   { id: "home", icon: Home, labelKey: "nav.home", path: "/dashboard", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
@@ -113,7 +114,12 @@ export function BottomNav() {
           </SheetTrigger>
           <SheetContent side="bottom" className="h-auto max-h-[80vh] rounded-t-3xl border-t border-border/50 px-4 pb-8">
             <div className="w-12 h-1 bg-border rounded-full mx-auto mt-3 mb-4" />
-            
+
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <img src={logoIcon} alt="Plantera" className="w-7 h-7 rounded-lg" />
+              <span className="font-bold text-base text-foreground">Plantera</span>
+            </div>
+
             {user && (
               <div className="flex items-center gap-3 p-4 rounded-2xl bg-muted/30 mb-4">
                 <Avatar className="h-12 w-12">
