@@ -543,7 +543,8 @@ export default function MarketplaceFarmer() {
           onSuccess={handlePaymentSuccess}
         />
       )}
-
+        </>
+      )}
     </AppLayout>
   );
 }
