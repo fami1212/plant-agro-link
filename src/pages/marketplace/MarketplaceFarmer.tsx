@@ -205,7 +205,8 @@ export default function MarketplaceFarmer() {
     <AppLayout>
       <PageHeader
         title="Marketplace"
-        subtitle="Achetez et vendez vos produits"
+        subtitle={isSimple ? "Que voulez-vous faire ?" : "Achetez et vendez vos produits"}
+        showLogo
         action={
           <div className="flex items-center gap-2">
             <MessagesIndicator />
@@ -217,6 +218,71 @@ export default function MarketplaceFarmer() {
         }
       />
 
+      <div className="px-4 mb-3 flex justify-end">
+        <ViewModeToggle />
+      </div>
+
+      {isSimple && (
+        <div className="px-4 pb-24 space-y-4">
+          <SimpleHub
+            greeting="Bonjour 👋"
+            helperText="Choisissez une action ci-dessous pour démarrer."
+            actions={[
+              {
+                id: "sell",
+                icon: Store,
+                title: "Vendre ma récolte",
+                description: "Publiez votre production en quelques clics",
+                color: "primary",
+                onClick: () => setShowListingForm(true),
+              },
+              {
+                id: "browse",
+                icon: ShoppingBag,
+                title: "Acheter des produits",
+                description: "Parcourez les annonces des autres producteurs",
+                color: "accent",
+                onClick: () => { setActiveTab("acheter"); /* user can switch to advanced */ },
+              },
+              {
+                id: "offers",
+                icon: HandCoins,
+                title: "Mes offres reçues",
+                description: pendingOffers.length > 0
+                  ? `${pendingOffers.length} offre(s) en attente`
+                  : "Suivez les propositions des acheteurs",
+                color: pendingOffers.length > 0 ? "warning" : "primary",
+                badge: pendingOffers.length || undefined,
+                onClick: () => setActiveTab("offres"),
+              },
+            ]}
+          />
+
+          <div className="grid grid-cols-3 gap-2 pt-2">
+            <Card className="p-3 text-center">
+              <p className="text-xl font-bold text-primary">{myListings.length}</p>
+              <p className="text-[11px] text-muted-foreground">Annonces</p>
+            </Card>
+            <Card className="p-3 text-center">
+              <p className="text-xl font-bold text-foreground">{pendingOffers.length}</p>
+              <p className="text-[11px] text-muted-foreground">À traiter</p>
+            </Card>
+            <Card className="p-3 text-center">
+              <p className="text-xl font-bold text-primary">
+                {myListings.filter(l => l.status === "vendu").length}
+              </p>
+              <p className="text-[11px] text-muted-foreground">Vendus</p>
+            </Card>
+          </div>
+
+          <p className="text-center text-xs text-muted-foreground pt-2">
+            Besoin de plus d'options ? Passez en mode <strong>Avancé</strong> ↑
+          </p>
+        </div>
+      )}
+
+      {!isSimple && (
+        <>
       {/* Quick Stats */}
       <div className="px-4 mb-4 grid grid-cols-3 gap-2">
         <Card className="p-3 text-center bg-card/50 backdrop-blur-sm border-border/50">
