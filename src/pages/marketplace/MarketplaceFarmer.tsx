@@ -17,6 +17,9 @@ import { ListingForm } from "@/components/marketplace/ListingForm";
 import { MobileMoneyPayment } from "@/components/payment/MobileMoneyPayment";
 import { MessagingButton } from "@/components/marketplace/MessagingButton";
 import { MessagesIndicator } from "@/components/marketplace/MessagesIndicator";
+import { SimpleHub, type HubAction } from "@/components/marketplace/SimpleHub";
+import { ViewModeToggle } from "@/components/marketplace/ViewModeToggle";
+import { useViewMode } from "@/hooks/useViewMode";
 import type { Database } from "@/integrations/supabase/types";
 
 type Listing = Database["public"]["Tables"]["marketplace_listings"]["Row"];
