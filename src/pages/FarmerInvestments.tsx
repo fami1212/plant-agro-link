@@ -12,7 +12,7 @@ export default function FarmerInvestments() {
 
   return (
     <AppLayout>
-      <PageHeader
+      <PageHeader showLogo
         title={t("farmer.investments")}
         subtitle={t("farmer.investmentsSubtitle")}
         action={

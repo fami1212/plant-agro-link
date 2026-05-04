@@ -241,7 +241,7 @@ export default function Investisseur() {
 
   return (
     <AppLayout>
-      <PageHeader
+      <PageHeader showLogo
         title={t("investor.title")}
         subtitle={t("investor.subtitle")}
         action={

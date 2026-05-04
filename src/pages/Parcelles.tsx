@@ -168,7 +168,7 @@ export default function Parcelles() {
 
   return (
     <AppLayout>
-      <PageHeader
+      <PageHeader showLogo
         title={t("parcels.title")}
         subtitle={`${fields.length} ${fields.length !== 1 ? t("parcels.parcels") : t("parcels.parcel")} • ${totalArea.toFixed(1)} ha ${t("parcels.total")}`}
         action={

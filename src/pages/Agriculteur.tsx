@@ -59,7 +59,7 @@ export default function Agriculteur() {
 
   return (
     <AppLayout>
-      <PageHeader
+      <PageHeader showLogo
         title={t("farmer.title")}
         subtitle={t("farmer.subtitle")}
         action={
