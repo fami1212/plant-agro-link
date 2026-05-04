@@ -453,6 +453,7 @@ export default function MarketplaceBuyer() {
           </TabsContent>
         </Tabs>
       </div>
+      )}
 
       {/* Mobile Money Payment */}
       {selectedListing && (
