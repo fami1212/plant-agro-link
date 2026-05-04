@@ -31,6 +31,7 @@ type Offer = Database["public"]["Tables"]["marketplace_offers"]["Row"] & {
 
 export default function MarketplaceFarmer() {
   const { user } = useAuth();
+  const { isSimple } = useViewMode();
   const [activeTab, setActiveTab] = useState("acheter");
   const [searchQuery, setSearchQuery] = useState("");
   const [showListingForm, setShowListingForm] = useState(false);
