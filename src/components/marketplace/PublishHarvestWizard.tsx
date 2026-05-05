@@ -105,19 +105,18 @@ export function PublishHarvestWizard({ open, onOpenChange, onSuccess }: PublishH
       return;
     }
     const titleCheck = titleSchema.safeParse(data.title);
-    if (!titleCheck.success) return toast.error(firstError(titleCheck.error));
+    if (!titleCheck.success) { toast.error(firstError(titleCheck.error)); return; }
 
     const priceNum = parseFloat(data.price);
     const priceCheck = priceSchema.safeParse(priceNum);
-    if (!priceCheck.success) return toast.error(firstError(priceCheck.error));
+    if (!priceCheck.success) { toast.error(firstError(priceCheck.error)); return; }
 
     const descCheck = descriptionSchema.safeParse(data.description);
-    if (!descCheck.success) return toast.error(firstError(descCheck.error));
+    if (!descCheck.success) { toast.error(firstError(descCheck.error)); return; }
 
     if (CONTACT_REGEX.test(data.title) || CONTACT_REGEX.test(data.description)) {
-      return toast.error(
-        "Les coordonnées (téléphone, email, liens) sont interdites. Toutes les discussions doivent passer par l'application."
-      );
+      toast.error("Les coordonnées (téléphone, email, liens) sont interdites. Toutes les discussions doivent passer par l'application.");
+      return;
     }
 
     setLoading(true);
