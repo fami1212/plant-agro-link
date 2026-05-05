@@ -219,7 +219,7 @@ export function PublishHarvestWizard({ open, onOpenChange, onSuccess }: PublishH
             <Select value={data.location} onValueChange={(v) => setData({ ...data, location: v })}>
               <SelectTrigger><SelectValue placeholder="Sélectionner une région" /></SelectTrigger>
               <SelectContent>
-                {regions.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>))}
+                {regions.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
