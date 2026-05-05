@@ -13,13 +13,11 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { ListingForm } from "@/components/marketplace/ListingForm";
 import { MobileMoneyPayment } from "@/components/payment/MobileMoneyPayment";
-import { MessagingButton } from "@/components/marketplace/MessagingButton";
-import { MessagesIndicator } from "@/components/marketplace/MessagesIndicator";
 import { SimpleHub, type HubAction } from "@/components/marketplace/SimpleHub";
 import { ViewModeToggle } from "@/components/marketplace/ViewModeToggle";
 import { useViewMode } from "@/hooks/useViewMode";
+import { PublishHarvestWizard } from "@/components/marketplace/PublishHarvestWizard";
 import type { Database } from "@/integrations/supabase/types";
 
 type Listing = Database["public"]["Tables"]["marketplace_listings"]["Row"];
@@ -31,10 +29,10 @@ type Offer = Database["public"]["Tables"]["marketplace_offers"]["Row"] & {
 
 export default function MarketplaceFarmer() {
   const { user } = useAuth();
-  const { isSimple } = useViewMode();
+  const { isSimple, setMode } = useViewMode();
   const [activeTab, setActiveTab] = useState("acheter");
   const [searchQuery, setSearchQuery] = useState("");
-  const [showListingForm, setShowListingForm] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
   const [loading, setLoading] = useState(true);
   
   // Payment state
@@ -209,8 +207,7 @@ export default function MarketplaceFarmer() {
         showLogo
         action={
           <div className="flex items-center gap-2">
-            <MessagesIndicator />
-            <Button size="sm" onClick={() => setShowListingForm(true)}>
+            <Button size="sm" onClick={() => setShowWizard(true)}>
               <Plus className="w-4 h-4 mr-1" />
               Vendre
             </Button>
@@ -234,7 +231,7 @@ export default function MarketplaceFarmer() {
                 title: "Vendre ma récolte",
                 description: "Publiez votre production en quelques clics",
                 color: "primary",
-                onClick: () => setShowListingForm(true),
+                onClick: () => setShowWizard(true),
               },
               {
                 id: "browse",
@@ -242,7 +239,7 @@ export default function MarketplaceFarmer() {
                 title: "Acheter des produits",
                 description: "Parcourez les annonces des autres producteurs",
                 color: "accent",
-                onClick: () => { setActiveTab("acheter"); /* user can switch to advanced */ },
+                onClick: () => { setMode("advanced"); setActiveTab("acheter"); },
               },
               {
                 id: "offers",
@@ -253,7 +250,7 @@ export default function MarketplaceFarmer() {
                   : "Suivez les propositions des acheteurs",
                 color: pendingOffers.length > 0 ? "warning" : "primary",
                 badge: pendingOffers.length || undefined,
-                onClick: () => setActiveTab("offres"),
+                onClick: () => { setMode("advanced"); setActiveTab("offres"); },
               },
             ]}
           />
@@ -365,17 +362,9 @@ export default function MarketplaceFarmer() {
                         </div>
                       </div>
                       <div className="flex gap-2 mt-3">
-                        <MessagingButton
-                          sellerId={listing.user_id}
-                          sellerName={sellerNames[listing.user_id] || "Vendeur"}
-                          listingId={listing.id}
-                          listingTitle={listing.title}
-                          size="sm"
-                          className="flex-1"
-                        />
                         <Button 
                           size="sm" 
-                          className="flex-1"
+                          className="w-full"
                           onClick={() => handleBuy(listing)}
                         >
                           Acheter
@@ -393,7 +382,7 @@ export default function MarketplaceFarmer() {
             <Button 
               variant="outline" 
               className="w-full border-dashed h-14"
-              onClick={() => setShowListingForm(true)}
+              onClick={() => setShowWizard(true)}
             >
               <Plus className="w-5 h-5 mr-2" />
               Nouvelle annonce
@@ -520,14 +509,13 @@ export default function MarketplaceFarmer() {
         </Tabs>
       </div>
 
-      {/* Listing Form */}
-      <ListingForm 
-        open={showListingForm}
-        onOpenChange={setShowListingForm}
+      {/* Publish Harvest Wizard */}
+      <PublishHarvestWizard
+        open={showWizard}
+        onOpenChange={setShowWizard}
         onSuccess={() => {
-          setShowListingForm(false);
+          setShowWizard(false);
           fetchMyListings();
-          toast.success("Annonce créée !");
         }}
       />
 

@@ -14,8 +14,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { MobileMoneyPayment } from "@/components/payment/MobileMoneyPayment";
-import { MessagingButton } from "@/components/marketplace/MessagingButton";
-import { MessagesIndicator } from "@/components/marketplace/MessagesIndicator";
 import { SellerRating } from "@/components/marketplace/SellerRating";
 import { ReviewDialog } from "@/components/marketplace/ReviewDialog";
 import { SimpleHub } from "@/components/marketplace/SimpleHub";
@@ -39,7 +37,7 @@ const categories = [
 
 export default function MarketplaceBuyer() {
   const { user } = useAuth();
-  const { isSimple } = useViewMode();
+  const { isSimple, setMode } = useViewMode();
   const [activeTab, setActiveTab] = useState("catalogue");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -199,7 +197,6 @@ export default function MarketplaceBuyer() {
         title="Marketplace"
         subtitle={isSimple ? "Que voulez-vous faire ?" : "Achetez les meilleurs produits agricoles"}
         showLogo
-        action={<MessagesIndicator />}
       />
 
       <div className="px-4 mb-3 flex justify-end">
@@ -218,7 +215,7 @@ export default function MarketplaceBuyer() {
                 title: "Acheter des produits",
                 description: "Parcourez le catalogue de produits frais",
                 color: "primary",
-                onClick: () => setActiveTab("catalogue"),
+                onClick: () => { setMode("advanced"); setActiveTab("catalogue"); },
               },
               {
                 id: "orders",
@@ -229,7 +226,7 @@ export default function MarketplaceBuyer() {
                   : "Suivez l'avancement de vos achats",
                 color: "accent",
                 badge: myOrders.length || undefined,
-                onClick: () => setActiveTab("commandes"),
+                onClick: () => { setMode("advanced"); setActiveTab("commandes"); },
               },
               {
                 id: "favs",
@@ -239,7 +236,7 @@ export default function MarketplaceBuyer() {
                   ? `${favorites.length} produit(s) sauvegardé(s)`
                   : "Gardez sous la main vos produits préférés",
                 color: "primary",
-                onClick: () => setActiveTab("favoris"),
+                onClick: () => { setMode("advanced"); setActiveTab("favoris"); },
               },
             ]}
           />
@@ -330,17 +327,9 @@ export default function MarketplaceBuyer() {
                           {listing.price?.toLocaleString() || "—"} FCFA
                         </p>
                         <div className="flex gap-1 mt-2">
-                          <MessagingButton
-                            sellerId={listing.user_id}
-                            sellerName={sellerNames[listing.user_id] || "Vendeur"}
-                            listingId={listing.id}
-                            listingTitle={listing.title}
-                            size="sm"
-                            className="flex-1 h-8"
-                          />
                           <Button
                             size="sm" 
-                            className="flex-1 h-8"
+                            className="w-full h-8"
                             onClick={() => handleBuy(listing)}
                           >
                             Acheter

@@ -25,7 +25,7 @@ type Investment = Database["public"]["Tables"]["investments"]["Row"];
 
 export default function MarketplaceInvestor() {
   const { user } = useAuth();
-  const { isSimple } = useViewMode();
+  const { isSimple, setMode } = useViewMode();
   const [activeTab, setActiveTab] = useState("opportunites");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -169,7 +169,7 @@ export default function MarketplaceInvestor() {
                 description: `${opportunities.length} projet(s) ouvert(s) au financement`,
                 color: "primary",
                 badge: opportunities.length || undefined,
-                onClick: () => setActiveTab("opportunites"),
+                onClick: () => { setMode("advanced"); setActiveTab("opportunites"); },
               },
               {
                 id: "portfolio",
@@ -179,7 +179,7 @@ export default function MarketplaceInvestor() {
                   ? `${stats.total.toLocaleString()} FCFA investis · +${stats.gains.toLocaleString()} gains prévus`
                   : "Vos investissements et leur rendement",
                 color: "accent",
-                onClick: () => setActiveTab("portfolio"),
+                onClick: () => { setMode("advanced"); setActiveTab("portfolio"); },
               },
             ]}
           />
