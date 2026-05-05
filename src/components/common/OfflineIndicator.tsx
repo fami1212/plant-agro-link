@@ -2,7 +2,7 @@ import { WifiOff, RefreshCw } from "lucide-react";
 import { useOnlineStatus } from "@/services/offlineService";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { offlineService } from "@/services/offlineService";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 export function OfflineIndicator() {
   const { isOnline, pendingCount } = useOnlineStatus();
   const [isSyncing, setIsSyncing] = useState(false);
+  const wasOffline = useRef(false);
 
   const handleSync = async () => {
     if (!isOnline) {
@@ -48,6 +49,18 @@ export function OfflineIndicator() {
       setIsSyncing(false);
     }
   };
+
+  // Auto-sync : dès que la connexion revient avec des opérations en attente
+  useEffect(() => {
+    if (!isOnline) {
+      wasOffline.current = true;
+      return;
+    }
+    if ((wasOffline.current || pendingCount > 0) && pendingCount > 0 && !isSyncing) {
+      wasOffline.current = false;
+      handleSync();
+    }
+  }, [isOnline, pendingCount]);
 
   if (isOnline && pendingCount === 0) return null;
 
