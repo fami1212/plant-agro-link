@@ -15,6 +15,7 @@ import { ImagePlus, Loader2, X, Sprout, Tag, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { offlineService, useOnlineStatus } from "@/services/offlineService";
 import {
   titleSchema,
   descriptionSchema,
@@ -44,6 +45,7 @@ const CONTACT_REGEX = /(\+?\d[\d\s().-]{6,}|\b[\w.+-]+@[\w-]+\.[\w.-]+\b|https?:
 
 export function PublishHarvestWizard({ open, onOpenChange, onSuccess }: PublishHarvestWizardProps) {
   const { user } = useAuth();
+  const { isOnline } = useOnlineStatus();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -69,6 +71,11 @@ export function PublishHarvestWizard({ open, onOpenChange, onSuccess }: PublishH
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || !user) return;
+    if (!isOnline) {
+      toast.error("Photos indisponibles hors ligne. Publiez maintenant et ajoutez les photos une fois reconnecté.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
     if (imageUrls.length + files.length > 5) {
       toast.error("Maximum 5 photos");
       return;
@@ -121,7 +128,7 @@ export function PublishHarvestWizard({ open, onOpenChange, onSuccess }: PublishH
 
     setLoading(true);
     try {
-      const { error } = await supabase.from("marketplace_listings").insert({
+      const payload = {
         user_id: user.id,
         listing_type: "produit",
         title: titleCheck.data,
@@ -134,14 +141,49 @@ export function PublishHarvestWizard({ open, onOpenChange, onSuccess }: PublishH
         delivery_available: data.delivery_available,
         status: "publie",
         images: imageUrls.length > 0 ? imageUrls : null,
-      });
-      if (error) throw error;
-      toast.success("🎉 Votre récolte est en ligne !");
+      };
+
+      if (!isOnline) {
+        await offlineService.saveOfflineOperation("marketplace_listings", "insert", payload);
+        toast.success("📦 Sauvegardé hors ligne — sera publié dès le retour de la connexion.");
+        onSuccess();
+        onOpenChange(false);
+        return;
+      }
+
+      const { error } = await supabase.from("marketplace_listings").insert(payload as any);
+      if (error) {
+        // Fallback : on file pour resync ultérieur si l'insertion en ligne échoue
+        await offlineService.saveOfflineOperation("marketplace_listings", "insert", payload);
+        toast.success("Connexion instable — votre annonce sera publiée automatiquement.");
+      } else {
+        toast.success("🎉 Votre récolte est en ligne !");
+      }
       onSuccess();
       onOpenChange(false);
     } catch (err) {
       console.error(err);
-      toast.error("Erreur lors de la publication");
+      try {
+        await offlineService.saveOfflineOperation("marketplace_listings", "insert", {
+          user_id: user.id,
+          listing_type: "produit",
+          title: data.title,
+          description: data.description || null,
+          category: data.category || null,
+          price: parseFloat(data.price),
+          price_negotiable: true,
+          quantity: data.quantity || null,
+          location: data.location || null,
+          delivery_available: data.delivery_available,
+          status: "publie",
+          images: imageUrls.length > 0 ? imageUrls : null,
+        });
+        toast.success("Sauvegardé localement — publication automatique prévue.");
+        onSuccess();
+        onOpenChange(false);
+      } catch {
+        toast.error("Erreur lors de la publication");
+      }
     } finally {
       setLoading(false);
     }
