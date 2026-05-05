@@ -151,7 +151,7 @@ export function PublishHarvestWizard({ open, onOpenChange, onSuccess }: PublishH
         return;
       }
 
-      const { error } = await supabase.from("marketplace_listings").insert(payload);
+      const { error } = await supabase.from("marketplace_listings").insert(payload as any);
       if (error) {
         // Fallback : on file pour resync ultérieur si l'insertion en ligne échoue
         await offlineService.saveOfflineOperation("marketplace_listings", "insert", payload);
