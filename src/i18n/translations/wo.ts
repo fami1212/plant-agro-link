@@ -570,6 +570,9 @@ export const wo = {
   "nav.community": "Mbooloo",
   "nav.elearning": "Jàng",
   "nav.logistics": "Logistik",
+  "menu.section.tools": "Jumtukaay yi",
+  "menu.section.community": "Mbooloo ak Jàng",
+  "menu.section.account": "Sama kont",
 
   "community.title": "Mbooloo",
   "community.subtitle": "Waxtaanal ak mbooloo beykat yi",

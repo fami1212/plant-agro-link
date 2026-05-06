@@ -204,7 +204,6 @@ export default function MarketplaceFarmer() {
       <PageHeader
         title="Marketplace"
         subtitle={isSimple ? "Que voulez-vous faire ?" : "Achetez et vendez vos produits"}
-        showLogo
         action={
           <div className="flex items-center gap-2">
             <Button size="sm" onClick={() => setShowWizard(true)}>

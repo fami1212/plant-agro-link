@@ -120,7 +120,7 @@ export default function Communaute() {
     return (
       <AppLayout>
         <div className="min-h-screen bg-background">
-          <PageHeader showLogo title={selectedGroup.name} subtitle={t("community.group")} />
+          <PageHeader title={selectedGroup.name} subtitle={t("community.group")} />
           <div className="px-4 pb-24">
             <Button variant="ghost" size="sm" className="mb-3 gap-1" onClick={() => setSelectedGroup(null)}>
               <ArrowLeft className="w-4 h-4" /> {t("common.back")}

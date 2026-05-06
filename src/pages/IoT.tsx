@@ -201,7 +201,7 @@ export default function IoT() {
 
   return (
     <AppLayout>
-      <PageHeader showLogo
+      <PageHeader
         title={t("iot.title")}
         subtitle={`${activeDevices.length} ${t("iot.devices")} ${t("iot.online")}`}
         action={

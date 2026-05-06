@@ -48,7 +48,7 @@ export default function Settings() {
   return (
     <AppLayout>
       <div className="p-4 pb-24 space-y-6">
-        <PageHeader showLogo
+        <PageHeader
           title={t("settings.title")}
           subtitle={t("settings.subtitle")}
         />

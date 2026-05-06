@@ -574,6 +574,9 @@ export const fr = {
   "nav.community": "Communauté",
   "nav.elearning": "Formation",
   "nav.logistics": "Logistique",
+  "menu.section.tools": "Outils & gestion",
+  "menu.section.community": "Communauté & apprentissage",
+  "menu.section.account": "Compte",
 
   // Community
   "community.title": "Communauté",

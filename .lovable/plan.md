@@ -1,70 +1,84 @@
-## Audit de sécurité réalisé
+# Simplification globale de Plantera
 
-J'ai analysé l'application et identifié plusieurs vulnérabilités à corriger :
+## Constat
 
-### Vulnérabilités identifiées
+L'app expose trop de modules en navigation principale et en menu (Cultures, Bétail, Parcelles, IoT, IA, Communauté, E-Learning, Logistique, Finances, Investissements, Admin, Settings…). Pour un agriculteur ou un vétérinaire au champ, c'est écrasant.
 
-1. **XSS critique dans `CourseDetail.tsx`** : utilisation directe de `dangerouslySetInnerHTML={{ __html: activeModule.text_content }}` sans assainissement → un contenu de cours malveillant exécuterait du JS arbitraire chez tous les utilisateurs.
-2. **Aucune validation côté client** des entrées utilisateur (formulaires d'auth, posts communauté, listings marketplace, commentaires, profil, etc.) malgré la présence de `zod` dans les dépendances.
-3. **Absence d'en-têtes de sécurité HTTP** (CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy) dans `index.html`.
-4. **Pas de limite de longueur** sur les champs texte → risque de DoS et de payloads volumineux.
-5. **Absence de protection contre les mots de passe compromis** (HIBP) côté Supabase Auth.
-6. **Pas d'audit RLS récent** ni de scan de sécurité Supabase.
-7. **Liens externes** potentiellement sans `rel="noopener noreferrer"`.
+Objectif : **3 onglets en bas, un seul "Plus" sobre, et une page "Ferme" unifiée** qui regroupe tous les modules métier en sous-sections accessibles à la demande — sans rien supprimer.
 
----
+## Nouvelle architecture de navigation
 
-## Plan d'action
+**Bottom nav réduite à 3 + 1 (au lieu de 5)** pour tous les rôles :
 
-### 1. Corriger la XSS dans le E-Learning
-- Installer `dompurify` + `@types/dompurify`.
-- Créer un helper `src/lib/sanitize.ts` qui assainit le HTML (whitelist de balises sûres : `p, b, i, ul, ol, li, h1-h4, br, strong, em, a, img` avec attributs filtrés).
-- Remplacer `dangerouslySetInnerHTML` dans `CourseDetail.tsx` par `__html: sanitize(text_content)`.
+```text
+[ Accueil ]   [ Ma Ferme / Mon Espace ]   [ Marché ]   [ ☰ Plus ]
+```
 
-### 2. Validation centralisée avec Zod
-- Créer `src/lib/validation.ts` avec des schémas réutilisables :
-  - `emailSchema`, `passwordSchema` (min 8, force minimale), `nameSchema` (trim, max 100)
-  - `postContentSchema` (max 2000), `commentSchema` (max 1000)
-  - `phoneSchema`, `priceSchema`, `quantitySchema`
-  - `urlSchema` (https uniquement)
-- Appliquer la validation dans :
-  - `src/pages/Auth.tsx` (login + signup)
-  - `src/components/community/PostForm.tsx` et `CommentDialog.tsx`
-  - `src/components/marketplace/ListingForm.tsx`
-  - `src/components/crops/CropForm.tsx`, `FieldForm.tsx`, `LivestockForm.tsx`
-- Afficher les erreurs via `toast.error` avec messages clairs.
-- Limiter `maxLength` sur tous les `<Input>` et `<Textarea>` correspondants.
+- **Accueil** : Dashboard épuré (salutation, 2-3 stats clés, 1 alerte, 1 conseil IA, 3 actions rapides)
+- **Ma Ferme** (agriculteur) / **Mon Cabinet** (véto) / **Mon Portefeuille** (investisseur) / **Mes Achats** (acheteur) : page hub unifiée
+- **Marché** : SimpleHub déjà en place
+- **Plus** : sheet repensée — sections claires, pas une grille de 11 icônes
 
-### 3. En-têtes de sécurité HTTP
-Ajouter dans `index.html` (balises `<meta http-equiv>`) :
-- `Content-Security-Policy` adaptée (autorise Supabase, Lovable AI, YouTube embed pour les vidéos de cours, self pour scripts/styles).
-- `X-Content-Type-Options: nosniff`
-- `Referrer-Policy: strict-origin-when-cross-origin`
-- `Permissions-Policy` (caméra/micro autorisés uniquement pour self).
+## Page "Ma Ferme" unifiée (agriculteur)
 
-### 4. Renforcer l'authentification
-- Augmenter le minimum de mot de passe à **8 caractères** (au lieu de 6) avec règle de force (chiffre + lettre).
-- Activer la **protection HIBP** (Have I Been Pwned) sur Supabase Auth via `configure_auth`.
-- Ne plus exposer `error.message` brut dans les toasts (déjà partiellement fait, à généraliser).
+Remplace le besoin d'aller chercher Cultures / Bétail / Parcelles / IoT / IA / Finances dans le menu. Une seule page avec **onglets scrollables horizontalement** (déjà partiellement en place) :
 
-### 5. Sécurisation des liens et médias externes
-- Audit rapide des `<a target="_blank">` → ajout systématique de `rel="noopener noreferrer"`.
-- Le composant `VideoPlayer` accepte une URL arbitraire : valider qu'il s'agit bien d'un domaine YouTube/Vimeo autorisé avant d'embarquer l'iframe.
+```text
+Vue d'ensemble · Cultures · Bétail · Parcelles · Capteurs · IA · Finances
+```
 
-### 6. Audit Supabase
-- Lancer `supabase--linter` pour détecter RLS manquantes / policies trop permissives.
-- Lancer `security--run_security_scan` pour un audit complet des tables et policies.
-- Corriger les findings critiques découverts (RLS manquantes, policies `true`, colonnes sensibles exposées).
+Chaque onglet charge le contenu existant (pas de réécriture des modules). Les pages standalone `/cultures`, `/betail`, `/parcelles`, `/iot`, `/ia` restent accessibles via deep-link mais disparaissent du menu principal.
 
-### 7. Documentation
-- Mettre à jour `@security-memory` avec la posture de sécurité finale (XSS protégée via DOMPurify, validation zod systématique, CSP active, HIBP activé, etc.).
+Mêmes patterns pour :
+- **Vétérinaire** → `Rendez-vous · Patients · Dossiers · Diagnostic IA · Facturation` (déjà en place, à épurer)
+- **Investisseur** → `Portefeuille · Opportunités · Contrats · Suivi IoT`
+- **Acheteur** → `Catalogue · Mes commandes · Suivi`
 
----
+## Menu "Plus" repensé
 
-## Fichiers impactés (estimation)
+Structure en 3 sections courtes au lieu d'une grille 4×3 :
 
-**Nouveaux** : `src/lib/sanitize.ts`, `src/lib/validation.ts`
-**Modifiés** : `index.html`, `src/components/elearning/CourseDetail.tsx`, `src/pages/Auth.tsx`, `src/components/community/PostForm.tsx`, `src/components/community/CommentDialog.tsx`, `src/components/marketplace/ListingForm.tsx`, `src/components/elearning/VideoPlayer.tsx`, plus formulaires crops/fields/livestock.
-**Backend** : configuration Auth (HIBP), éventuelles migrations RLS selon résultats du scan.
+```text
+COMMUNAUTÉ
+  Communauté · E-Learning
 
-Souhaitez-vous que je procède avec ce plan ?
+OUTILS
+  Logistique · Assistant vocal · Investissements
+
+COMPTE
+  Paramètres · Déconnexion
+```
+
+L'admin a une section supplémentaire "Administration" visible uniquement si rôle admin.
+
+## Design : sobre, moderne, allégé
+
+- **Headers** : retirer le logo systématique sur sous-pages, le garder seulement sur Accueil et Plus. Réduit le bruit visuel.
+- **Cartes** : bordure 1px, fond `bg-card`, ombre minimale (`shadow-sm` au lieu de `shadow-md`). Espacements `space-y-3` au lieu de `space-y-5`.
+- **StatCards** : passer de 4 à 2-3 stats max sur l'accueil. Format compact, pas de gradients colorés sauf accent rare.
+- **Couleurs** : moins de variantes (primary/accent/success/warning), plus de `bg-muted/30` neutre.
+- **Typographie** : titres `text-lg font-semibold` (au lieu de xl), libellés stat `text-xs uppercase tracking-wide text-muted-foreground`.
+- **Onglets scrollables** : underline minimal au lieu de pills colorées.
+- **AIContextualTip** : version compacte (1 ligne, icône + texte), dépliable au tap.
+
+## Fichiers à modifier
+
+- `src/components/layout/BottomNav.tsx` — réduire à 3 items + Plus, refondre la sheet en sections
+- `src/pages/Dashboard.tsx` — épurer : 2-3 stats, 1 alerte, 1 tip, 3 actions
+- `src/pages/Agriculteur.tsx` — ajouter onglets `Cultures`, `Bétail`, `Parcelles`, `Capteurs`, `IA` qui réutilisent les composants des pages standalone
+- `src/pages/Veterinaire.tsx` — déjà multi-onglets, juste épurer header/cartes
+- `src/pages/Investisseur.tsx` & `src/pages/Acheteur.tsx` — adopter le même pattern hub unifié
+- `src/components/dashboard/StatCard.tsx` — variante compacte sobre
+- `src/components/common/PageHeader.tsx` — `showLogo` désactivé par défaut sur sous-pages
+- `src/index.css` — éventuels ajustements de tokens (ombres, rayons)
+- Conserver toutes les routes existantes pour compatibilité
+
+## Hors scope
+
+- Aucune suppression de fonctionnalité
+- Aucune modification backend / RLS
+- Pas de refonte du marketplace (déjà simplifié récemment)
+
+## Résultat attendu
+
+Un agriculteur voit 3 boutons en bas, ouvre "Ma Ferme" et navigue par onglets dans tout son métier. Le menu "Plus" devient une vraie liste lisible. Le design respire, moins d'icônes colorées, plus de blanc.
