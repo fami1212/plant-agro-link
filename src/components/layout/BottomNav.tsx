@@ -17,29 +17,52 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import logoIcon from "@/assets/plantera-icon.png";
 
+// Bottom nav: just 3 essentials per role (Home / Mon espace / Marché) + Menu "Plus".
 const allNavItems = [
   { id: "home", icon: Home, labelKey: "nav.home", path: "/dashboard", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
   { id: "farm", icon: Tractor, labelKey: "nav.farm", path: "/agriculteur", roles: ['agriculteur'] },
-  { id: "market-farmer", icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/farmer", roles: ['agriculteur'] },
   { id: "vet-cabinet", icon: Stethoscope, labelKey: "nav.cabinet", path: "/veterinaire", roles: ['veterinaire'] },
-  { id: "vet-market", icon: ShoppingBag, labelKey: "nav.catalog", path: "/marketplace/buyer", roles: ['veterinaire'] },
-  { id: "buyer-catalog", icon: ShoppingBag, labelKey: "nav.catalog", path: "/marketplace/buyer", roles: ['acheteur'] },
-  { id: "investor-market", icon: TrendingUp, labelKey: "nav.invest", path: "/marketplace/investor", roles: ['investisseur'] },
+  { id: "buyer-space", icon: ShoppingBag, labelKey: "nav.catalog", path: "/acheteur", roles: ['acheteur'] },
+  { id: "investor-space", icon: TrendingUp, labelKey: "nav.invest", path: "/investisseur", roles: ['investisseur'] },
+  { id: "admin-space", icon: Shield, labelKey: "nav.admin", path: "/admin", roles: ['admin'] },
+  { id: "market-farmer", icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/farmer", roles: ['agriculteur'] },
+  { id: "vet-market", icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/buyer", roles: ['veterinaire'] },
+  { id: "buyer-market", icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/buyer", roles: ['acheteur'] },
+  { id: "investor-market", icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/investor", roles: ['investisseur'] },
   { id: "admin-market", icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/farmer", roles: ['admin'] },
 ];
 
-const allMenuItems = [
-  { icon: Brain, labelKey: "nav.ai", path: "/ia", roles: ['agriculteur', 'admin'], highlight: true },
-  { icon: Wheat, labelKey: "nav.crops", path: "/cultures", roles: ['agriculteur', 'admin'] },
-  { icon: PawPrint, labelKey: "nav.livestock", path: "/betail", roles: ['agriculteur', 'admin'] },
-  { icon: MapPin, labelKey: "nav.parcels", path: "/parcelles", roles: ['agriculteur', 'admin'] },
-  { icon: Activity, labelKey: "nav.iot", path: "/iot", roles: ['agriculteur', 'admin'] },
-  { icon: Users, labelKey: "nav.community", path: "/communaute", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
-  { icon: GraduationCap, labelKey: "nav.elearning", path: "/elearning", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
-  { icon: Truck, labelKey: "nav.logistics", path: "/logistique", roles: ['agriculteur', 'acheteur', 'admin'] },
-  { icon: PawPrint, labelKey: "nav.animals", path: "/betail", roles: ['veterinaire'] },
-  { icon: Shield, labelKey: "nav.admin", path: "/admin", roles: ['admin'] },
-  { icon: Settings, labelKey: "nav.settings", path: "/settings", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
+type MenuSection = {
+  titleKey: string;
+  items: { icon: any; labelKey: string; path: string; roles: string[]; highlight?: boolean }[];
+};
+
+const menuSections: MenuSection[] = [
+  {
+    titleKey: "menu.section.tools",
+    items: [
+      { icon: Brain, labelKey: "nav.ai", path: "/ia", roles: ['agriculteur', 'admin'], highlight: true },
+      { icon: Wheat, labelKey: "nav.crops", path: "/cultures", roles: ['agriculteur', 'admin'] },
+      { icon: PawPrint, labelKey: "nav.livestock", path: "/betail", roles: ['agriculteur', 'veterinaire', 'admin'] },
+      { icon: MapPin, labelKey: "nav.parcels", path: "/parcelles", roles: ['agriculteur', 'admin'] },
+      { icon: Activity, labelKey: "nav.iot", path: "/iot", roles: ['agriculteur', 'admin'] },
+      { icon: Truck, labelKey: "nav.logistics", path: "/logistique", roles: ['agriculteur', 'acheteur', 'admin'] },
+    ],
+  },
+  {
+    titleKey: "menu.section.community",
+    items: [
+      { icon: Users, labelKey: "nav.community", path: "/communaute", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
+      { icon: GraduationCap, labelKey: "nav.elearning", path: "/elearning", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
+    ],
+  },
+  {
+    titleKey: "menu.section.account",
+    items: [
+      { icon: Shield, labelKey: "nav.admin", path: "/admin", roles: ['admin'] },
+      { icon: Settings, labelKey: "nav.settings", path: "/settings", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
+    ],
+  },
 ];
 
 export function BottomNav() {
@@ -50,13 +73,30 @@ export function BottomNav() {
   const { t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const navItems = allNavItems.filter(item => 
-    item.roles.some(role => roles.includes(role as any)) || roles.length === 0
-  );
+  // Build a clean 3-item nav: Home + role space + Marché (deduped, max 3).
+  const navItems = (() => {
+    const filtered = allNavItems.filter(item =>
+      item.roles.some(role => roles.includes(role as any)) || roles.length === 0
+    );
+    const seen = new Set<string>();
+    const out: typeof filtered = [];
+    for (const it of filtered) {
+      if (seen.has(it.path)) continue;
+      seen.add(it.path);
+      out.push(it);
+      if (out.length >= 3) break;
+    }
+    return out;
+  })();
 
-  const menuItems = allMenuItems.filter(item =>
-    item.roles.some(role => roles.includes(role as any)) || item.path === '/settings'
-  );
+  const visibleSections = menuSections
+    .map((s) => ({
+      ...s,
+      items: s.items.filter(
+        (it) => it.roles.some((r) => roles.includes(r as any)) || it.path === "/settings"
+      ),
+    }))
+    .filter((s) => s.items.length > 0);
 
   const handleSignOut = async () => {
     try {
@@ -76,7 +116,7 @@ export function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t border-border/50 bottom-nav" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-1">
-        {navItems.slice(0, 4).map((item) => {
+        {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
           
@@ -121,7 +161,7 @@ export function BottomNav() {
             </div>
 
             {user && (
-              <div className="flex items-center gap-3 p-4 rounded-2xl bg-muted/30 mb-4">
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/30 mb-4">
                 <Avatar className="h-12 w-12">
                   <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                     {getInitials(profile?.full_name)}
@@ -143,29 +183,51 @@ export function BottomNav() {
               </div>
             )}
 
-            <div className="grid grid-cols-4 gap-2 mb-4">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path;
-                const isHighlight = (item as any).highlight;
-                return (
-                  <button
-                    key={item.path}
-                    onClick={() => {
-                      navigate(item.path);
-                      setMenuOpen(false);
-                    }}
-                    className={cn(
-                      "flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all",
-                      isActive ? "bg-primary/10 text-primary" : "hover:bg-muted/50",
-                      isHighlight && !isActive && "bg-primary text-primary-foreground hover:bg-primary/90"
-                    )}
-                  >
-                    <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
-                    <span className="text-[10px] font-medium text-center leading-tight">{t(item.labelKey)}</span>
-                  </button>
-                );
-              })}
+            <div className="space-y-4 mb-4 max-h-[50vh] overflow-y-auto -mx-1 px-1">
+              {visibleSections.map((section) => (
+                <div key={section.titleKey}>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">
+                    {t(section.titleKey)}
+                  </p>
+                  <div className="rounded-2xl bg-muted/30 divide-y divide-border/50 overflow-hidden">
+                    {section.items.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = location.pathname === item.path;
+                      return (
+                        <button
+                          key={item.path}
+                          onClick={() => {
+                            navigate(item.path);
+                            setMenuOpen(false);
+                          }}
+                          className={cn(
+                            "w-full flex items-center gap-3 px-3 py-3 text-left transition-colors",
+                            isActive
+                              ? "bg-primary/10 text-primary"
+                              : "hover:bg-muted/60 text-foreground"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "w-9 h-9 rounded-xl flex items-center justify-center shrink-0",
+                              isActive
+                                ? "bg-primary/15 text-primary"
+                                : item.highlight
+                                ? "bg-primary/10 text-primary"
+                                : "bg-background text-muted-foreground"
+                            )}
+                          >
+                            <Icon className="w-4 h-4" strokeWidth={2} />
+                          </div>
+                          <span className="text-sm font-medium flex-1">
+                            {t(item.labelKey)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {user && (
