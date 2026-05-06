@@ -20,7 +20,7 @@ export default function IA() {
 
   return (
     <AppLayout>
-      <PageHeader showLogo
+      <PageHeader
         title={t("ai.title")}
         subtitle={t("ai.subtitle")}
       />

@@ -294,7 +294,7 @@ export default function Admin() {
 
   return (
     <AppLayout>
-      <PageHeader showLogo
+      <PageHeader
         title={t("admin.title")}
         subtitle={t("admin.subtitle")}
         action={

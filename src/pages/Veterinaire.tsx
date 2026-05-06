@@ -254,7 +254,7 @@ export default function Veterinaire() {
 
   return (
     <AppLayout>
-      <PageHeader showLogo
+      <PageHeader
         title={`Dr. ${profile?.full_name?.split(" ")[0] || t("role.veterinaire")}`}
         subtitle={t("vet.subtitle")}
         action={

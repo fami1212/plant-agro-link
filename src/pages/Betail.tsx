@@ -248,7 +248,7 @@ export default function Betail() {
 
   return (
     <AppLayout>
-      <PageHeader showLogo
+      <PageHeader
         title={isVeterinaire && !isAgriculteur ? t("livestock.vetTitle") : t("livestock.title")}
         subtitle={`${livestock.filter(a => a.health_status !== 'decede').length} ${livestock.length > 1 ? t("livestock.headsPlural") : t("livestock.heads")}`}
         action={
