@@ -113,43 +113,90 @@ export function BottomNav() {
     return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
   };
 
+  // Routes that live inside the "Plus" sheet — used to highlight Menu when active.
+  const moreRoutes = visibleSections.flatMap((s) => s.items.map((i) => i.path));
+  const isMoreActive = moreRoutes.includes(location.pathname);
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t border-border/50 bottom-nav" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-      <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-1">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 bg-background/85 backdrop-blur-2xl border-t border-border/60 bottom-nav shadow-[0_-4px_20px_-8px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_24px_-8px_rgba(0,0,0,0.5)]"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
+      <div className="flex items-stretch justify-around h-16 max-w-lg mx-auto px-2 gap-1">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
-          
+
           return (
             <button
               key={item.id}
               onClick={() => navigate(item.path)}
+              aria-current={isActive ? "page" : undefined}
+              aria-label={t(item.labelKey)}
               className={cn(
-                "flex flex-col items-center justify-center flex-1 h-14 rounded-2xl transition-all duration-200",
+                "relative flex flex-col items-center justify-center flex-1 min-w-0 rounded-2xl transition-all duration-200 active:scale-95",
                 isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <div className={cn(
-                "flex items-center justify-center w-10 h-8 rounded-xl transition-all duration-200",
-                isActive && "bg-primary/10"
-              )}>
-                <Icon className={cn("w-5 h-5", isActive && "text-primary")} strokeWidth={isActive ? 2.5 : 2} />
+              {isActive && (
+                <span className="absolute top-0 h-0.5 w-8 rounded-full bg-primary" aria-hidden />
+              )}
+              <div
+                className={cn(
+                  "flex items-center justify-center w-11 h-9 rounded-2xl transition-all duration-200",
+                  isActive && "bg-primary/12"
+                )}
+              >
+                <Icon
+                  className={cn("w-[22px] h-[22px]", isActive && "text-primary")}
+                  strokeWidth={isActive ? 2.4 : 1.9}
+                />
               </div>
-              <span className={cn(
-                "text-[10px] mt-0.5 transition-all",
-                isActive ? "font-semibold" : "font-medium"
-              )}>{t(item.labelKey)}</span>
+              <span
+                className={cn(
+                  "text-[10px] leading-tight mt-0.5 transition-all truncate max-w-full px-1",
+                  isActive ? "font-semibold" : "font-medium"
+                )}
+              >
+                {t(item.labelKey)}
+              </span>
             </button>
           );
         })}
 
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild>
-            <button className="flex flex-col items-center justify-center flex-1 h-14 rounded-2xl transition-all duration-200 text-muted-foreground hover:text-foreground">
-              <div className="flex items-center justify-center w-10 h-8 rounded-xl">
-                <Menu className="w-5 h-5" strokeWidth={2} />
+            <button
+              aria-label={t("nav.more")}
+              className={cn(
+                "relative flex flex-col items-center justify-center flex-1 min-w-0 rounded-2xl transition-all duration-200 active:scale-95",
+                isMoreActive || menuOpen
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {(isMoreActive || menuOpen) && (
+                <span className="absolute top-0 h-0.5 w-8 rounded-full bg-primary" aria-hidden />
+              )}
+              <div
+                className={cn(
+                  "flex items-center justify-center w-11 h-9 rounded-2xl transition-all duration-200",
+                  (isMoreActive || menuOpen) && "bg-primary/12"
+                )}
+              >
+                <Menu
+                  className="w-[22px] h-[22px]"
+                  strokeWidth={isMoreActive || menuOpen ? 2.4 : 1.9}
+                />
               </div>
-              <span className="text-[10px] font-medium mt-0.5">{t("nav.more")}</span>
+              <span
+                className={cn(
+                  "text-[10px] leading-tight mt-0.5",
+                  isMoreActive || menuOpen ? "font-semibold" : "font-medium"
+                )}
+              >
+                {t("nav.more")}
+              </span>
             </button>
           </SheetTrigger>
           <SheetContent side="bottom" className="h-auto max-h-[80vh] rounded-t-3xl border-t border-border/50 px-4 pb-8">
