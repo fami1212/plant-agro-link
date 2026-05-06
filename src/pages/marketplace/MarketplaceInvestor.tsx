@@ -149,7 +149,6 @@ export default function MarketplaceInvestor() {
       <PageHeader
         title="Investissements"
         subtitle={isSimple ? "Que voulez-vous faire ?" : "Financez l'agriculture sénégalaise"}
-        showLogo
       />
 
       <div className="px-4 mb-3 flex justify-end">

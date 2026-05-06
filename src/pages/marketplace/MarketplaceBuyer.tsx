@@ -196,7 +196,6 @@ export default function MarketplaceBuyer() {
       <PageHeader
         title="Marketplace"
         subtitle={isSimple ? "Que voulez-vous faire ?" : "Achetez les meilleurs produits agricoles"}
-        showLogo
       />
 
       <div className="px-4 mb-3 flex justify-end">
