@@ -573,6 +573,9 @@ export const en = {
   "nav.community": "Community",
   "nav.elearning": "Training",
   "nav.logistics": "Logistics",
+  "menu.section.tools": "Tools & management",
+  "menu.section.community": "Community & learning",
+  "menu.section.account": "Account",
 
   "community.title": "Community",
   "community.subtitle": "Connect with the farming community",
