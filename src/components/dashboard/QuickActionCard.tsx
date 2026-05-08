@@ -31,7 +31,7 @@ export function QuickActionCard({
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 p-3 rounded-2xl border text-left transition-all duration-200 shadow-xs hover:shadow-soft active:scale-[0.98] w-full",
+        "flex items-center gap-3 p-3 rounded-2xl border text-left transition-all duration-200 hover:border-border active:scale-[0.98] w-full",
         variants[variant],
         className
       )}

@@ -5,7 +5,8 @@ import { AIContextualTip } from "@/components/ai/AIContextualTip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsContent } from "@/components/ui/tabs";
+import { ScrollableTabs, ScrollableTabsList, ScrollableTabsTrigger } from "@/components/ui/scrollable-tabs";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -299,25 +300,21 @@ export default function Investisseur() {
 
       {/* Tabs Navigation */}
       <div className="px-4 pb-28">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 mb-4 h-12 p-1">
-             <TabsTrigger value="opportunites" className="gap-1.5 text-xs">
-              <Target className="w-4 h-4" />
-              <span className="hidden sm:inline">{t("investor.opportunities")}</span>
-            </TabsTrigger>
-            <TabsTrigger value="portefeuille" className="gap-1.5 text-xs">
-              <PieChart className="w-4 h-4" />
-              <span className="hidden sm:inline">{t("investor.portfolioTab")}</span>
-            </TabsTrigger>
-            <TabsTrigger value="rendements" className="gap-1.5 text-xs">
-              <BarChart3 className="w-4 h-4" />
-              <span className="hidden sm:inline">{t("investor.returns")}</span>
-            </TabsTrigger>
-            <TabsTrigger value="iot" className="gap-1.5 text-xs">
-              <Activity className="w-4 h-4" />
-              <span className="hidden sm:inline">{t("investor.iotTracking")}</span>
-            </TabsTrigger>
-          </TabsList>
+        <ScrollableTabs value={activeTab} onValueChange={setActiveTab}>
+          <ScrollableTabsList className="mb-4 bg-muted/40 p-1 rounded-xl">
+            <ScrollableTabsTrigger value="opportunites" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
+              <Target className="w-4 h-4" /><span>{t("investor.opportunities")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="portefeuille" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
+              <PieChart className="w-4 h-4" /><span>{t("investor.portfolioTab")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="rendements" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
+              <BarChart3 className="w-4 h-4" /><span>{t("investor.returns")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="iot" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
+              <Activity className="w-4 h-4" /><span>{t("investor.iotTracking")}</span>
+            </ScrollableTabsTrigger>
+          </ScrollableTabsList>
 
           {/* Opportunities Tab */}
           <TabsContent value="opportunites" className="space-y-4">
@@ -404,7 +401,7 @@ export default function Investisseur() {
           <TabsContent value="iot">
             <InvestmentIoTMonitor />
           </TabsContent>
-        </Tabs>
+        </ScrollableTabs>
       </div>
 
       {/* Invest Dialog */}

@@ -11,6 +11,11 @@ import {
   Settings,
   CloudSun,
   FileDown,
+  Wheat,
+  PawPrint,
+  MapPin,
+  Activity,
+  Brain,
 } from "lucide-react";
 import { FarmOverview } from "@/components/farmer/FarmOverview";
 import { FarmCalendar } from "@/components/farmer/FarmCalendar";
@@ -76,31 +81,71 @@ export default function Agriculteur() {
 
       <div className="px-4 pb-28">
         <ScrollableTabs value={activeTab} onValueChange={setActiveTab}>
-          <ScrollableTabsList className="mb-5 bg-muted/50 p-1 rounded-xl">
+          <ScrollableTabsList className="mb-5 bg-muted/40 p-1 rounded-xl">
             <ScrollableTabsTrigger 
               value="overview" 
-              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg"
+              className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
             >
               <LayoutDashboard className="w-4 h-4" />
               <span>{t("farmer.overview")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger 
               value="calendar" 
-              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg"
+              className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
             >
               <Calendar className="w-4 h-4" />
               <span>{t("farmer.calendar")}</span>
             </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger
+              value="cultures"
+              onClick={() => navigate("/cultures")}
+              className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
+            >
+              <Wheat className="w-4 h-4" />
+              <span>{t("nav.crops")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger
+              value="betail"
+              onClick={() => navigate("/betail")}
+              className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
+            >
+              <PawPrint className="w-4 h-4" />
+              <span>{t("nav.livestock")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger
+              value="parcelles"
+              onClick={() => navigate("/parcelles")}
+              className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
+            >
+              <MapPin className="w-4 h-4" />
+              <span>{t("nav.parcels")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger
+              value="iot"
+              onClick={() => navigate("/iot")}
+              className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
+            >
+              <Activity className="w-4 h-4" />
+              <span>{t("nav.iot")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger
+              value="ia"
+              onClick={() => navigate("/ia")}
+              className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
+            >
+              <Brain className="w-4 h-4" />
+              <span>{t("nav.ai")}</span>
+            </ScrollableTabsTrigger>
             <ScrollableTabsTrigger 
               value="finances" 
-              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg"
+              className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
             >
               <Wallet className="w-4 h-4" />
               <span>{t("farmer.finances")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger 
               value="meteo" 
-              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg"
+              className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
             >
               <CloudSun className="w-4 h-4" />
               <span>{t("farmer.weather")}</span>
