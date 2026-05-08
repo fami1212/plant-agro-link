@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsContent } from "@/components/ui/tabs";
+import { ScrollableTabs, ScrollableTabsList, ScrollableTabsTrigger } from "@/components/ui/scrollable-tabs";
 import {
   ShoppingBag,
   Search,
@@ -246,37 +247,21 @@ export default function Acheteur() {
         />
       </div>
 
-      {/* Stats */}
-      <div className="px-4 mb-6">
-        <div className="grid grid-cols-4 gap-2">
-          <Card className="bg-primary/5 border-primary/20">
-            <CardContent className="p-3 text-center">
-              <Package className="w-4 h-4 mx-auto mb-1 text-primary" />
-              <p className="text-lg font-bold text-primary">{totalOrders}</p>
-              <p className="text-[10px] text-muted-foreground">{t("buyer.commands")}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-warning/5 border-warning/20">
-            <CardContent className="p-3 text-center">
-              <Clock className="w-4 h-4 mx-auto mb-1 text-warning" />
-              <p className="text-lg font-bold text-warning">{pendingOrders}</p>
-              <p className="text-[10px] text-muted-foreground">{t("buyer.pending")}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-success/5 border-success/20">
-            <CardContent className="p-3 text-center">
-              <CheckCircle2 className="w-4 h-4 mx-auto mb-1 text-success" />
-              <p className="text-lg font-bold text-success">{acceptedOrders}</p>
-              <p className="text-[10px] text-muted-foreground">{t("buyer.accepted")}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-destructive/5 border-destructive/20">
-            <CardContent className="p-3 text-center">
-              <Heart className="w-4 h-4 mx-auto mb-1 text-destructive" />
-              <p className="text-lg font-bold text-destructive">{favorites.length}</p>
-              <p className="text-[10px] text-muted-foreground">{t("buyer.favorites")}</p>
-            </CardContent>
-          </Card>
+      {/* Stats - sober */}
+      <div className="px-4 mb-5">
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-2xl bg-card border border-border/40 p-3 text-center">
+            <p className="text-xl font-semibold text-foreground">{totalOrders}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{t("buyer.commands")}</p>
+          </div>
+          <div className="rounded-2xl bg-card border border-border/40 p-3 text-center">
+            <p className="text-xl font-semibold text-foreground">{pendingOrders}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{t("buyer.pending")}</p>
+          </div>
+          <div className="rounded-2xl bg-card border border-border/40 p-3 text-center">
+            <p className="text-xl font-semibold text-foreground">{favorites.length}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{t("buyer.favorites")}</p>
+          </div>
         </div>
       </div>
 
@@ -296,25 +281,21 @@ export default function Acheteur() {
 
       {/* Tabs */}
       <div className="px-4 pb-28">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 mb-4 h-12">
-            <TabsTrigger value="produits" className="gap-1 text-xs">
-              <ShoppingBag className="w-4 h-4" />
-              {t("buyer.products")}
-            </TabsTrigger>
-            <TabsTrigger value="panier" className="gap-1 text-xs">
-              <ShoppingCart className="w-4 h-4" />
-              {t("buyer.cart")}
-            </TabsTrigger>
-            <TabsTrigger value="commandes" className="gap-1 text-xs">
-              <Package className="w-4 h-4" />
-              {t("buyer.orders")}
-            </TabsTrigger>
-            <TabsTrigger value="favoris" className="gap-1 text-xs">
-              <Heart className="w-4 h-4" />
-              {t("buyer.favorites")}
-            </TabsTrigger>
-          </TabsList>
+        <ScrollableTabs value={activeTab} onValueChange={setActiveTab}>
+          <ScrollableTabsList className="mb-4 bg-muted/40 p-1 rounded-xl">
+            <ScrollableTabsTrigger value="produits" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
+              <ShoppingBag className="w-4 h-4" /><span>{t("buyer.products")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="panier" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
+              <ShoppingCart className="w-4 h-4" /><span>{t("buyer.cart")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="commandes" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
+              <Package className="w-4 h-4" /><span>{t("buyer.orders")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="favoris" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
+              <Heart className="w-4 h-4" /><span>{t("buyer.favorites")}</span>
+            </ScrollableTabsTrigger>
+          </ScrollableTabsList>
 
           {/* Cart Tab */}
           <TabsContent value="panier">

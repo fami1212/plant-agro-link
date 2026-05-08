@@ -4,7 +4,8 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { AIContextualTip } from "@/components/ai/AIContextualTip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsContent } from "@/components/ui/tabs";
+import { ScrollableTabs, ScrollableTabsList, ScrollableTabsTrigger } from "@/components/ui/scrollable-tabs";
 import {
   Stethoscope,
   Calendar,
@@ -272,65 +273,44 @@ export default function Veterinaire() {
         />
       </div>
 
-      {/* Stats */}
-      <div className="px-4 mb-6">
-        <div className="grid grid-cols-4 gap-2">
-          <Card className="bg-primary/5 border-primary/20">
-            <CardContent className="p-3 text-center">
-              <Calendar className="w-4 h-4 mx-auto mb-1 text-primary" />
-              <p className="text-lg font-bold text-primary">{todayBookings}</p>
-              <p className="text-[10px] text-muted-foreground">{t("vet.today")}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-warning/5 border-warning/20">
-            <CardContent className="p-3 text-center">
-              <AlertCircle className="w-4 h-4 mx-auto mb-1 text-warning" />
-              <p className="text-lg font-bold text-warning">{pendingBookings}</p>
-              <p className="text-[10px] text-muted-foreground">{t("vet.pending")}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-destructive/5 border-destructive/20">
-            <CardContent className="p-3 text-center">
-              <Heart className="w-4 h-4 mx-auto mb-1 text-destructive" />
-              <p className="text-lg font-bold text-destructive">{sickPatients}</p>
-              <p className="text-[10px] text-muted-foreground">{t("vet.toWatch")}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-success/5 border-success/20">
-            <CardContent className="p-3 text-center">
-              <Users className="w-4 h-4 mx-auto mb-1 text-success" />
-              <p className="text-lg font-bold text-success">{patients.length}</p>
-              <p className="text-[10px] text-muted-foreground">{t("vet.patients")}</p>
-            </CardContent>
-          </Card>
+      {/* Stats - sober */}
+      <div className="px-4 mb-5">
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-2xl bg-card border border-border/40 p-3 text-center">
+            <p className="text-xl font-semibold text-foreground">{todayBookings}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{t("vet.today")}</p>
+          </div>
+          <div className="rounded-2xl bg-card border border-border/40 p-3 text-center">
+            <p className="text-xl font-semibold text-foreground">{pendingBookings}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{t("vet.pending")}</p>
+          </div>
+          <div className="rounded-2xl bg-card border border-border/40 p-3 text-center">
+            <p className="text-xl font-semibold text-foreground">{patients.length}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{t("vet.patients")}</p>
+          </div>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="px-4 pb-28">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5 mb-4 h-12">
-            <TabsTrigger value="rdv" className="gap-1 text-xs px-1">
-              <Calendar className="w-4 h-4" />
-              <span className="hidden sm:inline">{t("vet.appointments")}</span>
-            </TabsTrigger>
-            <TabsTrigger value="patients" className="gap-1 text-xs px-1">
-              <Users className="w-4 h-4" />
-              <span className="hidden sm:inline">{t("vet.patients")}</span>
-            </TabsTrigger>
-            <TabsTrigger value="dossiers" className="gap-1 text-xs px-1">
-              <FolderOpen className="w-4 h-4" />
-              <span className="hidden sm:inline">{t("vet.records")}</span>
-            </TabsTrigger>
-            <TabsTrigger value="diagnostic" className="gap-1 text-xs px-1">
-              <Stethoscope className="w-4 h-4" />
-              <span className="hidden sm:inline">{t("vet.aiDiagnosis")}</span>
-            </TabsTrigger>
-            <TabsTrigger value="billing" className="gap-1 text-xs px-1">
-              <Heart className="w-4 h-4" />
-              <span className="hidden sm:inline">{t("vet.revenue")}</span>
-            </TabsTrigger>
-          </TabsList>
+        <ScrollableTabs value={activeTab} onValueChange={setActiveTab}>
+          <ScrollableTabsList className="mb-4 bg-muted/40 p-1 rounded-xl">
+            <ScrollableTabsTrigger value="rdv" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
+              <Calendar className="w-4 h-4" /><span>{t("vet.appointments")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="patients" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
+              <Users className="w-4 h-4" /><span>{t("vet.patients")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="dossiers" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
+              <FolderOpen className="w-4 h-4" /><span>{t("vet.records")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="diagnostic" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
+              <Stethoscope className="w-4 h-4" /><span>{t("vet.aiDiagnosis")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="billing" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
+              <Heart className="w-4 h-4" /><span>{t("vet.revenue")}</span>
+            </ScrollableTabsTrigger>
+          </ScrollableTabsList>
 
           {/* Appointments Tab */}
           <TabsContent value="rdv" className="mt-0">
@@ -380,7 +360,7 @@ export default function Veterinaire() {
           <TabsContent value="billing" className="mt-0">
             <VetBilling />
           </TabsContent>
-        </Tabs>
+        </ScrollableTabs>
       </div>
 
       {/* Consultation Form */}
