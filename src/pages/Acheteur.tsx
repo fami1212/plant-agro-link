@@ -435,7 +435,7 @@ export default function Acheteur() {
             )}
           </TabsContent>
 
-        </Tabs>
+        </ScrollableTabs>
       </div>
     </AppLayout>
   );
