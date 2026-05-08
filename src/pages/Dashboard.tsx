@@ -3,16 +3,14 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
-import { HarvestChart } from "@/components/dashboard/HarvestChart";
 import { AIContextualTip } from "@/components/ai/AIContextualTip";
+import { AlertBanner } from "@/components/dashboard/AlertBanner";
 import { InteractiveTutorial } from "@/components/onboarding/InteractiveTutorial";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  MapPin, Wheat, PawPrint, Plus, TrendingUp, Scale,
-  ShoppingBag, Stethoscope, DollarSign, ArrowRight,
-  Users, GraduationCap, Truck,
+  MapPin, Wheat, PawPrint, Plus, TrendingUp,
+  ShoppingBag, Stethoscope, DollarSign,
+  Tractor,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -48,6 +46,52 @@ export default function Dashboard() {
     return t("dashboard.role.farmer");
   };
 
+  // 2-3 KPIs per role
+  const kpis = (() => {
+    if (isVeterinaire && !isAgriculteur) return [
+      { icon: <Stethoscope className="w-5 h-5" />, label: t("dashboard.stat.consultations"), value: stats?.upcomingAppointments || 0, subtitle: t("dashboard.stat.upcoming"), iconBg: "primary" as const },
+      { icon: <PawPrint className="w-5 h-5" />, label: t("dashboard.stat.patients"), value: stats?.totalLivestock || 0, subtitle: t("dashboard.stat.followed"), iconBg: "secondary" as const },
+    ];
+    if (isAcheteur && !isAgriculteur) return [
+      { icon: <ShoppingBag className="w-5 h-5" />, label: t("dashboard.stat.purchases"), value: stats?.totalPurchases || 0, subtitle: t("dashboard.stat.accepted"), iconBg: "primary" as const },
+      { icon: <TrendingUp className="w-5 h-5" />, label: t("dashboard.stat.products"), value: stats?.availableProducts || 0, subtitle: t("dashboard.stat.available"), iconBg: "accent" as const },
+    ];
+    if (isInvestisseur && !isAgriculteur) return [
+      { icon: <DollarSign className="w-5 h-5" />, label: t("dashboard.stat.invested"), value: `${((stats?.totalInvested || 0) / 1000).toFixed(0)}k`, subtitle: `${stats?.activeInvestments || 0} ${t("dashboard.stat.activeInv")}`, iconBg: "primary" as const },
+      { icon: <TrendingUp className="w-5 h-5" />, label: t("dashboard.stat.yield"), value: `${(stats?.averageReturn || 15).toFixed(0)}%`, subtitle: t("dashboard.stat.expected"), iconBg: "success" as const },
+    ];
+    return [
+      { icon: <MapPin className="w-5 h-5" />, label: t("dashboard.stat.parcels"), value: stats?.totalFields || 0, subtitle: `${stats?.totalArea?.toFixed(1) || 0} ha`, iconBg: "primary" as const },
+      { icon: <Wheat className="w-5 h-5" />, label: t("dashboard.stat.crops"), value: stats?.activeCrops || 0, subtitle: t("dashboard.stat.active"), iconBg: "accent" as const },
+      { icon: <PawPrint className="w-5 h-5" />, label: t("dashboard.stat.livestock"), value: stats?.totalLivestock || 0, subtitle: stats?.healthAlerts ? `${stats.healthAlerts} ${t("dashboard.stat.alerts")}` : t("dashboard.stat.healthy"), iconBg: "secondary" as const },
+    ];
+  })();
+
+  // Top alert (single, most important)
+  const topAlert = alerts && alerts.length > 0 ? alerts[0] : null;
+
+  // 3 quick actions
+  const quickActions = (() => {
+    if (isVeterinaire && !isAgriculteur) return [
+      { icon: <Stethoscope className="w-4 h-4" />, title: t("dashboard.action.consultation"), description: t("dashboard.action.register"), onClick: () => navigate("/veterinaire"), variant: "primary" as const },
+      { icon: <PawPrint className="w-4 h-4" />, title: t("dashboard.action.myPatients"), description: t("dashboard.action.consult"), onClick: () => navigate("/veterinaire") },
+      { icon: <ShoppingBag className="w-4 h-4" />, title: t("dashboard.action.marketplace"), description: t("dashboard.marketplace.buy"), onClick: () => navigate("/marketplace"), variant: "accent" as const },
+    ];
+    if (isAcheteur && !isAgriculteur) return [
+      { icon: <ShoppingBag className="w-4 h-4" />, title: t("dashboard.action.explore"), description: t("dashboard.action.availableProducts"), onClick: () => navigate("/marketplace"), variant: "primary" as const },
+      { icon: <Wheat className="w-4 h-4" />, title: t("dashboard.action.recordHarvest"), description: t("buyer.orders"), onClick: () => navigate("/acheteur") },
+    ];
+    if (isInvestisseur && !isAgriculteur) return [
+      { icon: <TrendingUp className="w-4 h-4" />, title: t("dashboard.action.opportunities"), description: t("dashboard.action.discoverProjects"), onClick: () => navigate("/investisseur"), variant: "primary" as const },
+      { icon: <DollarSign className="w-4 h-4" />, title: t("investor.portfolio"), description: t("investor.portfolioTab"), onClick: () => navigate("/investisseur") },
+    ];
+    return [
+      { icon: <Tractor className="w-4 h-4" />, title: t("nav.farm"), description: t("farmer.subtitle"), onClick: () => navigate("/agriculteur"), variant: "primary" as const },
+      { icon: <Plus className="w-4 h-4" />, title: t("dashboard.action.newParcel"), description: t("dashboard.action.create"), onClick: () => navigate("/parcelles") },
+      { icon: <ShoppingBag className="w-4 h-4" />, title: t("dashboard.action.marketplace"), description: t("dashboard.action.sell"), onClick: () => navigate("/marketplace"), variant: "accent" as const },
+    ];
+  })();
+
   return (
     <AppLayout>
       {showTutorial && <InteractiveTutorial onComplete={() => setShowTutorial(false)} />}
@@ -58,104 +102,39 @@ export default function Dashboard() {
           action={<NotificationCenter />}
         />
 
-        <div className="px-4 space-y-5 pb-28">
+        <div className="px-4 space-y-4 pb-28">
+          {topAlert && (
+            <AlertBanner
+              title={topAlert.title}
+              message={topAlert.message}
+              type={topAlert.type as any}
+            />
+          )}
+
           <AIContextualTip context="dashboard" data={{ totalFields: stats?.totalFields, activeCrops: stats?.activeCrops, totalLivestock: stats?.totalLivestock }} />
 
           {isLoading ? (
-            <div className="grid grid-cols-2 gap-3">
-              {[1, 2, 3, 4].map((i) => (<Skeleton key={i} className="h-24 rounded-2xl" />))}
+            <div className={`grid grid-cols-${kpis.length} gap-3`}>
+              {kpis.map((_, i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}
             </div>
           ) : (
-            <>
-              {(isAgriculteur || isAdmin) && (
-                <div className="grid grid-cols-2 gap-3">
-                  <StatCard icon={<MapPin className="w-5 h-5" />} label={t("dashboard.stat.parcels")} value={stats?.totalFields || 0} subtitle={`${stats?.totalArea?.toFixed(1) || 0} ha`} iconBg="primary" />
-                  <StatCard icon={<Wheat className="w-5 h-5" />} label={t("dashboard.stat.crops")} value={stats?.activeCrops || 0} subtitle={t("dashboard.stat.active")} iconBg="accent" />
-                  <StatCard icon={<PawPrint className="w-5 h-5" />} label={t("dashboard.stat.livestock")} value={stats?.totalLivestock || 0} subtitle={stats?.healthAlerts ? `${stats.healthAlerts} ${t("dashboard.stat.alerts")}` : t("dashboard.stat.healthy")} iconBg="secondary" />
-                  <StatCard icon={<Scale className="w-5 h-5" />} label={t("dashboard.stat.harvested")} value={`${((stats?.totalHarvested || 0) / 1000).toFixed(1)}t`} subtitle={t("dashboard.stat.season")} iconBg="success" />
-                </div>
-              )}
-              {isVeterinaire && !isAgriculteur && (
-                <div className="grid grid-cols-2 gap-3">
-                  <StatCard icon={<Stethoscope className="w-5 h-5" />} label={t("dashboard.stat.consultations")} value={stats?.upcomingAppointments || 0} subtitle={t("dashboard.stat.upcoming")} iconBg="primary" />
-                  <StatCard icon={<PawPrint className="w-5 h-5" />} label={t("dashboard.stat.patients")} value={stats?.totalLivestock || 0} subtitle={t("dashboard.stat.followed")} iconBg="secondary" />
-                </div>
-              )}
-              {isAcheteur && !isAgriculteur && (
-                <div className="grid grid-cols-2 gap-3">
-                  <StatCard icon={<ShoppingBag className="w-5 h-5" />} label={t("dashboard.stat.purchases")} value={stats?.totalPurchases || 0} subtitle={t("dashboard.stat.accepted")} iconBg="primary" />
-                  <StatCard icon={<TrendingUp className="w-5 h-5" />} label={t("dashboard.stat.products")} value={stats?.availableProducts || 0} subtitle={t("dashboard.stat.available")} iconBg="accent" />
-                </div>
-              )}
-              {isInvestisseur && !isAgriculteur && (
-                <div className="grid grid-cols-2 gap-3">
-                  <StatCard icon={<DollarSign className="w-5 h-5" />} label={t("dashboard.stat.invested")} value={`${((stats?.totalInvested || 0) / 1000).toFixed(0)}k`} subtitle={`${stats?.activeInvestments || 0} ${t("dashboard.stat.activeInv")}`} iconBg="primary" />
-                  <StatCard icon={<TrendingUp className="w-5 h-5" />} label={t("dashboard.stat.yield")} value={`${(stats?.averageReturn || 15).toFixed(0)}%`} subtitle={t("dashboard.stat.expected")} iconBg="success" />
-                </div>
-              )}
-            </>
+            <div className={cn("grid gap-3", kpis.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
+              {kpis.map((k, i) => (
+                <StatCard key={i} compact icon={k.icon} label={k.label} value={k.value} iconBg={k.iconBg} />
+              ))}
+            </div>
           )}
 
-          {(isAgriculteur || isAdmin) && !isLoading && harvestTrend && (<HarvestChart data={harvestTrend} />)}
-
-          <div className="space-y-3">
-            <h2 className="text-sm font-semibold text-foreground">{t("dashboard.quickActions")}</h2>
-            
-            {(isAgriculteur || isAdmin) && (
-              <div className="grid grid-cols-2 gap-3">
-                <QuickActionCard icon={<Plus className="w-4 h-4" />} title={t("dashboard.action.newParcel")} description={t("dashboard.action.create")} onClick={() => navigate("/parcelles")} variant="primary" />
-                <QuickActionCard icon={<Wheat className="w-4 h-4" />} title={t("dashboard.action.recordHarvest")} description={t("dashboard.action.enter")} onClick={() => navigate("/cultures")} />
-                <QuickActionCard icon={<PawPrint className="w-4 h-4" />} title={t("dashboard.action.healthTracking")} description={t("dashboard.action.livestock")} onClick={() => navigate("/betail")} />
-                <QuickActionCard icon={<ShoppingBag className="w-4 h-4" />} title={t("dashboard.action.marketplace")} description={t("dashboard.action.sell")} onClick={() => navigate("/marketplace")} variant="accent" />
-              </div>
-            )}
-
-            {isVeterinaire && !isAgriculteur && (
-              <div className="grid grid-cols-2 gap-3">
-                <QuickActionCard icon={<PawPrint className="w-4 h-4" />} title={t("dashboard.action.myPatients")} description={t("dashboard.action.consult")} onClick={() => navigate("/veterinaire")} variant="primary" />
-                <QuickActionCard icon={<Stethoscope className="w-4 h-4" />} title={t("dashboard.action.consultation")} description={t("dashboard.action.register")} onClick={() => navigate("/veterinaire")} />
-              </div>
-            )}
-
-            {isAcheteur && !isAgriculteur && (
-              <QuickActionCard icon={<ShoppingBag className="w-4 h-4" />} title={t("dashboard.action.explore")} description={t("dashboard.action.availableProducts")} onClick={() => navigate("/marketplace")} variant="primary" />
-            )}
-
-            {isInvestisseur && !isAgriculteur && (
-              <QuickActionCard icon={<TrendingUp className="w-4 h-4" />} title={t("dashboard.action.opportunities")} description={t("dashboard.action.discoverProjects")} onClick={() => navigate("/investisseur")} variant="primary" />
-            )}
-          </div>
-
-          {/* New modules quick access */}
-          <div className="space-y-3">
-            <h2 className="text-sm font-semibold text-foreground">{t("nav.community")} & {t("nav.elearning")}</h2>
-            <div className="grid grid-cols-3 gap-3">
-              <QuickActionCard icon={<Users className="w-4 h-4" />} title={t("nav.community")} description={t("community.subtitle")} onClick={() => navigate("/communaute")} />
-              <QuickActionCard icon={<GraduationCap className="w-4 h-4" />} title={t("nav.elearning")} description={t("elearning.subtitle")} onClick={() => navigate("/elearning")} />
-              {(isAgriculteur || isAcheteur || isAdmin) && (
-                <QuickActionCard icon={<Truck className="w-4 h-4" />} title={t("nav.logistics")} description={t("logistics.subtitle")} onClick={() => navigate("/logistique")} />
-              )}
+          <div className="space-y-2">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
+              {t("dashboard.quickActions")}
+            </h2>
+            <div className="space-y-2">
+              {quickActions.map((a, i) => (
+                <QuickActionCard key={i} icon={a.icon} title={a.title} description={a.description} onClick={a.onClick} variant={a.variant} />
+              ))}
             </div>
           </div>
-
-          <Card className="overflow-hidden cursor-pointer border-0 shadow-soft hover:shadow-elevated transition-shadow" onClick={() => navigate("/marketplace")}>
-            <CardContent className="p-0">
-              <div className="gradient-accent p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                    <ShoppingBag className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="text-white">
-                    <p className="font-semibold">{t("dashboard.action.marketplace")}</p>
-                    <p className="text-xs opacity-80">
-                      {isAgriculteur ? t("dashboard.marketplace.sell") : t("dashboard.marketplace.buy")}
-                    </p>
-                  </div>
-                </div>
-                <ArrowRight className="w-5 h-5 text-white/80" />
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </AppLayout>
