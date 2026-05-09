@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TabsContent } from "@/components/ui/tabs";
-import { ScrollableTabs, ScrollableTabsList, ScrollableTabsTrigger } from "@/components/ui/scrollable-tabs";
+import { HubTabs } from "@/components/common/HubTabs";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -300,21 +300,16 @@ export default function Investisseur() {
 
       {/* Tabs Navigation */}
       <div className="px-4 pb-28">
-        <ScrollableTabs value={activeTab} onValueChange={setActiveTab}>
-          <ScrollableTabsList className="mb-4 bg-muted/40 p-1 rounded-xl">
-            <ScrollableTabsTrigger value="opportunites" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
-              <Target className="w-4 h-4" /><span>{t("investor.opportunities")}</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="portefeuille" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
-              <PieChart className="w-4 h-4" /><span>{t("investor.portfolioTab")}</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="rendements" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
-              <BarChart3 className="w-4 h-4" /><span>{t("investor.returns")}</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="iot" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
-              <Activity className="w-4 h-4" /><span>{t("investor.iotTracking")}</span>
-            </ScrollableTabsTrigger>
-          </ScrollableTabsList>
+        <HubTabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          items={[
+            { value: "opportunites", label: t("investor.opportunities"), icon: Target },
+            { value: "portefeuille", label: t("investor.portfolioTab"), icon: PieChart },
+            { value: "rendements", label: t("investor.returns"), icon: BarChart3 },
+            { value: "iot", label: t("investor.iotTracking"), icon: Activity },
+          ]}
+        >
 
           {/* Opportunities Tab */}
           <TabsContent value="opportunites" className="space-y-4">
@@ -401,7 +396,7 @@ export default function Investisseur() {
           <TabsContent value="iot">
             <InvestmentIoTMonitor />
           </TabsContent>
-        </ScrollableTabs>
+        </HubTabs>
       </div>
 
       {/* Invest Dialog */}

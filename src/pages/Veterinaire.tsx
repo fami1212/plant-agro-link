@@ -5,7 +5,7 @@ import { AIContextualTip } from "@/components/ai/AIContextualTip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TabsContent } from "@/components/ui/tabs";
-import { ScrollableTabs, ScrollableTabsList, ScrollableTabsTrigger } from "@/components/ui/scrollable-tabs";
+import { HubTabs } from "@/components/common/HubTabs";
 import {
   Stethoscope,
   Calendar,
@@ -293,24 +293,17 @@ export default function Veterinaire() {
 
       {/* Tabs */}
       <div className="px-4 pb-28">
-        <ScrollableTabs value={activeTab} onValueChange={setActiveTab}>
-          <ScrollableTabsList className="mb-4 bg-muted/40 p-1 rounded-xl">
-            <ScrollableTabsTrigger value="rdv" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
-              <Calendar className="w-4 h-4" /><span>{t("vet.appointments")}</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="patients" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
-              <Users className="w-4 h-4" /><span>{t("vet.patients")}</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="dossiers" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
-              <FolderOpen className="w-4 h-4" /><span>{t("vet.records")}</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="diagnostic" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
-              <Stethoscope className="w-4 h-4" /><span>{t("vet.aiDiagnosis")}</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="billing" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
-              <Heart className="w-4 h-4" /><span>{t("vet.revenue")}</span>
-            </ScrollableTabsTrigger>
-          </ScrollableTabsList>
+        <HubTabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          items={[
+            { value: "rdv", label: t("vet.appointments"), icon: Calendar },
+            { value: "patients", label: t("vet.patients"), icon: Users },
+            { value: "dossiers", label: t("vet.records"), icon: FolderOpen },
+            { value: "diagnostic", label: t("vet.aiDiagnosis"), icon: Stethoscope },
+            { value: "billing", label: t("vet.revenue"), icon: Heart },
+          ]}
+        >
 
           {/* Appointments Tab */}
           <TabsContent value="rdv" className="mt-0">
@@ -360,7 +353,7 @@ export default function Veterinaire() {
           <TabsContent value="billing" className="mt-0">
             <VetBilling />
           </TabsContent>
-        </ScrollableTabs>
+        </HubTabs>
       </div>
 
       {/* Consultation Form */}
