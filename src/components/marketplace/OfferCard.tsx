@@ -12,14 +12,12 @@ import {
   Package,
   Truck,
   MessageSquare,
-  MessageCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { PaymentOfferDialog } from "./PaymentOfferDialog";
 import { CounterOfferDialog } from "./CounterOfferDialog";
-import { ChatDialog } from "./ChatDialog";
 
 interface OfferCardProps {
   offer: {
@@ -188,20 +186,11 @@ export function OfferCard({
               </div>
             )}
 
-            {/* Date + Chat button */}
-            <div className="flex items-center justify-between pt-1">
+            {/* Date */}
+            <div className="pt-1">
               <p className="text-xs text-muted-foreground">
                 {format(new Date(offer.created_at), "dd MMM yyyy 'à' HH:mm", { locale: fr })}
               </p>
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                className="text-primary"
-                onClick={() => setShowChatDialog(true)}
-              >
-                <MessageCircle className="w-4 h-4 mr-1" />
-                Message
-              </Button>
             </div>
 
             {/* Actions for seller (incoming offers) */}
@@ -297,15 +286,6 @@ export function OfferCard({
         onSuccess={onCounterOffer}
       />
 
-      {/* Chat Dialog */}
-      <ChatDialog
-        open={showChatDialog}
-        onOpenChange={setShowChatDialog}
-        offerId={offer.id}
-        recipientId={offer.is_incoming ? offer.buyer_id : offer.seller_id}
-        recipientName={offer.other_party_name || "Utilisateur"}
-        productTitle={offer.listing?.title || "Produit"}
-      />
     </>
   );
 }
