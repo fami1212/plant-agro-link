@@ -69,7 +69,6 @@ export function OfferCard({
 }: OfferCardProps) {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [showCounterDialog, setShowCounterDialog] = useState(false);
-  const [showChatDialog, setShowChatDialog] = useState(false);
   const [paymentMode, setPaymentMode] = useState<"accept" | "pay">("accept");
   
   const config = statusConfig[offer.status] || statusConfig.en_attente;
