@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { TabsContent } from "@/components/ui/tabs";
-import { ScrollableTabs, ScrollableTabsList, ScrollableTabsTrigger } from "@/components/ui/scrollable-tabs";
+import { HubTabs } from "@/components/common/HubTabs";
 import {
   ShoppingBag,
   Search,
@@ -281,21 +281,16 @@ export default function Acheteur() {
 
       {/* Tabs */}
       <div className="px-4 pb-28">
-        <ScrollableTabs value={activeTab} onValueChange={setActiveTab}>
-          <ScrollableTabsList className="mb-4 bg-muted/40 p-1 rounded-xl">
-            <ScrollableTabsTrigger value="produits" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
-              <ShoppingBag className="w-4 h-4" /><span>{t("buyer.products")}</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="panier" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
-              <ShoppingCart className="w-4 h-4" /><span>{t("buyer.cart")}</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="commandes" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
-              <Package className="w-4 h-4" /><span>{t("buyer.orders")}</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="favoris" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
-              <Heart className="w-4 h-4" /><span>{t("buyer.favorites")}</span>
-            </ScrollableTabsTrigger>
-          </ScrollableTabsList>
+        <HubTabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          items={[
+            { value: "produits", label: t("buyer.products"), icon: ShoppingBag },
+            { value: "panier", label: t("buyer.cart"), icon: ShoppingCart },
+            { value: "commandes", label: t("buyer.orders"), icon: Package },
+            { value: "favoris", label: t("buyer.favorites"), icon: Heart },
+          ]}
+        >
 
           {/* Cart Tab */}
           <TabsContent value="panier">
@@ -435,7 +430,7 @@ export default function Acheteur() {
             )}
           </TabsContent>
 
-        </ScrollableTabs>
+        </HubTabs>
       </div>
     </AppLayout>
   );
