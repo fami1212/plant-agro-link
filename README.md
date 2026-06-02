@@ -47,7 +47,7 @@ npm run dev
 
 | Secret | Usage |
 |---|---|
-| `LOVABLE_API_KEY` | Accès IA Lovable (Gemini, GPT) |
+| `LOVABLE_API_KEY` | Clé d'accès à la passerelle IA (Gemini, GPT) |
 | `OPENAI_API_KEY` | OpenAI Realtime / fallback |
 | `ELEVENLABS_API_KEY` | Text-to-Speech |
 | `SUPABASE_SERVICE_ROLE_KEY` | Opérations admin |
@@ -158,7 +158,7 @@ npm run dev
 - **UI**: shadcn/ui, Radix UI, Lucide Icons, Recharts
 - **State**: TanStack React Query, React Context
 - **Backend**: Supabase (PostgreSQL, Auth, Storage, Edge Functions, Realtime)
-- **IA**: Google Gemini, OpenAI GPT (via Lovable AI)
+- **IA**: Google Gemini, OpenAI GPT (via passerelle IA managée)
 - **Paiements**: Orange Money, Wave, MTN (simulation)
 - **PDF**: jsPDF + jspdf-autotable
 - **Routing**: React Router v6
