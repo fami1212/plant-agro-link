@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-// Guard: never register SW in iframes or Lovable preview hosts
+// Guard: never register SW in iframes or preview hosts
 const isInIframe = (() => {
   try {
     return window.self !== window.top;
@@ -13,7 +13,7 @@ const isInIframe = (() => {
 
 const isPreviewHost =
   window.location.hostname.includes("id-preview--") ||
-  window.location.hostname.includes("lovableproject.com");
+  window.location.hostname.includes("preview");
 
 if (isPreviewHost || isInIframe) {
   navigator.serviceWorker?.getRegistrations().then((registrations) => {
