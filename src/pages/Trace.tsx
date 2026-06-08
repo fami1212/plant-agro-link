@@ -464,6 +464,40 @@ export default function Trace() {
               </code>
             </div>
 
+            {/* On-chain anchoring (Polygon Amoy) */}
+            <div className="p-3 bg-primary/5 rounded-lg border border-primary/20 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Anchor className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-medium">Ancrage Polygon Amoy</span>
+                </div>
+                <Button size="sm" onClick={handleAnchor} disabled={anchoring || !!anchorResult}>
+                  {anchoring ? (
+                    <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> En cours…</>
+                  ) : anchorResult ? (
+                    <><CheckCircle2 className="w-4 h-4 mr-1" /> Ancré</>
+                  ) : (
+                    <><Anchor className="w-4 h-4 mr-1" /> Ancrer sur blockchain</>
+                  )}
+                </Button>
+              </div>
+              {anchorResult && (
+                <div className="space-y-1">
+                  <code className="text-xs font-mono text-foreground break-all block">
+                    {anchorResult.tx_hash}
+                  </code>
+                  <a
+                    href={anchorResult.explorer_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary inline-flex items-center gap-1 hover:underline"
+                  >
+                    Voir sur Polygonscan <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+            </div>
+
             {/* Footer */}
             <div className="pt-3 border-t border-border text-center space-y-2">
               <div className="flex items-center justify-center gap-2">
