@@ -21,9 +21,12 @@ import {
   AlertCircle,
   QrCode,
   FileDown,
+  Anchor,
+  Loader2,
 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { generateTraceabilityCertificatePDF } from "@/services/pdfService";
+import { toast } from "sonner";
 
 interface TraceData {
   lotId: string;
@@ -59,6 +62,39 @@ export default function Trace() {
   const [traceData, setTraceData] = useState<TraceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [anchoring, setAnchoring] = useState(false);
+  const [anchorResult, setAnchorResult] = useState<{ tx_hash: string; explorer_url: string } | null>(null);
+
+  const handleAnchor = async () => {
+    if (!traceData) return;
+    setAnchoring(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("blockchain-anchor", {
+        body: {
+          transaction_type: "traceability",
+          data: {
+            lotId: traceData.lotId,
+            product: traceData.productName,
+            variety: traceData.variety,
+            field: traceData.fieldName,
+            harvestDate: traceData.harvestDate,
+            quantity: traceData.quantity,
+            quality: traceData.qualityGrade,
+          },
+        },
+      });
+      if (error) throw error;
+      const res = data as { tx_hash?: string; explorer_url?: string; error?: string };
+      if (res?.error) throw new Error(res.error);
+      if (!res?.tx_hash) throw new Error("Réponse invalide");
+      setAnchorResult({ tx_hash: res.tx_hash, explorer_url: res.explorer_url! });
+      toast.success("Ancrage blockchain réussi");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Échec de l'ancrage blockchain");
+    } finally {
+      setAnchoring(false);
+    }
+  };
 
   useEffect(() => {
     if (lotId) {
@@ -426,6 +462,40 @@ export default function Trace() {
               <code className="text-xs font-mono text-foreground break-all block">
                 {traceData.blockchainHash}
               </code>
+            </div>
+
+            {/* On-chain anchoring (Polygon Amoy) */}
+            <div className="p-3 bg-primary/5 rounded-lg border border-primary/20 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Anchor className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-medium">Ancrage Polygon Amoy</span>
+                </div>
+                <Button size="sm" onClick={handleAnchor} disabled={anchoring || !!anchorResult}>
+                  {anchoring ? (
+                    <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> En cours…</>
+                  ) : anchorResult ? (
+                    <><CheckCircle2 className="w-4 h-4 mr-1" /> Ancré</>
+                  ) : (
+                    <><Anchor className="w-4 h-4 mr-1" /> Ancrer sur blockchain</>
+                  )}
+                </Button>
+              </div>
+              {anchorResult && (
+                <div className="space-y-1">
+                  <code className="text-xs font-mono text-foreground break-all block">
+                    {anchorResult.tx_hash}
+                  </code>
+                  <a
+                    href={anchorResult.explorer_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary inline-flex items-center gap-1 hover:underline"
+                  >
+                    Voir sur Polygonscan <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* Footer */}
