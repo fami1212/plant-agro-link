@@ -36,6 +36,7 @@ import MarketplaceFarmer from "./pages/marketplace/MarketplaceFarmer";
 import MarketplaceBuyer from "./pages/marketplace/MarketplaceBuyer";
 import MarketplaceInvestor from "./pages/marketplace/MarketplaceInvestor";
 import IoT from "./pages/IoT";
+import Devices from "./pages/Devices";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -146,6 +147,14 @@ const App = () => (
                   element={
                     <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
                       <IoT />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/devices"
+                  element={
+                    <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
+                      <Devices />
                     </ProtectedRoute>
                   }
                 />
