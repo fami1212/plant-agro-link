@@ -21,9 +21,12 @@ import {
   AlertCircle,
   QrCode,
   FileDown,
+  Anchor,
+  Loader2,
 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { generateTraceabilityCertificatePDF } from "@/services/pdfService";
+import { toast } from "sonner";
 
 interface TraceData {
   lotId: string;
@@ -59,6 +62,39 @@ export default function Trace() {
   const [traceData, setTraceData] = useState<TraceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [anchoring, setAnchoring] = useState(false);
+  const [anchorResult, setAnchorResult] = useState<{ tx_hash: string; explorer_url: string } | null>(null);
+
+  const handleAnchor = async () => {
+    if (!traceData) return;
+    setAnchoring(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("blockchain-anchor", {
+        body: {
+          transaction_type: "traceability",
+          data: {
+            lotId: traceData.lotId,
+            product: traceData.productName,
+            variety: traceData.variety,
+            field: traceData.fieldName,
+            harvestDate: traceData.harvestDate,
+            quantity: traceData.quantity,
+            quality: traceData.qualityGrade,
+          },
+        },
+      });
+      if (error) throw error;
+      const res = data as { tx_hash?: string; explorer_url?: string; error?: string };
+      if (res?.error) throw new Error(res.error);
+      if (!res?.tx_hash) throw new Error("Réponse invalide");
+      setAnchorResult({ tx_hash: res.tx_hash, explorer_url: res.explorer_url! });
+      toast.success("Ancrage blockchain réussi");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Échec de l'ancrage blockchain");
+    } finally {
+      setAnchoring(false);
+    }
+  };
 
   useEffect(() => {
     if (lotId) {
