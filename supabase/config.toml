@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.smart-planner]
 verify_jwt = false
+
+[functions.iot-webhook]
+verify_jwt = false
