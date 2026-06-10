@@ -263,11 +263,13 @@ export default function Trace() {
       if (!trace.fieldId && !trace.farmerId) return trace;
 
       // Find devices linked to the field (or to the farmer as fallback)
-      const baseQuery = supabase.from("iot_devices").select("id, name, field_id, user_id");
-      const filteredQuery = trace.fieldId
+      const baseQuery: any = supabase.from("iot_devices").select("id, name, field_id, user_id");
+      const filteredQuery: any = trace.fieldId
         ? baseQuery.eq("field_id", trace.fieldId)
         : baseQuery.eq("user_id", trace.farmerId!);
-      const { data: devices } = (await filteredQuery) as { data: Array<{ id: string; name: string | null; field_id: string | null; user_id: string }> | null };
+      const { data: devices } = (await filteredQuery) as {
+        data: Array<{ id: string; name: string | null; field_id: string | null; user_id: string }> | null;
+      };
       if (!devices || devices.length === 0) return trace;
 
       const deviceIds = devices.map((d: any) => d.id);
