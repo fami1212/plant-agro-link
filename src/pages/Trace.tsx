@@ -44,9 +44,18 @@ interface TraceData {
     avgTemperature?: number;
     irrigationCount?: number;
   };
+  iotHistory?: Array<{
+    recorded_at: string;
+    sensor_type: string;
+    value: number;
+    unit: string | null;
+    device_name: string | null;
+  }>;
   blockchainHash?: string;
   farmerName?: string;
   createdAt?: string;
+  fieldId?: string;
+  farmerId?: string;
 }
 
 const qualityColors: Record<string, string> = {
