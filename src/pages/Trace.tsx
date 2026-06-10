@@ -140,7 +140,7 @@ export default function Trace() {
         const crop = harvestData.crops as any;
         const field = crop?.fields;
 
-        setTraceData({
+        const baseTrace: TraceData = {
           lotId: harvestData.id,
           productName: crop?.name || "Produit agricole",
           variety: crop?.variety,
@@ -153,7 +153,11 @@ export default function Trace() {
           qualityGrade: harvestData.quality_grade,
           blockchainHash: generateBlockchainHash(harvestData),
           createdAt: harvestData.created_at,
-        });
+          fieldId: (crop?.field_id as string) || undefined,
+          farmerId: (harvestData as any).farmer_id || (crop?.farmer_id as string) || undefined,
+        };
+        const enriched = await enrichWithIoT(baseTrace, crop?.sowing_date, harvestData.harvest_date);
+        setTraceData(enriched);
         setLoading(false);
         return;
       }
