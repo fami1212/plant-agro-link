@@ -519,6 +519,29 @@ export default function Trace() {
                       </div>
                     )}
                   </div>
+                  {traceData.iotHistory && traceData.iotHistory.length > 0 && (
+                    <div className="mt-3 pl-6">
+                      <p className="text-xs font-medium text-muted-foreground mb-2">
+                        Historique capteurs ({traceData.iotHistory.length} dernières mesures)
+                      </p>
+                      <div className="max-h-60 overflow-y-auto rounded-lg border border-border/50 divide-y divide-border/40">
+                        {traceData.iotHistory.map((r, i) => (
+                          <div key={i} className="flex items-center justify-between px-3 py-2 text-xs">
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">{r.sensor_type}</p>
+                              <p className="text-[10px] text-muted-foreground truncate">
+                                {r.device_name ?? "Capteur"} • {new Date(r.recorded_at).toLocaleString("fr-FR")}
+                              </p>
+                            </div>
+                            <span className="font-mono font-semibold text-primary shrink-0 ml-2">
+                              {r.value}
+                              {r.unit ? ` ${r.unit}` : ""}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </>
             )}
