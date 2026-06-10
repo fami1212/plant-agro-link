@@ -254,6 +254,64 @@ export default function Trace() {
     return `0x${Math.abs(hash).toString(16).padStart(64, '0')}`;
   }
 
+  async function enrichWithIoT(
+    trace: TraceData,
+    sowingDate?: string | null,
+    harvestDate?: string | null,
+  ): Promise<TraceData> {
+    try {
+      if (!trace.fieldId && !trace.farmerId) return trace;
+
+      // Find devices linked to the field (or to the farmer as fallback)
+      let deviceQuery = supabase.from("iot_devices").select("id, name, field_id, user_id");
+      if (trace.fieldId) deviceQuery = deviceQuery.eq("field_id", trace.fieldId);
+      else if (trace.farmerId) deviceQuery = deviceQuery.eq("user_id", trace.farmerId);
+      const { data: devices } = await deviceQuery;
+      if (!devices || devices.length === 0) return trace;
+
+      const deviceIds = devices.map((d: any) => d.id);
+      const deviceMap = new Map<string, string>(devices.map((d: any) => [d.id, d.name]));
+
+      let q = supabase
+        .from("device_data")
+        .select("device_id, sensor_type, value, unit, recorded_at")
+        .in("device_id", deviceIds)
+        .order("recorded_at", { ascending: false })
+        .limit(200);
+      if (sowingDate) q = q.gte("recorded_at", sowingDate);
+      if (harvestDate) q = q.lte("recorded_at", new Date(new Date(harvestDate).getTime() + 86400000).toISOString());
+
+      const { data: readings } = await q;
+      if (!readings || readings.length === 0) return trace;
+
+      const humidity = readings.filter((r: any) => /humid/i.test(r.sensor_type));
+      const temp = readings.filter((r: any) => /temp/i.test(r.sensor_type));
+      const irrigation = readings.filter((r: any) => /irrig|water|pump/i.test(r.sensor_type));
+
+      const avg = (arr: any[]) =>
+        arr.length ? Math.round((arr.reduce((s, r) => s + Number(r.value || 0), 0) / arr.length) * 10) / 10 : undefined;
+
+      return {
+        ...trace,
+        iotData: {
+          avgHumidity: avg(humidity),
+          avgTemperature: avg(temp),
+          irrigationCount: irrigation.length || undefined,
+        },
+        iotHistory: readings.slice(0, 30).map((r: any) => ({
+          recorded_at: r.recorded_at,
+          sensor_type: r.sensor_type,
+          value: Number(r.value),
+          unit: r.unit,
+          device_name: deviceMap.get(r.device_id) ?? null,
+        })),
+      };
+    } catch (e) {
+      console.warn("enrichWithIoT failed", e);
+      return trace;
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background p-4">
