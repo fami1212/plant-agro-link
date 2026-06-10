@@ -16,6 +16,7 @@ import {
   MapPin,
   Activity,
   Brain,
+  Cpu,
 } from "lucide-react";
 import { FarmOverview } from "@/components/farmer/FarmOverview";
 import { FarmCalendar } from "@/components/farmer/FarmCalendar";
@@ -127,6 +128,14 @@ export default function Agriculteur() {
             >
               <Activity className="w-4 h-4" />
               <span>{t("nav.iot")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger
+              value="devices"
+              onClick={() => navigate("/devices")}
+              className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
+            >
+              <Cpu className="w-4 h-4" />
+              <span>Devices</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger
               value="ia"
