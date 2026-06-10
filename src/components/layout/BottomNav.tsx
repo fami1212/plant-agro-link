@@ -199,7 +199,7 @@ export function BottomNav() {
               </span>
             </button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="h-auto max-h-[80vh] rounded-t-3xl border-t border-border/50 px-4 pb-8">
+          <SheetContent side="bottom" className="h-[92vh] max-h-[92vh] rounded-t-3xl border-t border-border/50 px-4 pb-8 flex flex-col">
             <div className="w-12 h-1 bg-border rounded-full mx-auto mt-3 mb-4" />
 
             <div className="flex items-center justify-center gap-2 mb-3">
@@ -230,7 +230,7 @@ export function BottomNav() {
               </div>
             )}
 
-            <div className="space-y-4 mb-4 max-h-[50vh] overflow-y-auto -mx-1 px-1">
+            <div className="space-y-4 mb-4 flex-1 overflow-y-auto -mx-1 px-1">
               {visibleSections.map((section) => (
                 <div key={section.titleKey}>
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">
