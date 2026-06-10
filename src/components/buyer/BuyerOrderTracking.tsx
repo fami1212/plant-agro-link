@@ -33,6 +33,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
 import { BuyerReviewDialog } from "@/components/buyer/BuyerReviewDialog";
+import { AnchorButton } from "@/components/blockchain/AnchorButton";
 
 interface Order {
   id: string;
@@ -424,6 +425,32 @@ export function BuyerOrderTracking() {
                   <Star className="w-4 h-4" />
                   Laisser un avis
                 </Button>
+              )}
+
+              {/* Blockchain anchoring */}
+              {["acceptee", "en_cours", "livree"].includes(selectedOrder.status) && (
+                <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+                  <p className="text-xs font-medium text-foreground">
+                    Traçabilité blockchain
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Enregistrez cette commande de façon immuable sur Polygon.
+                  </p>
+                  <AnchorButton
+                    transactionType="marketplace_order"
+                    referenceId={selectedOrder.id}
+                    data={{
+                      orderId: selectedOrder.id,
+                      product: selectedOrder.product_title,
+                      price: selectedOrder.proposed_price,
+                      quantity: selectedOrder.proposed_quantity,
+                      seller: selectedOrder.seller_name,
+                      sellerId: selectedOrder.seller_id,
+                      status: selectedOrder.status,
+                      createdAt: selectedOrder.created_at,
+                    }}
+                  />
+                </div>
               )}
             </div>
           )}
