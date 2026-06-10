@@ -44,9 +44,18 @@ interface TraceData {
     avgTemperature?: number;
     irrigationCount?: number;
   };
+  iotHistory?: Array<{
+    recorded_at: string;
+    sensor_type: string;
+    value: number;
+    unit: string | null;
+    device_name: string | null;
+  }>;
   blockchainHash?: string;
   farmerName?: string;
   createdAt?: string;
+  fieldId?: string;
+  farmerId?: string;
 }
 
 const qualityColors: Record<string, string> = {
@@ -131,7 +140,7 @@ export default function Trace() {
         const crop = harvestData.crops as any;
         const field = crop?.fields;
 
-        setTraceData({
+        const baseTrace: TraceData = {
           lotId: harvestData.id,
           productName: crop?.name || "Produit agricole",
           variety: crop?.variety,
@@ -144,7 +153,11 @@ export default function Trace() {
           qualityGrade: harvestData.quality_grade,
           blockchainHash: generateBlockchainHash(harvestData),
           createdAt: harvestData.created_at,
-        });
+          fieldId: (crop?.field_id as string) || undefined,
+          farmerId: (harvestData as any).farmer_id || (crop?.farmer_id as string) || undefined,
+        };
+        const enriched = await enrichWithIoT(baseTrace, crop?.sowing_date, harvestData.harvest_date);
+        setTraceData(enriched);
         setLoading(false);
         return;
       }
@@ -239,6 +252,67 @@ export default function Trace() {
       hash = hash & hash;
     }
     return `0x${Math.abs(hash).toString(16).padStart(64, '0')}`;
+  }
+
+  async function enrichWithIoT(
+    trace: TraceData,
+    sowingDate?: string | null,
+    harvestDate?: string | null,
+  ): Promise<TraceData> {
+    try {
+      if (!trace.fieldId && !trace.farmerId) return trace;
+
+      // Find devices linked to the field (or to the farmer as fallback)
+      const baseQuery: any = supabase.from("iot_devices").select("id, name, field_id, user_id");
+      const filteredQuery: any = trace.fieldId
+        ? baseQuery.eq("field_id", trace.fieldId)
+        : baseQuery.eq("user_id", trace.farmerId!);
+      const { data: devices } = (await filteredQuery) as {
+        data: Array<{ id: string; name: string | null; field_id: string | null; user_id: string }> | null;
+      };
+      if (!devices || devices.length === 0) return trace;
+
+      const deviceIds = devices.map((d: any) => d.id);
+      const deviceMap = new Map<string, string>(devices.map((d: any) => [d.id, d.name]));
+
+      let q: any = supabase
+        .from("device_data")
+        .select("device_id, sensor_type, value, unit, recorded_at")
+        .in("device_id", deviceIds)
+        .order("recorded_at", { ascending: false })
+        .limit(200);
+      if (sowingDate) q = q.gte("recorded_at", sowingDate);
+      if (harvestDate) q = q.lte("recorded_at", new Date(new Date(harvestDate).getTime() + 86400000).toISOString());
+
+      const { data: readings } = await q;
+      if (!readings || readings.length === 0) return trace;
+
+      const humidity = readings.filter((r: any) => /humid/i.test(r.sensor_type));
+      const temp = readings.filter((r: any) => /temp/i.test(r.sensor_type));
+      const irrigation = readings.filter((r: any) => /irrig|water|pump/i.test(r.sensor_type));
+
+      const avg = (arr: any[]) =>
+        arr.length ? Math.round((arr.reduce((s, r) => s + Number(r.value || 0), 0) / arr.length) * 10) / 10 : undefined;
+
+      return {
+        ...trace,
+        iotData: {
+          avgHumidity: avg(humidity),
+          avgTemperature: avg(temp),
+          irrigationCount: irrigation.length || undefined,
+        },
+        iotHistory: readings.slice(0, 30).map((r: any) => ({
+          recorded_at: r.recorded_at,
+          sensor_type: r.sensor_type,
+          value: Number(r.value),
+          unit: r.unit,
+          device_name: deviceMap.get(r.device_id) ?? null,
+        })),
+      };
+    } catch (e) {
+      console.warn("enrichWithIoT failed", e);
+      return trace;
+    }
   }
 
   if (loading) {
@@ -445,6 +519,29 @@ export default function Trace() {
                       </div>
                     )}
                   </div>
+                  {traceData.iotHistory && traceData.iotHistory.length > 0 && (
+                    <div className="mt-3 pl-6">
+                      <p className="text-xs font-medium text-muted-foreground mb-2">
+                        Historique capteurs ({traceData.iotHistory.length} dernières mesures)
+                      </p>
+                      <div className="max-h-60 overflow-y-auto rounded-lg border border-border/50 divide-y divide-border/40">
+                        {traceData.iotHistory.map((r, i) => (
+                          <div key={i} className="flex items-center justify-between px-3 py-2 text-xs">
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">{r.sensor_type}</p>
+                              <p className="text-[10px] text-muted-foreground truncate">
+                                {r.device_name ?? "Capteur"} • {new Date(r.recorded_at).toLocaleString("fr-FR")}
+                              </p>
+                            </div>
+                            <span className="font-mono font-semibold text-primary shrink-0 ml-2">
+                              {r.value}
+                              {r.unit ? ` ${r.unit}` : ""}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </>
             )}

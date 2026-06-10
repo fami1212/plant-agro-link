@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { FileText, Shield, AlertTriangle, CheckCircle2, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { AnchorButton } from "@/components/blockchain/AnchorButton";
 
 interface ContractData {
   projectTitle: string;
@@ -179,6 +180,23 @@ export function InvestmentContract({ open, onOpenChange, contractData, onSign }:
                 Votre signature électronique a été enregistrée et le contrat est sécurisé sur la blockchain.
               </p>
               <Badge variant="outline" className="font-mono text-xs">{contractId}</Badge>
+              <div className="pt-2">
+                <AnchorButton
+                  transactionType="investment_contract"
+                  referenceId={contractId}
+                  data={{
+                    contractId,
+                    projectTitle: contractData.projectTitle,
+                    farmerName: contractData.farmerName,
+                    investorName: contractData.investorName,
+                    amount: contractData.amount,
+                    returnPercent: contractData.returnPercent,
+                    harvestDate: contractData.harvestDate,
+                    contractDate: contractData.contractDate,
+                  }}
+                  label="Ancrer le contrat sur blockchain"
+                />
+              </div>
             </div>
           )}
         </div>
