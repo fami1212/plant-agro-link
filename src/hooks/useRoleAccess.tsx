@@ -11,9 +11,9 @@ interface RoleConfig {
 
 const roleConfigs: Record<AppRole, RoleConfig> = {
   agriculteur: {
-    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/iot', '/ia', '/farmer-investments', '/settings', '/voice', '/communaute', '/elearning', '/logistique'],
+    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/iot', '/devices', '/ia', '/farmer-investments', '/settings', '/voice', '/communaute', '/elearning', '/logistique'],
     navItems: ['/dashboard', '/agriculteur', '/cultures', '/betail', '/marketplace/farmer'],
-    menuItems: ['/parcelles', '/farmer-investments', '/iot', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/settings'],
+    menuItems: ['/parcelles', '/farmer-investments', '/iot', '/devices', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/settings'],
     dashboardType: 'agriculteur',
   },
   veterinaire: {
@@ -35,9 +35,9 @@ const roleConfigs: Record<AppRole, RoleConfig> = {
     dashboardType: 'investisseur',
   },
   admin: {
-    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/marketplace/buyer', '/marketplace/investor', '/iot', '/ia', '/admin', '/settings', '/farmer-investments', '/voice', '/communaute', '/elearning', '/logistique'],
+    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/marketplace/buyer', '/marketplace/investor', '/iot', '/devices', '/ia', '/admin', '/settings', '/farmer-investments', '/voice', '/communaute', '/elearning', '/logistique', '/investisseur', '/veterinaire', '/acheteur'],
     navItems: ['/dashboard', '/agriculteur', '/cultures', '/betail', '/marketplace'],
-    menuItems: ['/parcelles', '/farmer-investments', '/iot', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/admin', '/settings'],
+    menuItems: ['/parcelles', '/farmer-investments', '/iot', '/devices', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/admin', '/settings'],
     dashboardType: 'admin',
   },
 };
