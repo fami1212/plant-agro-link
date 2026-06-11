@@ -1,22 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRoleAccess } from "@/hooks/useRoleAccess";
+import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
 
 // This page now redirects to role-specific marketplace pages
 export default function Marketplace() {
   const navigate = useNavigate();
   const { isAgriculteur, isVeterinaire, isAcheteur, isInvestisseur, isAdmin } = useRoleAccess();
-  const [ready, setReady] = useState(false);
+  const { loading, rolesLoading } = useAuth();
 
   useEffect(() => {
-    // Give a small delay for roles to load
-    const timer = setTimeout(() => setReady(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!ready) return;
+    if (loading || rolesLoading) return;
 
     // Redirect based on role
     if (isAgriculteur || isAdmin) {
@@ -30,7 +25,7 @@ export default function Marketplace() {
     } else {
       navigate("/marketplace/buyer", { replace: true });
     }
-  }, [ready, isAgriculteur, isVeterinaire, isAcheteur, isInvestisseur, isAdmin, navigate]);
+  }, [loading, rolesLoading, isAgriculteur, isVeterinaire, isAcheteur, isInvestisseur, isAdmin, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
