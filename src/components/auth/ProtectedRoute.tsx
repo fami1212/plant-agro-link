@@ -11,11 +11,13 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requiredRole, allowedRoles }: ProtectedRouteProps) {
-  const { user, loading, hasRole } = useAuth();
+  const { user, loading, rolesLoading, hasRole } = useAuth();
   const { canAccessRoute } = useRoleAccess();
   const location = useLocation();
 
-  if (loading) {
+  // Wait for both session AND roles to load before any access decision,
+  // otherwise users get redirected to /dashboard with an empty roles list.
+  if (loading || (user && rolesLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
