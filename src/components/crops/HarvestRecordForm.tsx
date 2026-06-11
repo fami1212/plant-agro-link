@@ -52,18 +52,46 @@ export function HarvestRecordForm({ cropId, onSuccess, onCancel }: HarvestRecord
 
     setLoading(true);
     try {
-      const { error } = await supabase.from("harvest_records").insert({
+      const { data: inserted, error } = await supabase.from("harvest_records").insert({
         crop_id: cropId,
         user_id: user.id,
         harvest_date: formData.harvest_date,
         quantity_kg: parseFloat(formData.quantity_kg),
         quality_grade: formData.quality_grade || null,
         notes: formData.notes || null,
-      });
+      }).select().single();
 
       if (error) throw error;
 
       toast.success("Récolte enregistrée");
+
+      // Auto-anchor the harvest lot on the blockchain for immutable timestamping
+      try {
+        const { data: anchor, error: anchorError } = await supabase.functions.invoke(
+          "blockchain-anchor",
+          {
+            body: {
+              transaction_type: "harvest",
+              data: {
+                harvest_id: inserted?.id,
+                crop_id: cropId,
+                quantity_kg: parseFloat(formData.quantity_kg),
+                quality_grade: formData.quality_grade,
+                harvest_date: formData.harvest_date,
+              },
+            },
+          },
+        );
+        if (!anchorError && anchor?.tx_hash) {
+          toast.success("Lot horodaté sur blockchain", {
+            description: `TX: ${anchor.tx_hash.slice(0, 10)}…`,
+          });
+        }
+      } catch (e) {
+        // Silent: anchoring is best-effort, harvest already saved
+        console.warn("Auto-anchor skipped", e);
+      }
+
       onSuccess?.();
     } catch (error: any) {
       toast.error(error.message || "Erreur lors de l'enregistrement");
