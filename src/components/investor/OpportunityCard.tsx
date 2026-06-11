@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { AIRiskScore } from "./AIRiskScore";
 
 interface InvestmentOpportunity {
   id: string;
@@ -137,6 +138,7 @@ export function OpportunityCard({ opportunity, onInvest, index = 0 }: Opportunit
           )}
 
           {/* CTA */}
+          <AIRiskScore opportunityId={opportunity.id} compact />
           <Button 
             className="w-full h-12"
             onClick={() => onInvest(opportunity)}
