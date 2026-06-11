@@ -19,7 +19,23 @@ Deno.serve(async (req) => {
     const supabaseAnon = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseService = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const rpcUrl = Deno.env.get("POLYGON_AMOY_RPC_URL") || "https://rpc-amoy.polygon.technology";
-    const privateKey = Deno.env.get("BLOCKCHAIN_PRIVATE_KEY")!;
+    let privateKey = (Deno.env.get("BLOCKCHAIN_PRIVATE_KEY") ?? "").trim();
+    // Strip wrapping quotes if user pasted them
+    if ((privateKey.startsWith('"') && privateKey.endsWith('"')) ||
+        (privateKey.startsWith("'") && privateKey.endsWith("'"))) {
+      privateKey = privateKey.slice(1, -1).trim();
+    }
+    // Normalize: ethers expects 0x + 64 hex chars
+    if (!privateKey.startsWith("0x")) privateKey = "0x" + privateKey;
+    if (!/^0x[0-9a-fA-F]{64}$/.test(privateKey)) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "BLOCKCHAIN_PRIVATE_KEY mal formatée. Attendu: 64 caractères hexadécimaux (avec ou sans préfixe 0x), sans guillemets ni espaces.",
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     const userClient = createClient(supabaseUrl, supabaseAnon, {
       global: { headers: { Authorization: authHeader } },
