@@ -21,6 +21,7 @@ interface AuthContextType {
   profile: Profile | null;
   roles: AppRole[];
   loading: boolean;
+  rolesLoading: boolean;
   signUp: (email: string, password: string, metadata: { full_name: string; phone?: string; role?: AppRole }) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signInWithPhone: (phone: string) => Promise<{ error: Error | null }>;
@@ -37,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [rolesLoading, setRolesLoading] = useState(true);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -47,12 +49,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Defer profile fetch with setTimeout to prevent deadlock
         if (session?.user) {
+          setRolesLoading(true);
           setTimeout(() => {
             fetchUserData(session.user.id);
           }, 0);
         } else {
           setProfile(null);
           setRoles([]);
+          setRolesLoading(false);
         }
       }
     );
@@ -63,6 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchUserData(session.user.id);
+      } else {
+        setRolesLoading(false);
       }
       setLoading(false);
     });
@@ -94,6 +100,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
+    } finally {
+      setRolesLoading(false);
     }
   };
 
@@ -161,6 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profile,
       roles,
       loading,
+      rolesLoading,
       signUp,
       signIn,
       signInWithPhone,
