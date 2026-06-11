@@ -2,7 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import {
+  ScrollableTabs,
+  ScrollableTabsList,
+  ScrollableTabsTrigger,
+} from "@/components/ui/scrollable-tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Bug, Sprout, Droplets, Mic, Sparkles, MessageCircle, History, Camera, ArrowRight } from "lucide-react";
@@ -61,26 +66,26 @@ export default function IA() {
           </Card>
         </div>
 
-        {/* AI Tools Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 h-auto p-1">
-            <TabsTrigger value="disease" className="flex flex-col gap-1 py-2">
+        {/* AI Tools Tabs — scrollable on mobile to avoid label collisions */}
+        <ScrollableTabs value={activeTab} onValueChange={setActiveTab}>
+          <ScrollableTabsList className="w-full">
+            <ScrollableTabsTrigger value="disease" className="gap-1.5">
               <Bug className="w-4 h-4" />
-              <span className="text-xs">{t("ai.diseases")}</span>
-            </TabsTrigger>
-            <TabsTrigger value="yield" className="flex flex-col gap-1 py-2">
+              <span>{t("ai.diseases")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="yield" className="gap-1.5">
               <Sprout className="w-4 h-4" />
-              <span className="text-xs">{t("ai.yield")}</span>
-            </TabsTrigger>
-            <TabsTrigger value="irrigation" className="flex flex-col gap-1 py-2">
+              <span>{t("ai.yield")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="irrigation" className="gap-1.5">
               <Droplets className="w-4 h-4" />
-              <span className="text-xs">{t("ai.irrigation")}</span>
-            </TabsTrigger>
-            <TabsTrigger value="history" className="flex flex-col gap-1 py-2">
+              <span>{t("ai.irrigation")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="history" className="gap-1.5">
               <History className="w-4 h-4" />
-              <span className="text-xs">{t("ai.history")}</span>
-            </TabsTrigger>
-          </TabsList>
+              <span>{t("ai.history")}</span>
+            </ScrollableTabsTrigger>
+          </ScrollableTabsList>
 
           <TabsContent value="disease" className="mt-4">
             <PlantDiseaseDetector />
@@ -97,7 +102,7 @@ export default function IA() {
           <TabsContent value="history" className="mt-4">
             <ScanHistory />
           </TabsContent>
-        </Tabs>
+        </ScrollableTabs>
       </div>
     </AppLayout>
   );
