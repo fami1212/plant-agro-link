@@ -38,6 +38,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { recordRepayment } from "@/services/blockchainService";
+import { DirectMessageDialog } from "@/components/messaging/DirectMessageDialog";
+import { MessageSquare, ExternalLink } from "lucide-react";
 
 interface Investment {
   id: string;
@@ -85,6 +87,7 @@ export function FarmerInvestmentDashboard() {
   const [selectedInvestment, setSelectedInvestment] = useState<Investment | null>(null);
   const [repaymentAmount, setRepaymentAmount] = useState("");
   const [processing, setProcessing] = useState(false);
+  const [chatWith, setChatWith] = useState<Investment | null>(null);
 
   const fetchData = async () => {
     if (!user) return;
@@ -176,7 +179,15 @@ export function FarmerInvestmentDashboard() {
 
       if (error) throw error;
 
-      toast.success(`Remboursement enregistré! Hash: ${tx.hash.substring(0, 12)}...`);
+      const polygonscanUrl = `https://amoy.polygonscan.com/tx/${tx.hash}`;
+      toast.success("Remboursement enregistré sur blockchain", {
+        description: `Hash: ${tx.hash.substring(0, 14)}…`,
+        action: {
+          label: "Voir sur Polygonscan",
+          onClick: () => window.open(polygonscanUrl, "_blank", "noopener,noreferrer"),
+        },
+        duration: 8000,
+      });
       setSelectedInvestment(null);
       setRepaymentAmount("");
       fetchData();
@@ -330,24 +341,38 @@ export function FarmerInvestmentDashboard() {
                     )}
 
                     {inv.status === "en_cours" && (
-                      <Button
-                        className="w-full"
-                        onClick={() => {
-                          setSelectedInvestment(inv);
-                          setRepaymentAmount(expectedReturn.toString());
-                        }}
-                      >
-                        <CheckCircle2 className="w-4 h-4 mr-1" />
-                        Marquer comme remboursé
-                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setChatWith(inv)}
+                        >
+                          <MessageSquare className="w-4 h-4 mr-1" />
+                          Discuter
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setSelectedInvestment(inv);
+                            setRepaymentAmount(expectedReturn.toString());
+                          }}
+                        >
+                          <CheckCircle2 className="w-4 h-4 mr-1" />
+                          Rembourser
+                        </Button>
+                      </div>
                     )}
 
                     {inv.status === "rembourse" && inv.actual_return_amount && (
-                      <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-success/10 text-success text-sm">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>
-                          Remboursé: {inv.actual_return_amount.toLocaleString()} FCFA
-                        </span>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-success/10 text-success text-sm">
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>
+                            Remboursé: {inv.actual_return_amount.toLocaleString()} FCFA
+                          </span>
+                        </div>
+                        <Button variant="outline" className="w-full" onClick={() => setChatWith(inv)}>
+                          <MessageSquare className="w-4 h-4 mr-1" />
+                          Discuter avec l'investisseur
+                        </Button>
                       </div>
                     )}
                   </CardContent>
