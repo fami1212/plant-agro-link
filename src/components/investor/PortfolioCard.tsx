@@ -1,11 +1,15 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { DirectMessageDialog } from "@/components/messaging/DirectMessageDialog";
 import {
   TrendingUp,
   Calendar,
   User,
   ArrowRight,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, differenceInDays } from "date-fns";
@@ -21,6 +25,7 @@ interface Investment {
   expected_harvest_date: string | null;
   actual_return_amount: number | null;
   farmer_name?: string;
+  farmer_id?: string;
 }
 
 interface PortfolioCardProps {
@@ -38,6 +43,7 @@ const statusConfig: Record<string, { label: string; color: string }> = {
 };
 
 export function PortfolioCard({ investment, index = 0, onClick }: PortfolioCardProps) {
+  const [chatOpen, setChatOpen] = useState(false);
   const expectedReturn = investment.amount_invested * (1 + investment.expected_return_percent / 100);
   const actualReturn = investment.actual_return_amount || expectedReturn;
   const gain = actualReturn - investment.amount_invested;
@@ -118,14 +124,37 @@ export function PortfolioCard({ investment, index = 0, onClick }: PortfolioCardP
           </div>
         )}
 
-        {/* Footer with arrow */}
-        <div className="flex items-center justify-between pt-1 border-t border-border/30">
-          <span className="text-xs text-muted-foreground">
+        {/* Footer with chat + arrow */}
+        <div className="flex items-center justify-between pt-1 border-t border-border/30 gap-2">
+          <span className="text-xs text-muted-foreground flex-1 min-w-0 truncate">
             Gain estimé: <span className="font-semibold text-success">+{(gain / 1000).toFixed(0)}k FCFA</span>
           </span>
-          <ArrowRight className="w-4 h-4 text-muted-foreground" />
+          {investment.farmer_id && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 shrink-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                setChatOpen(true);
+              }}
+            >
+              <MessageSquare className="w-4 h-4 mr-1" />
+              <span className="text-xs">Discuter</span>
+            </Button>
+          )}
+          <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
         </div>
       </CardContent>
+      {investment.farmer_id && (
+        <DirectMessageDialog
+          open={chatOpen}
+          onOpenChange={setChatOpen}
+          otherUserId={investment.farmer_id}
+          otherUserName={investment.farmer_name || "Agriculteur"}
+          context={`Investissement: ${investment.title}`}
+        />
+      )}
     </Card>
   );
 }

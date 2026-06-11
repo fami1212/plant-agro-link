@@ -522,6 +522,14 @@ export function FarmerInvestmentDashboard() {
           )}
         </DialogContent>
       </Dialog>
+
+      <DirectMessageDialog
+        open={!!chatWith}
+        onOpenChange={(o) => !o && setChatWith(null)}
+        otherUserId={chatWith?.investor_id || ""}
+        otherUserName={chatWith?.investor_name || "Investisseur"}
+        context={chatWith ? `Investissement: ${chatWith.title}` : undefined}
+      />
     </div>
   );
 }
