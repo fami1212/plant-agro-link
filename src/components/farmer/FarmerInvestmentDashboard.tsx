@@ -40,6 +40,7 @@ import { Label } from "@/components/ui/label";
 import { recordRepayment } from "@/services/blockchainService";
 import { DirectMessageDialog } from "@/components/messaging/DirectMessageDialog";
 import { MessageSquare, ExternalLink } from "lucide-react";
+import { FarmerInvestmentConversations } from "@/components/farmer/FarmerInvestmentConversations";
 
 interface Investment {
   id: string;
@@ -180,14 +181,17 @@ export function FarmerInvestmentDashboard() {
       if (error) throw error;
 
       const polygonscanUrl = `https://amoy.polygonscan.com/tx/${tx.hash}`;
-      toast.success("Remboursement enregistré sur blockchain", {
-        description: `Hash: ${tx.hash.substring(0, 14)}…`,
-        action: {
-          label: "Voir sur Polygonscan",
-          onClick: () => window.open(polygonscanUrl, "_blank", "noopener,noreferrer"),
-        },
-        duration: 8000,
-      });
+      toast.success(
+        `Remboursement confirmé • ${amount.toLocaleString()} FCFA`,
+        {
+          description: `Statut: rembourse · Bénéficiaire: ${selectedInvestment.investor_name} · Tx: ${tx.hash.substring(0, 10)}…${tx.hash.slice(-6)}`,
+          action: {
+            label: "Polygonscan",
+            onClick: () => window.open(polygonscanUrl, "_blank", "noopener,noreferrer"),
+          },
+          duration: 10000,
+        }
+      );
       setSelectedInvestment(null);
       setRepaymentAmount("");
       fetchData();
@@ -278,6 +282,10 @@ export function FarmerInvestmentDashboard() {
           <TabsTrigger value="opportunities" className="flex-1">
             <Target className="w-4 h-4 mr-1" />
             Opportunités ({opportunities.length})
+          </TabsTrigger>
+          <TabsTrigger value="messages" className="flex-1">
+            <MessageSquare className="w-4 h-4 mr-1" />
+            Messages
           </TabsTrigger>
         </TabsList>
 
@@ -460,6 +468,10 @@ export function FarmerInvestmentDashboard() {
               );
             })
           )}
+        </TabsContent>
+
+        <TabsContent value="messages" className="mt-4">
+          <FarmerInvestmentConversations />
         </TabsContent>
       </Tabs>
 

@@ -2,13 +2,20 @@ import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Loader2, MessageSquare } from "lucide-react";
+import { Send, Loader2, MessageSquare, WifiOff, ArrowDown, Check, CheckCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import {
+  enqueueMessage,
+  flushQueue,
+  getQueuedMessages,
+  subscribeQueue,
+  type QueuedMessage,
+} from "@/services/messageQueueService";
 
 interface Message {
   id: string;
@@ -16,6 +23,8 @@ interface Message {
   recipient_id: string;
   content: string;
   created_at: string;
+  is_read?: boolean;
+  pending?: boolean;
 }
 
 interface DirectMessageDialogProps {
@@ -47,7 +56,32 @@ export function DirectMessageDialog({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [online, setOnline] = useState<boolean>(typeof navigator !== "undefined" ? navigator.onLine : true);
+  const [queuedCount, setQueuedCount] = useState(0);
+  const [otherPhone, setOtherPhone] = useState<string | null>(null);
+  const [newMsgPill, setNewMsgPill] = useState(false);
+  const atBottomRef = useRef(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Online/offline tracking
+  useEffect(() => {
+    const on = () => setOnline(true);
+    const off = () => setOnline(false);
+    window.addEventListener("online", on);
+    window.addEventListener("offline", off);
+    return () => {
+      window.removeEventListener("online", on);
+      window.removeEventListener("offline", off);
+    };
+  }, []);
+
+  // Queue subscription — show pending messages for this conversation
+  useEffect(() => {
+    return subscribeQueue((q) => {
+      const mine = q.filter((m) => m.conversation_id === conversationId);
+      setQueuedCount(mine.length);
+    });
+  }, [conversationId]);
 
   // Init/fetch conversation when dialog opens
   useEffect(() => {
@@ -85,11 +119,29 @@ export function DirectMessageDialog({
 
         const { data: msgs } = await supabase
           .from("marketplace_messages")
-          .select("id, sender_id, recipient_id, content, created_at")
+          .select("id, sender_id, recipient_id, content, created_at, is_read")
           .eq("conversation_id", convId)
           .order("created_at", { ascending: true })
           .limit(200);
         if (!cancelled) setMessages(msgs || []);
+
+        // Mark inbound messages as read
+        if (convId) {
+          await supabase
+            .from("marketplace_messages")
+            .update({ is_read: true })
+            .eq("conversation_id", convId)
+            .eq("recipient_id", user.id)
+            .eq("is_read", false);
+        }
+
+        // Try to fetch the other user's phone for SMS fallback
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("phone")
+          .eq("user_id", otherUserId)
+          .maybeSingle();
+        if (!cancelled) setOtherPhone(prof?.phone ?? null);
       } catch (err: any) {
         toast.error(err.message || "Erreur de chargement de la conversation");
       } finally {
@@ -116,32 +168,100 @@ export function DirectMessageDialog({
           table: "marketplace_messages",
           filter: `conversation_id=eq.${conversationId}`,
         },
-        (payload) => {
+        async (payload) => {
+          const m = payload.new as Message;
           setMessages((prev) =>
-            prev.some((m) => m.id === (payload.new as Message).id)
-              ? prev
-              : [...prev, payload.new as Message]
+            prev.some((x) => x.id === m.id) ? prev : [...prev, m]
           );
+          // If incoming for us, mark read immediately (dialog is open)
+          if (m.recipient_id === user?.id) {
+            if (!atBottomRef.current) setNewMsgPill(true);
+            await supabase
+              .from("marketplace_messages")
+              .update({ is_read: true })
+              .eq("id", m.id);
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "marketplace_messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const m = payload.new as Message;
+          setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, ...m } : x)));
         }
       )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversationId]);
+  }, [conversationId, user?.id]);
 
-  // Auto-scroll
+  // Auto-scroll only if user is near the bottom
   useEffect(() => {
     requestAnimationFrame(() => {
-      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+      const el = scrollRef.current;
+      if (!el) return;
+      if (atBottomRef.current) {
+        el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+        setNewMsgPill(false);
+      }
     });
   }, [messages]);
+
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
+    atBottomRef.current = dist < 40;
+    if (atBottomRef.current) setNewMsgPill(false);
+  };
+
+  const scrollToBottom = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    atBottomRef.current = true;
+    setNewMsgPill(false);
+  };
 
   const handleSend = async () => {
     if (!user || !conversationId || !input.trim() || sending) return;
     const content = input.trim();
     setSending(true);
     setInput("");
+
+    const optimistic: Message = {
+      id: `tmp_${Date.now()}`,
+      sender_id: user.id,
+      recipient_id: otherUserId,
+      content,
+      created_at: new Date().toISOString(),
+      pending: true,
+    };
+
+    // Offline → queue immediately
+    if (!navigator.onLine) {
+      enqueueMessage({
+        conversation_id: conversationId,
+        sender_id: user.id,
+        recipient_id: otherUserId,
+        content,
+        recipient_phone: otherPhone,
+      });
+      setMessages((p) => [...p, optimistic]);
+      toast.info("Message en attente — sera envoyé dès la reconnexion", {
+        description: otherPhone ? "Repli SMS disponible si nécessaire" : undefined,
+      });
+      setSending(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.from("marketplace_messages").insert({
         conversation_id: conversationId,
@@ -155,10 +275,22 @@ export function DirectMessageDialog({
         .update({ last_message_at: new Date().toISOString() })
         .eq("id", conversationId);
     } catch (err: any) {
-      toast.error(err.message || "Erreur d'envoi");
-      setInput(content);
+      // Network/insert failed → queue for retry
+      enqueueMessage({
+        conversation_id: conversationId,
+        sender_id: user.id,
+        recipient_id: otherUserId,
+        content,
+        recipient_phone: otherPhone,
+      });
+      setMessages((p) => [...p, optimistic]);
+      toast.warning("Envoi différé — réessai automatique", {
+        description: err.message,
+      });
     } finally {
       setSending(false);
+      // best-effort flush
+      flushQueue();
     }
   };
 
@@ -177,8 +309,14 @@ export function DirectMessageDialog({
 
         <div
           ref={scrollRef}
+          onScroll={handleScroll}
           className="h-[55vh] max-h-[460px] overflow-y-auto px-3 py-3 space-y-2 bg-muted/20"
         >
+          {!online && (
+            <div className="sticky top-0 z-10 -mt-1 mb-1 flex items-center justify-center gap-1.5 rounded-md bg-warning/15 text-warning text-xs py-1">
+              <WifiOff className="w-3 h-3" /> Hors-ligne — messages en file d'attente
+            </div>
+          )}
           {loading ? (
             <div className="flex items-center justify-center h-full">
               <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -198,17 +336,27 @@ export function DirectMessageDialog({
                       "max-w-[78%] rounded-2xl px-3 py-2 text-sm break-words",
                       isMe
                         ? "bg-primary text-primary-foreground rounded-br-md"
-                        : "bg-background border border-border/50 rounded-bl-md"
+                        : "bg-background border border-border/50 rounded-bl-md",
+                      msg.pending && "opacity-70"
                     )}
                   >
                     <p className="whitespace-pre-wrap">{msg.content}</p>
                     <p
                       className={cn(
-                        "text-[10px] mt-1 opacity-70",
+                        "text-[10px] mt-1 opacity-70 flex items-center gap-1 justify-end",
                         isMe ? "text-primary-foreground" : "text-muted-foreground"
                       )}
                     >
                       {format(new Date(msg.created_at), "HH:mm", { locale: fr })}
+                      {isMe && (
+                        msg.pending ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : msg.is_read ? (
+                          <CheckCheck className="w-3 h-3" />
+                        ) : (
+                          <Check className="w-3 h-3" />
+                        )
+                      )}
                     </p>
                   </div>
                 </div>
@@ -217,7 +365,21 @@ export function DirectMessageDialog({
           )}
         </div>
 
+        {newMsgPill && (
+          <button
+            onClick={scrollToBottom}
+            className="absolute bottom-[78px] right-4 z-20 flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs shadow-lg animate-fade-in"
+          >
+            <ArrowDown className="w-3 h-3" /> Nouveaux messages
+          </button>
+        )}
+
         <div className="flex gap-2 p-3 border-t border-border/40 bg-background">
+          {queuedCount > 0 && (
+            <div className="absolute -translate-y-7 left-3 text-[10px] text-warning flex items-center gap-1">
+              <WifiOff className="w-3 h-3" /> {queuedCount} en file
+            </div>
+          )}
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
