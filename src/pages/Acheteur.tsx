@@ -31,6 +31,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { BuyerCart } from "@/components/buyer/BuyerCart";
 import { BuyerOrderTracking } from "@/components/buyer/BuyerOrderTracking";
 import { GeolocatedSearch, type GeoFilters, getDistanceKm } from "@/components/buyer/GeolocatedSearch";
+import { MobileMoneyPayment } from "@/components/payment/MobileMoneyPayment";
 
 interface Product {
   id: string;
@@ -79,6 +80,8 @@ export default function Acheteur() {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [buyTarget, setBuyTarget] = useState<Product | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
   const [geoFilters, setGeoFilters] = useState<GeoFilters>({
     latitude: null, longitude: null, radiusKm: 50, sortBy: "recent", region: "Toutes",
   });
@@ -193,6 +196,43 @@ export default function Acheteur() {
         setFavorites(prev => [...prev, { id: data.id, listing_id: productId, product }]);
         toast.success("Ajouté aux favoris");
       }
+    }
+  };
+
+  const handleBuy = (product: Product) => {
+    if (!product.price) {
+      toast.error("Prix non disponible");
+      return;
+    }
+    setBuyTarget(product);
+    setShowPayment(true);
+  };
+
+  const handlePaymentSuccess = async () => {
+    if (!buyTarget || !user) return;
+    try {
+      const { data: listing } = await supabase
+        .from("marketplace_listings")
+        .select("user_id")
+        .eq("id", buyTarget.id)
+        .single();
+
+      await supabase.from("marketplace_offers").insert({
+        listing_id: buyTarget.id,
+        buyer_id: user.id,
+        seller_id: listing?.user_id,
+        proposed_price: buyTarget.price || 0,
+        status: "acceptee",
+        payment_status: "paid",
+      });
+      toast.success("Commande envoyée au producteur !");
+      setShowPayment(false);
+      setBuyTarget(null);
+      fetchData();
+      setActiveTab("commandes");
+    } catch (e) {
+      console.error(e);
+      toast.error("Erreur lors de l'enregistrement de la commande");
     }
   };
 
@@ -369,6 +409,15 @@ export default function Acheteur() {
                             <span className="truncate">{product.location}</span>
                           </div>
                         )}
+                        <Button
+                          size="sm"
+                          className="w-full mt-2 h-8 text-xs gap-1"
+                          onClick={() => handleBuy(product)}
+                          disabled={!product.price}
+                        >
+                          <ShoppingCart className="w-3 h-3" />
+                          Acheter
+                        </Button>
                       </CardContent>
                     </Card>
                   );
@@ -414,15 +463,25 @@ export default function Acheteur() {
                       <p className="text-lg font-bold text-primary">
                         {fav.product?.price?.toLocaleString()} FCFA
                       </p>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-destructive mt-1 p-0 h-auto"
-                        onClick={() => toggleFavorite(fav.listing_id)}
-                      >
-                        <Heart className="w-4 h-4 fill-current mr-1" />
-                        {t("buyer.remove")}
-                      </Button>
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          className="h-8 text-xs gap-1 flex-1"
+                          onClick={() => fav.product && handleBuy(fav.product as Product)}
+                          disabled={!fav.product?.price}
+                        >
+                          <ShoppingCart className="w-3 h-3" />
+                          Acheter
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive h-8 px-2"
+                          onClick={() => toggleFavorite(fav.listing_id)}
+                        >
+                          <Heart className="w-4 h-4 fill-current" />
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -432,6 +491,19 @@ export default function Acheteur() {
 
         </HubTabs>
       </div>
+
+      {/* Mobile Money Payment Dialog */}
+      {buyTarget && (
+        <MobileMoneyPayment
+          open={showPayment}
+          onOpenChange={setShowPayment}
+          amount={buyTarget.price || 0}
+          description={`Achat: ${buyTarget.title}`}
+          paymentType="marketplace"
+          referenceId={buyTarget.id}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </AppLayout>
   );
 }
