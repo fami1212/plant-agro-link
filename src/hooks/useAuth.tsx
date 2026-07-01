@@ -110,7 +110,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string, 
     metadata: { full_name: string; phone?: string; role?: AppRole }
   ) => {
-    const redirectUrl = `${window.location.origin}/dashboard`;
+    // On native (Capacitor) the origin is capacitor://localhost or http://localhost,
+    // which Supabase can't redirect back to. Always use the real domain for the
+    // magic-link callback; the app resolves the session on next open.
+    const isNative =
+      typeof window !== 'undefined' &&
+      (window.location.protocol === 'capacitor:' ||
+        window.location.hostname === 'localhost' ||
+        // @ts-ignore Capacitor global
+        !!(window as any).Capacitor?.isNativePlatform?.());
+    const origin = isNative ? 'https://plant-erea.com' : window.location.origin;
+    const redirectUrl = `${origin}/dashboard`;
     
     const { error } = await supabase.auth.signUp({
       email,
