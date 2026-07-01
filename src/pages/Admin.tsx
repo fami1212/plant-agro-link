@@ -60,6 +60,7 @@ import { AdminUserModeration } from "@/components/admin/AdminUserModeration";
 import { AdminListingModeration } from "@/components/admin/AdminListingModeration";
 import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
 import { AdminServiceProviders } from "@/components/admin/AdminServiceProviders";
+import { AdminKycPanel } from "@/components/admin/AdminKycPanel";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 type Profile = DatabaseTypes["public"]["Tables"]["profiles"]["Row"];
@@ -384,6 +385,10 @@ export default function Admin() {
               <Activity className="w-4 h-4" />
               <span className="text-sm">{t("admin.providers")}</span>
             </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="kyc" className="flex items-center gap-2 px-4">
+              <UserCheck className="w-4 h-4" />
+              <span className="text-sm">KYC</span>
+            </ScrollableTabsTrigger>
           </ScrollableTabsList>
 
           {/* Overview Tab */}
@@ -443,6 +448,11 @@ export default function Admin() {
           {/* Service Providers Tab */}
           <ScrollableTabsContent value="providers">
             <AdminServiceProviders />
+          </ScrollableTabsContent>
+
+          {/* KYC Verification Tab */}
+          <ScrollableTabsContent value="kyc">
+            <AdminKycPanel />
           </ScrollableTabsContent>
         </ScrollableTabs>
       </div>
