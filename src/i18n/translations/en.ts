@@ -448,11 +448,11 @@ export const en = {
   "trace.iotData": "IoT Sensor Data",
   "trace.verified": "Verified",
   "trace.authenticity": "Authenticity Confirmed",
-  "trace.certDesc": "This certificate is issued by the Plantéra platform and verified by blockchain.",
+  "trace.certDesc": "This certificate is issued by the PlantErea platform and verified by blockchain.",
   "trace.notFound": "Lot not found",
   "trace.notFoundDesc": "The traceability certificate for this lot does not exist or has expired.",
   "trace.backHome": "Back to home",
-  "trace.visitPlantera": "Visit Plantéra",
+  "trace.visitPlantErea": "Visit PlantErea",
   "trace.blockchainVerified": "Blockchain Signature Verified",
 
   // Onboarding
@@ -481,7 +481,7 @@ export const en = {
   "index.iotDesc": "Real-time sensors",
   "index.sales": "Sales",
   "index.salesDesc": "Integrated marketplace",
-  "index.whyPlantera": "Why Plantéra?",
+  "index.whyPlantErea": "Why PlantErea?",
   "index.benefit1": "Offline mode available",
   "index.benefit2": "Marketplace to sell your products",
   "index.benefit3": "AI to optimize your crops",
@@ -539,7 +539,7 @@ export const en = {
   "offline.syncing": "Syncing...",
 
   // Tutorial
-  "tutorial.welcome.title": "Welcome to Plantéra! 🌱",
+  "tutorial.welcome.title": "Welcome to PlantErea! 🌱",
   "tutorial.welcome.desc": "Your smart platform to manage your farm. Let's discover the main features together.",
   "tutorial.parcels.title": "Manage your Fields",
   "tutorial.parcels.desc": "Create and track your agricultural fields with GPS location, soil type, and irrigation system.",
@@ -552,7 +552,7 @@ export const en = {
   "tutorial.ai.title": "Artificial Intelligence",
   "tutorial.ai.desc": "Detect diseases by photo, predict yields, and receive personalized advice.",
   "tutorial.ready.title": "You're ready! 🚀",
-  "tutorial.ready.desc": "Start by creating your first field or explore the marketplace. Plantéra is with you!",
+  "tutorial.ready.desc": "Start by creating your first field or explore the marketplace. PlantErea is with you!",
   "tutorial.next": "Next",
   "tutorial.prev": "Previous",
   "tutorial.skip": "Skip tutorial",

@@ -448,11 +448,11 @@ export const wo = {
   "trace.iotData": "Xibaar Capteurs IoT",
   "trace.verified": "Dëgg na",
   "trace.authenticity": "Dëgg na",
-  "trace.certDesc": "Certificat bii Plantéra la ko defar te blockchain moo ko sëqël.",
+  "trace.certDesc": "Certificat bii PlantErea la ko defar te blockchain moo ko sëqël.",
   "trace.notFound": "Lot bi gisul",
   "trace.notFoundDesc": "Certificat bi amul wala jeex na.",
   "trace.backHome": "Déllu kër gi",
-  "trace.visitPlantera": "Xool Plantéra",
+  "trace.visitPlantErea": "Xool PlantErea",
   "trace.blockchainVerified": "Blockchain sëqël na",
 
   // Onboarding
@@ -481,7 +481,7 @@ export const wo = {
   "index.iotDesc": "Capteurs ci waxtu wi",
   "index.sales": "Jaay",
   "index.salesDesc": "Marse bu ci nekk",
-  "index.whyPlantera": "Lu tax Plantéra?",
+  "index.whyPlantErea": "Lu tax PlantErea?",
   "index.benefit1": "Mode hors-ligne am na",
   "index.benefit2": "Marse ngir jaay sa jën yi",
   "index.benefit3": "IA ngir yokk sa ndamu",
@@ -536,7 +536,7 @@ export const wo = {
   "offline.syncing": "Sync naa...",
 
   // Tutorial
-  "tutorial.welcome.title": "Dalal jàmm ci Plantéra! 🌱",
+  "tutorial.welcome.title": "Dalal jàmm ci PlantErea! 🌱",
   "tutorial.welcome.desc": "Sa plateforme bu xam-xam ngir saytu sa tool. Ñu gis jëf yi am ci biir.",
   "tutorial.parcels.title": "Saytu sa Parcelles",
   "tutorial.parcels.desc": "Sos te topp sa parcelles ak GPS, xeetu suuf, ak arrosage.",
@@ -549,7 +549,7 @@ export const wo = {
   "tutorial.ai.title": "Xam-xam Artificiel",
   "tutorial.ai.desc": "Fàttaliku feebar yi ci nataal, xam-xam rendement, te jot ndimbal.",
   "tutorial.ready.title": "Pare nga! 🚀",
-  "tutorial.ready.desc": "Tàmbalee sos sa parcelle bi njëk walla gis marse bi. Plantéra nekk na ak yow!",
+  "tutorial.ready.desc": "Tàmbalee sos sa parcelle bi njëk walla gis marse bi. PlantErea nekk na ak yow!",
   "tutorial.next": "Ci kanam",
   "tutorial.prev": "Ci ginnaaw",
   "tutorial.skip": "Wàcc tutoriel bi",

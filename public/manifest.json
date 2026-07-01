@@ -1,6 +1,6 @@
 {
-  "name": "Plantéra - Gestion Agricole Intelligente",
-  "short_name": "Plantéra",
+  "name": "PlantErea - Gestion Agricole Intelligente",
+  "short_name": "PlantErea",
   "description": "Plateforme mobile-first pour la gestion agricole et d'élevage au Sénégal",
   "start_url": "/dashboard",
   "display": "standalone",

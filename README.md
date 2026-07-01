@@ -1,4 +1,4 @@
-# 🌱 Plantéra - Plateforme Agricole Intelligente
+# 🌱 PlantErea - Plateforme Agricole Intelligente
 
 > Plateforme intégrée pour l'agriculture en Afrique de l'Ouest : IoT, IA, Marketplace, Blockchain & Traçabilité.
 
@@ -165,4 +165,4 @@ npm run dev
 
 ## 📄 Licence
 
-Propriétaire - Tous droits réservés © 2026 Plantéra
+Propriétaire - Tous droits réservés © 2026 PlantErea

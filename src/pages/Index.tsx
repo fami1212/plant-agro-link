@@ -51,7 +51,7 @@ export default function Index() {
             <div className="w-[88px] h-[88px] rounded-[28px] gradient-hero flex items-center justify-center shadow-glow p-3">
               <img
                 src={planteraIcon}
-                alt="Plantéra Logo"
+                alt="PlantErea Logo"
                 width={56}
                 height={56}
                 className="drop-shadow-md"
@@ -65,7 +65,7 @@ export default function Index() {
             mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           )}>
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-2 tracking-tight leading-none">
-              Plantéra
+              PlantErea
             </h1>
             <p className="text-base font-semibold text-primary mb-2">
               {t("index.tagline")}
@@ -124,7 +124,7 @@ export default function Index() {
         mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
       )}>
         <h2 className="text-lg font-semibold text-foreground mb-4 text-center">
-          {t("index.whyPlantera")}
+          {t("index.whyPlantErea")}
         </h2>
         <div className="grid grid-cols-2 gap-3">
           {features.map((feature, i) => (

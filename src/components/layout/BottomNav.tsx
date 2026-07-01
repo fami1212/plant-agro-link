@@ -203,8 +203,8 @@ export function BottomNav() {
             <div className="w-12 h-1 bg-border rounded-full mx-auto mt-3 mb-4" />
 
             <div className="flex items-center justify-center gap-2 mb-3">
-              <img src={logoIcon} alt="Plantera" className="w-7 h-7 rounded-lg" />
-              <span className="font-bold text-base text-foreground">Plantera</span>
+              <img src={logoIcon} alt="PlantErea" className="w-7 h-7 rounded-lg" />
+              <span className="font-bold text-base text-foreground">PlantErea</span>
             </div>
 
             {user && (

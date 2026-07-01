@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'sn.plantera.app',
-  appName: 'Plantéra',
+  appId: 'sn.planterea.app',
+  appName: 'PlantErea',
   webDir: 'dist',
   plugins: {
     SplashScreen: {

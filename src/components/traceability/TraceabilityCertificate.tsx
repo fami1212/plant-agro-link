@@ -194,10 +194,10 @@ export function TraceabilityCertificate({ data }: CertificateProps) {
         {/* Footer */}
         <div className="pt-3 border-t border-border text-center">
           <p className="text-xs text-muted-foreground">
-            Ce certificat est émis par la plateforme Plantéra et vérifié par blockchain.
+            Ce certificat est émis par la plateforme PlantErea et vérifié par blockchain.
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            © {new Date().getFullYear()} Plantéra - Agriculture Intelligente
+            © {new Date().getFullYear()} PlantErea - Agriculture Intelligente
           </p>
         </div>
       </CardContent>

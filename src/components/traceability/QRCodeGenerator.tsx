@@ -62,7 +62,7 @@ export function QRCodeGenerator({ data, onGenerate }: QRCodeGeneratorProps) {
   
   const certificateData = {
     version: "1.0",
-    platform: "Plantéra",
+    platform: "PlantErea",
     lot_id: data.lotId,
     product: data.productName,
     origin: {
@@ -141,7 +141,7 @@ export function QRCodeGenerator({ data, onGenerate }: QRCodeGeneratorProps) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Certificat Plantéra - ${data.productName}`,
+          title: `Certificat PlantErea - ${data.productName}`,
           text: `Vérifiez l'origine de ce produit agricole : ${data.productName}`,
           url: traceabilityUrl,
         });
@@ -192,7 +192,7 @@ export function QRCodeGenerator({ data, onGenerate }: QRCodeGeneratorProps) {
 Ce certificat atteste de l'origine et de la traçabilité du lot ci-dessus.
 Vérification en ligne: ${traceabilityUrl}
 
-© ${new Date().getFullYear()} Plantéra - Plateforme Agricole Intelligente
+© ${new Date().getFullYear()} PlantErea - Plateforme Agricole Intelligente
     `;
 
     const blob = new Blob([certificateContent], { type: "text/plain;charset=utf-8" });
