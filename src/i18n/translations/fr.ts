@@ -14,6 +14,7 @@ export const fr = {
   "nav.iot": "IoT",
   "nav.animals": "Animaux",
   "nav.admin": "Admin",
+  "nav.kyc": "Vérification KYC",
   "nav.settings": "Paramètres",
 
   // Auth
@@ -448,11 +449,11 @@ export const fr = {
   "trace.iotData": "Données Capteurs IoT",
   "trace.verified": "Vérifié",
   "trace.authenticity": "Authenticité Confirmée",
-  "trace.certDesc": "Ce certificat est émis par la plateforme Plantéra et vérifié par blockchain.",
+  "trace.certDesc": "Ce certificat est émis par la plateforme PlantErea et vérifié par blockchain.",
   "trace.notFound": "Lot introuvable",
   "trace.notFoundDesc": "Le certificat de traçabilité pour ce lot n'existe pas ou a expiré.",
   "trace.backHome": "Retour à l'accueil",
-  "trace.visitPlantera": "Visiter Plantéra",
+  "trace.visitPlantErea": "Visiter PlantErea",
   "trace.blockchainVerified": "Signature Blockchain Vérifiée",
 
   // Onboarding
@@ -481,7 +482,7 @@ export const fr = {
   "index.iotDesc": "Capteurs en temps réel",
   "index.sales": "Ventes",
   "index.salesDesc": "Marketplace intégré",
-  "index.whyPlantera": "Pourquoi Plantéra ?",
+  "index.whyPlantErea": "Pourquoi PlantErea ?",
   "index.benefit1": "Mode hors-ligne disponible",
   "index.benefit2": "Marketplace pour vendre vos produits",
   "index.benefit3": "IA pour optimiser vos cultures",
@@ -539,7 +540,7 @@ export const fr = {
   "offline.syncing": "Synchronisation...",
 
   // Tutorial
-  "tutorial.welcome.title": "Bienvenue sur Plantéra ! 🌱",
+  "tutorial.welcome.title": "Bienvenue sur PlantErea ! 🌱",
   "tutorial.welcome.desc": "Votre plateforme intelligente pour gérer votre exploitation agricole. Découvrons ensemble les fonctionnalités principales.",
   "tutorial.parcels.title": "Gérez vos Parcelles",
   "tutorial.parcels.desc": "Créez et suivez vos parcelles agricoles avec localisation GPS, type de sol, et système d'irrigation.",
@@ -552,7 +553,7 @@ export const fr = {
   "tutorial.ai.title": "Intelligence Artificielle",
   "tutorial.ai.desc": "Détectez les maladies par photo, prédisez vos rendements, et recevez des conseils personnalisés.",
   "tutorial.ready.title": "Vous êtes prêt ! 🚀",
-  "tutorial.ready.desc": "Commencez par créer votre première parcelle ou explorez le marketplace. Plantéra vous accompagne !",
+  "tutorial.ready.desc": "Commencez par créer votre première parcelle ou explorez le marketplace. PlantErea vous accompagne !",
   "tutorial.next": "Suivant",
   "tutorial.prev": "Précédent",
   "tutorial.skip": "Passer le tutoriel",

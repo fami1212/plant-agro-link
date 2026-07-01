@@ -11,33 +11,33 @@ interface RoleConfig {
 
 const roleConfigs: Record<AppRole, RoleConfig> = {
   agriculteur: {
-    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/iot', '/devices', '/ia', '/farmer-investments', '/settings', '/voice', '/communaute', '/elearning', '/logistique'],
+    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/iot', '/devices', '/ia', '/farmer-investments', '/settings', '/voice', '/communaute', '/elearning', '/logistique', '/kyc'],
     navItems: ['/dashboard', '/agriculteur', '/cultures', '/betail', '/marketplace/farmer'],
-    menuItems: ['/parcelles', '/farmer-investments', '/iot', '/devices', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/settings'],
+    menuItems: ['/parcelles', '/farmer-investments', '/iot', '/devices', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/kyc', '/settings'],
     dashboardType: 'agriculteur',
   },
   veterinaire: {
-    allowedRoutes: ['/dashboard', '/betail', '/marketplace', '/marketplace/buyer', '/veterinaire', '/settings', '/communaute', '/elearning'],
+    allowedRoutes: ['/dashboard', '/betail', '/marketplace', '/marketplace/buyer', '/veterinaire', '/settings', '/communaute', '/elearning', '/kyc'],
     navItems: ['/dashboard', '/veterinaire', '/betail', '/marketplace/buyer'],
-    menuItems: ['/communaute', '/elearning', '/settings'],
+    menuItems: ['/communaute', '/elearning', '/kyc', '/settings'],
     dashboardType: 'veterinaire',
   },
   acheteur: {
-    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/buyer', '/acheteur', '/settings', '/communaute', '/elearning', '/logistique'],
+    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/buyer', '/acheteur', '/settings', '/communaute', '/elearning', '/logistique', '/kyc'],
     navItems: ['/dashboard', '/acheteur', '/marketplace/buyer'],
-    menuItems: ['/communaute', '/elearning', '/logistique', '/settings'],
+    menuItems: ['/communaute', '/elearning', '/logistique', '/kyc', '/settings'],
     dashboardType: 'acheteur',
   },
   investisseur: {
-    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/investor', '/investisseur', '/settings', '/communaute', '/elearning'],
+    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/investor', '/investisseur', '/settings', '/communaute', '/elearning', '/kyc'],
     navItems: ['/dashboard', '/investisseur', '/marketplace/investor'],
-    menuItems: ['/communaute', '/elearning', '/settings'],
+    menuItems: ['/communaute', '/elearning', '/kyc', '/settings'],
     dashboardType: 'investisseur',
   },
   admin: {
-    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/marketplace/buyer', '/marketplace/investor', '/iot', '/devices', '/ia', '/admin', '/settings', '/farmer-investments', '/voice', '/communaute', '/elearning', '/logistique', '/investisseur', '/veterinaire', '/acheteur'],
+    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/marketplace/buyer', '/marketplace/investor', '/iot', '/devices', '/ia', '/admin', '/settings', '/farmer-investments', '/voice', '/communaute', '/elearning', '/logistique', '/investisseur', '/veterinaire', '/acheteur', '/kyc'],
     navItems: ['/dashboard', '/agriculteur', '/cultures', '/betail', '/marketplace'],
-    menuItems: ['/parcelles', '/farmer-investments', '/iot', '/devices', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/admin', '/settings'],
+    menuItems: ['/parcelles', '/farmer-investments', '/iot', '/devices', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/admin', '/kyc', '/settings'],
     dashboardType: 'admin',
   },
 };

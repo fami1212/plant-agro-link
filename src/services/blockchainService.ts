@@ -78,7 +78,7 @@ export async function createInvestmentContract(
     returnPercent,
     harvestDate,
     timestamp: new Date().toISOString(),
-    platform: "Plantéra",
+    platform: "PlantErea",
   };
 
   const hash = await generateHash(contractData);
@@ -107,7 +107,7 @@ export async function recordRepayment(
     investorId,
     farmerId,
     timestamp: new Date().toISOString(),
-    platform: "Plantéra",
+    platform: "PlantErea",
   };
 
   const hash = await generateHash(repaymentData);
@@ -143,7 +143,7 @@ export async function generateTraceabilityCertificate(
 ): Promise<{ hash: string; certificateUrl: string }> {
   const certificateData = {
     version: "1.0",
-    platform: "Plantéra",
+    platform: "PlantErea",
     lotId,
     product: productData,
     iotSummary: iotData,

@@ -136,7 +136,7 @@ export function InvestmentContract({ open, onOpenChange, contractData, onSign }:
               <h4 className="font-semibold text-sm">Clauses principales</h4>
               <ul className="text-xs text-muted-foreground space-y-1.5 list-disc pl-4">
                 <li>Le rendement est estimatif et dépend des conditions agricoles et climatiques.</li>
-                <li>Les fonds sont sécurisés via un contrat intelligent sur la blockchain Plantéra.</li>
+                <li>Les fonds sont sécurisés via un contrat intelligent sur la blockchain PlantErea.</li>
                 <li>Le remboursement est prévu après la récolte et la vente des produits.</li>
                 <li>En cas de sinistre majeur, une médiation sera organisée sur la plateforme.</li>
                 <li>La plateforme prélève des frais de 2% sur les gains réalisés.</li>

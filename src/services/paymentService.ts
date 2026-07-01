@@ -191,7 +191,7 @@ export const checkPaymentStatus = async (transactionId: string): Promise<Payment
 };
 
 // Generate USSD payment code
-export const generateUSSDCode = (provider: PaymentProvider, amount: number, merchantCode = 'PLANTERA'): string | null => {
+export const generateUSSDCode = (provider: PaymentProvider, amount: number, merchantCode = 'PLANTEREA'): string | null => {
   const config = providerConfig[provider];
   if (!config.ussdCode) return null;
   

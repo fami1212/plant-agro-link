@@ -56,7 +56,7 @@ function addFooter(doc: jsPDF) {
     doc.setFontSize(8);
     doc.setTextColor(...COLORS.muted as [number, number, number]);
     doc.text(
-      `© ${new Date().getFullYear()} Plantéra - Agriculture Intelligente | Page ${i}/${pageCount}`,
+      `© ${new Date().getFullYear()} PlantErea - Agriculture Intelligente | Page ${i}/${pageCount}`,
       105, 290, { align: "center" }
     );
     doc.setDrawColor(...COLORS.light as [number, number, number]);

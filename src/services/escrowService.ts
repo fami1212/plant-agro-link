@@ -92,7 +92,7 @@ export async function createEscrowContract(
     totalAmount,
     currency: "XOF",
     timestamp: new Date().toISOString(),
-    platform: "Plantéra",
+    platform: "PlantErea",
   };
 
   const blockchainHash = await generateHash(contractData);

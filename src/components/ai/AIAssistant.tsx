@@ -219,7 +219,7 @@ export function AIAssistant() {
                 <Bot className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <span className="block">Assistant IA Plantéra</span>
+                <span className="block">Assistant IA PlantErea</span>
                 <span className="text-xs font-normal text-muted-foreground">
                   Parlez ou tapez vos questions
                 </span>

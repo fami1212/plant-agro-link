@@ -607,7 +607,7 @@ export default function Trace() {
                 {t("trace.certDesc")}
               </p>
               <p className="text-xs text-muted-foreground">
-                © {new Date().getFullYear()} Plantéra - Agriculture Intelligente
+                © {new Date().getFullYear()} PlantErea - Agriculture Intelligente
               </p>
             </div>
           </CardContent>
@@ -626,7 +626,7 @@ export default function Trace() {
           <Link to="/">
             <Button variant="outline" size="sm">
               <ExternalLink className="w-4 h-4 mr-2" />
-              {t("trace.visitPlantera")}
+              {t("trace.visitPlantErea")}
             </Button>
           </Link>
         </div>

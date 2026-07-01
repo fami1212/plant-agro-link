@@ -1,84 +1,75 @@
-# Simplification globale de Plantera
+# Plan : KYC + Rebrand PlantErea + Auto-confirm email + Domaine plant-erea.com
 
-## Constat
+## 1. Rebrand "Plantéra" → "PlantErea"
+- Remplacer le logo `src/assets/plantera-icon.png` par le nouveau logo uploadé
+- Chercher/remplacer toutes les occurrences de "Plantera", "Plantéra", "plantera" → "PlantErea" / "planterea" dans :
+  - `index.html` (title, meta, manifest)
+  - `public/manifest.json`
+  - `capacitor.config.ts` (appName, appId → `com.planterea.app`)
+  - `android/app/src/main/res/values/strings.xml`
+  - Composants React qui affichent le nom
+  - Traductions i18n (fr/en/wo)
+  - README
 
-L'app expose trop de modules en navigation principale et en menu (Cultures, Bétail, Parcelles, IoT, IA, Communauté, E-Learning, Logistique, Finances, Investissements, Admin, Settings…). Pour un agriculteur ou un vétérinaire au champ, c'est écrasant.
+## 2. KYC — Vérification & approbation admin
 
-Objectif : **3 onglets en bas, un seul "Plus" sobre, et une page "Ferme" unifiée** qui regroupe tous les modules métier en sous-sections accessibles à la demande — sans rien supprimer.
+### Nouvelle table `kyc_verifications`
+- `user_id`, `status` (`pending`|`submitted`|`approved`|`rejected`), `role_requested`
+- `full_name`, `birth_date`, `id_type` (CNI/passport/permis), `id_number`
+- `id_front_url`, `id_back_url`, `selfie_url` (bucket `kyc-documents` privé)
+- `address`, `city`, `country`
+- Rôle-spécifique : `farm_name`, `farm_location`, `farm_size_ha` (agriculteur) / `license_number`, `specialty` (vétérinaire) / `company_name`, `business_reg_number` (acheteur) / `investor_type`, `capital_range` (investisseur)
+- `admin_notes`, `reviewed_by`, `reviewed_at`, `submitted_at`
+- Bucket privé `kyc-documents` avec RLS (user upload / admin lecture)
 
-## Nouvelle architecture de navigation
+### RLS
+- User : select/insert/update ses propres KYC (uniquement si status `pending` ou `rejected`)
+- Admin : full via `has_role`
 
-**Bottom nav réduite à 3 + 1 (au lieu de 5)** pour tous les rôles :
+### Hook `useKycStatus()`
+Retourne `{ status, isApproved, loading }`.
 
-```text
-[ Accueil ]   [ Ma Ferme / Mon Espace ]   [ Marché ]   [ ☰ Plus ]
-```
+### Composant `<KycGuard>`
+Wrap les actions sensibles :
+- Publier annonce, faire offre, payer, réserver vétérinaire, investir, publier projet, ajouter récolte, etc.
+- Si non approuvé → dialog "Vérification requise" avec bouton "Compléter ma vérification" → `/kyc`
 
-- **Accueil** : Dashboard épuré (salutation, 2-3 stats clés, 1 alerte, 1 conseil IA, 3 actions rapides)
-- **Ma Ferme** (agriculteur) / **Mon Cabinet** (véto) / **Mon Portefeuille** (investisseur) / **Mes Achats** (acheteur) : page hub unifiée
-- **Marché** : SimpleHub déjà en place
-- **Plus** : sheet repensée — sections claires, pas une grille de 11 icônes
+### Page `/kyc` (formulaire wizard 3 étapes)
+1. Infos personnelles + adresse
+2. Pièce d'identité (recto/verso) + selfie
+3. Infos professionnelles (selon rôle) + soumission
 
-## Page "Ma Ferme" unifiée (agriculteur)
+### Bannière globale
+Dans `AppLayout` : bandeau jaune si `status !== approved` avec CTA vers `/kyc`.
 
-Remplace le besoin d'aller chercher Cultures / Bétail / Parcelles / IoT / IA / Finances dans le menu. Une seule page avec **onglets scrollables horizontalement** (déjà partiellement en place) :
+### Ce qui reste accessible sans KYC (lecture seule)
+- Dashboard, profil, paramètres, communauté (lecture), e-learning, catalogue marketplace (browse), KYC page elle-même.
 
-```text
-Vue d'ensemble · Cultures · Bétail · Parcelles · Capteurs · IA · Finances
-```
+### Ce qui est BLOQUÉ tant que non approuvé
+Toutes les actions d'écriture métier : créer annonce, acheter, offrir, investir, publier projet, réserver service, ajouter animal/culture/parcelle, envoyer message direct commercial.
 
-Chaque onglet charge le contenu existant (pas de réécriture des modules). Les pages standalone `/cultures`, `/betail`, `/parcelles`, `/iot`, `/ia` restent accessibles via deep-link mais disparaissent du menu principal.
+## 3. Admin — gestion KYC
+Nouveau composant `<AdminKycPanel />` intégré dans `/admin` :
+- Liste des demandes (filtres : pending/submitted/approved/rejected + par rôle)
+- Détail : photos pièces + selfie + infos + notes
+- Actions : Approuver / Rejeter (avec note) / Demander compléments
+- Compteur "en attente" visible
 
-Mêmes patterns pour :
-- **Vétérinaire** → `Rendez-vous · Patients · Dossiers · Diagnostic IA · Facturation` (déjà en place, à épurer)
-- **Investisseur** → `Portefeuille · Opportunités · Contrats · Suivi IoT`
-- **Acheteur** → `Catalogue · Mes commandes · Suivi`
+## 4. Auto-confirm email
+- `supabase--configure_auth` : `auto_confirm_email: true`
 
-## Menu "Plus" repensé
+## 5. Domaine plant-erea.com
+- `capacitor.config.ts` : supprimer toute URL Lovable si présente, `appId: com.planterea.app`, `appName: PlantErea`, ajouter `server.url: https://plant-erea.com` (optionnel prod) — ou retirer complètement pour builder localement
+- `README.md` : URLs → plant-erea.com
+- `index.html` : og:url, canonical → plant-erea.com
+- `public/manifest.json` : `start_url` = `/`, `scope` = `/`
+- Vérifier les edge functions & code : aucune référence hardcodée à lovable.app / lovableproject.com (à part `id-preview` supabase auto-gen qu'on ne touche pas)
 
-Structure en 3 sections courtes au lieu d'une grille 4×3 :
+## Livraison
+Une seule vague — migration + code + config auth + rebrand assets + guard + admin panel.
 
-```text
-COMMUNAUTÉ
-  Communauté · E-Learning
-
-OUTILS
-  Logistique · Assistant vocal · Investissements
-
-COMPTE
-  Paramètres · Déconnexion
-```
-
-L'admin a une section supplémentaire "Administration" visible uniquement si rôle admin.
-
-## Design : sobre, moderne, allégé
-
-- **Headers** : retirer le logo systématique sur sous-pages, le garder seulement sur Accueil et Plus. Réduit le bruit visuel.
-- **Cartes** : bordure 1px, fond `bg-card`, ombre minimale (`shadow-sm` au lieu de `shadow-md`). Espacements `space-y-3` au lieu de `space-y-5`.
-- **StatCards** : passer de 4 à 2-3 stats max sur l'accueil. Format compact, pas de gradients colorés sauf accent rare.
-- **Couleurs** : moins de variantes (primary/accent/success/warning), plus de `bg-muted/30` neutre.
-- **Typographie** : titres `text-lg font-semibold` (au lieu de xl), libellés stat `text-xs uppercase tracking-wide text-muted-foreground`.
-- **Onglets scrollables** : underline minimal au lieu de pills colorées.
-- **AIContextualTip** : version compacte (1 ligne, icône + texte), dépliable au tap.
-
-## Fichiers à modifier
-
-- `src/components/layout/BottomNav.tsx` — réduire à 3 items + Plus, refondre la sheet en sections
-- `src/pages/Dashboard.tsx` — épurer : 2-3 stats, 1 alerte, 1 tip, 3 actions
-- `src/pages/Agriculteur.tsx` — ajouter onglets `Cultures`, `Bétail`, `Parcelles`, `Capteurs`, `IA` qui réutilisent les composants des pages standalone
-- `src/pages/Veterinaire.tsx` — déjà multi-onglets, juste épurer header/cartes
-- `src/pages/Investisseur.tsx` & `src/pages/Acheteur.tsx` — adopter le même pattern hub unifié
-- `src/components/dashboard/StatCard.tsx` — variante compacte sobre
-- `src/components/common/PageHeader.tsx` — `showLogo` désactivé par défaut sur sous-pages
-- `src/index.css` — éventuels ajustements de tokens (ombres, rayons)
-- Conserver toutes les routes existantes pour compatibilité
-
-## Hors scope
-
-- Aucune suppression de fonctionnalité
-- Aucune modification backend / RLS
-- Pas de refonte du marketplace (déjà simplifié récemment)
-
-## Résultat attendu
-
-Un agriculteur voit 3 boutons en bas, ouvre "Ma Ferme" et navigue par onglets dans tout son métier. Le menu "Plus" devient une vraie liste lisible. Le design respire, moins d'icônes colorées, plus de blanc.
+## Notes techniques
+- Storage bucket `kyc-documents` privé (pas listing-images qui est public)
+- Signed URLs pour l'admin qui consulte les pièces
+- Le trigger `handle_new_user` reste inchangé ; on crée une ligne `kyc_verifications` status `pending` dans le même trigger
+- Aucun changement business-logic hors garde d'accès
