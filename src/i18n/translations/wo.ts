@@ -14,6 +14,7 @@ export const wo = {
   "nav.iot": "IoT",
   "nav.animals": "Rab yi",
   "nav.admin": "Admin",
+  "nav.kyc": "Vérification KYC",
   "nav.settings": "Paramètres",
 
   // Auth

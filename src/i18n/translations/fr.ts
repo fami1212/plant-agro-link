@@ -14,6 +14,7 @@ export const fr = {
   "nav.iot": "IoT",
   "nav.animals": "Animaux",
   "nav.admin": "Admin",
+  "nav.kyc": "Vérification KYC",
   "nav.settings": "Paramètres",
 
   // Auth
