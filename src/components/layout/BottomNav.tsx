@@ -60,6 +60,7 @@ const menuSections: MenuSection[] = [
     titleKey: "menu.section.account",
     items: [
       { icon: Shield, labelKey: "nav.admin", path: "/admin", roles: ['admin'] },
+      { icon: BadgeCheck, labelKey: "nav.kyc", path: "/kyc", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur'] },
       { icon: Settings, labelKey: "nav.settings", path: "/settings", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
     ],
   },
