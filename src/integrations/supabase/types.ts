@@ -1212,6 +1212,102 @@ export type Database = {
           },
         ]
       }
+      kyc_verifications: {
+        Row: {
+          address: string | null
+          admin_notes: string | null
+          birth_date: string | null
+          business_reg_number: string | null
+          capital_range: string | null
+          city: string | null
+          company_name: string | null
+          country: string | null
+          created_at: string
+          farm_location: string | null
+          farm_name: string | null
+          farm_size_ha: number | null
+          full_name: string | null
+          id: string
+          id_back_url: string | null
+          id_front_url: string | null
+          id_number: string | null
+          id_type: string | null
+          investor_type: string | null
+          license_number: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          role_requested: Database["public"]["Enums"]["app_role"] | null
+          selfie_url: string | null
+          specialty: string | null
+          status: Database["public"]["Enums"]["kyc_status"]
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          admin_notes?: string | null
+          birth_date?: string | null
+          business_reg_number?: string | null
+          capital_range?: string | null
+          city?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          farm_location?: string | null
+          farm_name?: string | null
+          farm_size_ha?: number | null
+          full_name?: string | null
+          id?: string
+          id_back_url?: string | null
+          id_front_url?: string | null
+          id_number?: string | null
+          id_type?: string | null
+          investor_type?: string | null
+          license_number?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role_requested?: Database["public"]["Enums"]["app_role"] | null
+          selfie_url?: string | null
+          specialty?: string | null
+          status?: Database["public"]["Enums"]["kyc_status"]
+          submitted_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          admin_notes?: string | null
+          birth_date?: string | null
+          business_reg_number?: string | null
+          capital_range?: string | null
+          city?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          farm_location?: string | null
+          farm_name?: string | null
+          farm_size_ha?: number | null
+          full_name?: string | null
+          id?: string
+          id_back_url?: string | null
+          id_front_url?: string | null
+          id_number?: string | null
+          id_type?: string | null
+          investor_type?: string | null
+          license_number?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role_requested?: Database["public"]["Enums"]["app_role"] | null
+          selfie_url?: string | null
+          specialty?: string | null
+          status?: Database["public"]["Enums"]["kyc_status"]
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       livestock: {
         Row: {
           acquisition_date: string | null
@@ -2295,6 +2391,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_user_approved: { Args: { _user_id: string }; Returns: boolean }
       recalculate_opportunity_amount: {
         Args: { opp_id: string }
         Returns: undefined
@@ -2332,6 +2429,7 @@ export type Database = {
         | "irrigation"
         | "phytosanitaire"
         | "autre"
+      kyc_status: "pending" | "submitted" | "approved" | "rejected"
       listing_status:
         | "brouillon"
         | "publie"
@@ -2537,6 +2635,7 @@ export const Constants = {
         "phytosanitaire",
         "autre",
       ],
+      kyc_status: ["pending", "submitted", "approved", "rejected"],
       listing_status: [
         "brouillon",
         "publie",
