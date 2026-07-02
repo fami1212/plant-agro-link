@@ -2384,6 +2384,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_kyc_duplicate_groups: {
+        Args: never
+        Returns: {
+          count: number
+          id_number: string
+          user_ids: string[]
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

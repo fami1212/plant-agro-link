@@ -6,8 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Eye, Clock, FileText, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, Eye, Clock, FileText, Loader2, ShieldAlert, BadgeCheck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+
+interface DuplicateGroup {
+  id_number: string;
+  user_ids: string[];
+  count: number;
+}
 
 interface KycRow {
   id: string;
@@ -38,6 +44,7 @@ export function AdminKycPanel() {
   const [selected, setSelected] = useState<KycRow | null>(null);
   const [note, setNote] = useState("");
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const [duplicates, setDuplicates] = useState<DuplicateGroup[]>([]);
 
   const fetchRows = async () => {
     setLoading(true);
@@ -48,11 +55,20 @@ export function AdminKycPanel() {
     setLoading(false);
   };
 
+  const fetchDuplicates = async () => {
+    const { data } = await supabase.rpc("get_kyc_duplicate_groups" as any);
+    setDuplicates((data as DuplicateGroup[]) || []);
+  };
+
   useEffect(() => {
     fetchRows();
+    fetchDuplicates();
     const ch = supabase
       .channel("admin-kyc")
-      .on("postgres_changes", { event: "*", schema: "public", table: "kyc_verifications" }, fetchRows)
+      .on("postgres_changes", { event: "*", schema: "public", table: "kyc_verifications" }, () => {
+        fetchRows();
+        fetchDuplicates();
+      })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,6 +113,29 @@ export function AdminKycPanel() {
 
   return (
     <div className="space-y-4">
+      {duplicates.length > 0 && (
+        <Card className="p-3 border-red-500/40 bg-red-500/5">
+          <div className="flex items-start gap-2">
+            <ShieldAlert className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-red-600 dark:text-red-400">
+                ⚠️ {duplicates.length} doublon(s) KYC détecté(s)
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Plusieurs comptes utilisent la même pièce d'identité.
+              </p>
+              <ul className="mt-2 space-y-1 text-xs">
+                {duplicates.slice(0, 5).map((d) => (
+                  <li key={d.id_number} className="font-mono">
+                    N° <b>{d.id_number}</b> — {d.count} comptes
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <div className="flex gap-2 flex-wrap">
         {["submitted", "pending", "approved", "rejected", "all"].map((s) => (
           <Button key={s} size="sm" variant={filter === s ? "default" : "outline"} onClick={() => setFilter(s)}>
@@ -120,6 +159,9 @@ export function AdminKycPanel() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-medium truncate">{r.full_name || "(Sans nom)"}</p>
                   {badge(r.status)}
+                  {r.status === "approved" && (
+                    <BadgeCheck className="w-4 h-4 text-green-600" aria-label="Vérifié" />
+                  )}
                   {r.role_requested && <Badge variant="outline">{r.role_requested}</Badge>}
                 </div>
                 <p className="text-xs text-muted-foreground">
