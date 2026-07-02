@@ -2246,6 +2246,143 @@ export type Database = {
         }
         Relationships: []
       }
+      transaction_milestones: {
+        Row: {
+          amount: number
+          amount_percent: number
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          id: string
+          label: string
+          notes: string | null
+          order_index: number
+          proof_url: string | null
+          status: Database["public"]["Enums"]["milestone_status"]
+          transaction_id: string
+          updated_at: string
+          validator_role: string
+        }
+        Insert: {
+          amount?: number
+          amount_percent?: number
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          label: string
+          notes?: string | null
+          order_index: number
+          proof_url?: string | null
+          status?: Database["public"]["Enums"]["milestone_status"]
+          transaction_id: string
+          updated_at?: string
+          validator_role?: string
+        }
+        Update: {
+          amount?: number
+          amount_percent?: number
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          label?: string
+          notes?: string | null
+          order_index?: number
+          proof_url?: string | null
+          status?: Database["public"]["Enums"]["milestone_status"]
+          transaction_id?: string
+          updated_at?: string
+          validator_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_milestones_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          amount_locked: number
+          amount_released: number
+          booking_id: string | null
+          cancelled_at: string | null
+          completed_at: string | null
+          contract_blockchain_tx: string | null
+          contract_hash: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          escrow_enabled: boolean
+          id: string
+          initiator_id: string
+          listing_id: string | null
+          metadata: Json | null
+          opportunity_id: string | null
+          receiver_id: string
+          signed_at: string | null
+          status: Database["public"]["Enums"]["transaction_status"]
+          title: string | null
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          amount_locked?: number
+          amount_released?: number
+          booking_id?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          contract_blockchain_tx?: string | null
+          contract_hash?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          escrow_enabled?: boolean
+          id?: string
+          initiator_id: string
+          listing_id?: string | null
+          metadata?: Json | null
+          opportunity_id?: string | null
+          receiver_id: string
+          signed_at?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          title?: string | null
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          amount_locked?: number
+          amount_released?: number
+          booking_id?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          contract_blockchain_tx?: string | null
+          contract_hash?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          escrow_enabled?: boolean
+          id?: string
+          initiator_id?: string
+          listing_id?: string | null
+          metadata?: Json | null
+          opportunity_id?: string | null
+          receiver_id?: string
+          signed_at?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          title?: string | null
+          type?: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       typing_indicators: {
         Row: {
           conversation_id: string
@@ -2404,6 +2541,7 @@ export type Database = {
         Args: { opp_id: string }
         Returns: undefined
       }
+      seed_default_milestones: { Args: { _tx_id: string }; Returns: undefined }
     }
     Enums: {
       app_role:
@@ -2461,6 +2599,7 @@ export type Database = {
         | "porcin"
         | "equin"
         | "autre"
+      milestone_status: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "SKIPPED"
       offer_status:
         | "en_attente"
         | "acceptee"
@@ -2481,6 +2620,16 @@ export type Database = {
         | "calcaire"
         | "humifere"
         | "mixte"
+      transaction_status:
+        | "DRAFT"
+        | "NEGOTIATION"
+        | "CONTRACT_PENDING"
+        | "SIGNED"
+        | "IN_PROGRESS"
+        | "COMPLETED"
+        | "DISPUTED"
+        | "CANCELLED"
+      transaction_type: "PRODUCT_SALE" | "INVESTMENT" | "VET_SERVICE"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2670,6 +2819,7 @@ export const Constants = {
         "equin",
         "autre",
       ],
+      milestone_status: ["PENDING", "IN_PROGRESS", "COMPLETED", "SKIPPED"],
       offer_status: [
         "en_attente",
         "acceptee",
@@ -2693,6 +2843,17 @@ export const Constants = {
         "humifere",
         "mixte",
       ],
+      transaction_status: [
+        "DRAFT",
+        "NEGOTIATION",
+        "CONTRACT_PENDING",
+        "SIGNED",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "DISPUTED",
+        "CANCELLED",
+      ],
+      transaction_type: ["PRODUCT_SALE", "INVESTMENT", "VET_SERVICE"],
     },
   },
 } as const

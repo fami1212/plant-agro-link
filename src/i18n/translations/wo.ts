@@ -15,6 +15,7 @@ export const wo = {
   "nav.animals": "Rab yi",
   "nav.admin": "Admin",
   "nav.kyc": "Vérification KYC",
+  "nav.transactions": "Jëfandikoo",
   "nav.settings": "Paramètres",
 
   // Auth

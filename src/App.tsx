@@ -38,6 +38,7 @@ import MarketplaceInvestor from "./pages/marketplace/MarketplaceInvestor";
 import IoT from "./pages/IoT";
 import Devices from "./pages/Devices";
 import KycVerification from "./pages/KycVerification";
+import Transactions from "./pages/Transactions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -80,6 +81,14 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <KycVerification />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/transactions"
+                  element={
+                    <ProtectedRoute>
+                      <Transactions />
                     </ProtectedRoute>
                   }
                 />

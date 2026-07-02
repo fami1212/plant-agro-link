@@ -11,33 +11,33 @@ interface RoleConfig {
 
 const roleConfigs: Record<AppRole, RoleConfig> = {
   agriculteur: {
-    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/iot', '/devices', '/ia', '/farmer-investments', '/settings', '/voice', '/communaute', '/elearning', '/logistique', '/kyc'],
+    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/iot', '/devices', '/ia', '/farmer-investments', '/settings', '/voice', '/communaute', '/elearning', '/logistique', '/kyc', '/transactions'],
     navItems: ['/dashboard', '/agriculteur', '/cultures', '/betail', '/marketplace/farmer'],
-    menuItems: ['/parcelles', '/farmer-investments', '/iot', '/devices', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/kyc', '/settings'],
+    menuItems: ['/parcelles', '/farmer-investments', '/transactions', '/iot', '/devices', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/kyc', '/settings'],
     dashboardType: 'agriculteur',
   },
   veterinaire: {
-    allowedRoutes: ['/dashboard', '/betail', '/marketplace', '/marketplace/buyer', '/veterinaire', '/settings', '/communaute', '/elearning', '/kyc'],
+    allowedRoutes: ['/dashboard', '/betail', '/marketplace', '/marketplace/buyer', '/veterinaire', '/settings', '/communaute', '/elearning', '/kyc', '/transactions'],
     navItems: ['/dashboard', '/veterinaire', '/betail', '/marketplace/buyer'],
-    menuItems: ['/communaute', '/elearning', '/kyc', '/settings'],
+    menuItems: ['/transactions', '/communaute', '/elearning', '/kyc', '/settings'],
     dashboardType: 'veterinaire',
   },
   acheteur: {
-    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/buyer', '/acheteur', '/settings', '/communaute', '/elearning', '/logistique', '/kyc'],
+    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/buyer', '/acheteur', '/settings', '/communaute', '/elearning', '/logistique', '/kyc', '/transactions'],
     navItems: ['/dashboard', '/acheteur', '/marketplace/buyer'],
-    menuItems: ['/communaute', '/elearning', '/logistique', '/kyc', '/settings'],
+    menuItems: ['/transactions', '/communaute', '/elearning', '/logistique', '/kyc', '/settings'],
     dashboardType: 'acheteur',
   },
   investisseur: {
-    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/investor', '/investisseur', '/settings', '/communaute', '/elearning', '/kyc'],
+    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/investor', '/investisseur', '/settings', '/communaute', '/elearning', '/kyc', '/transactions'],
     navItems: ['/dashboard', '/investisseur', '/marketplace/investor'],
-    menuItems: ['/communaute', '/elearning', '/kyc', '/settings'],
+    menuItems: ['/transactions', '/communaute', '/elearning', '/kyc', '/settings'],
     dashboardType: 'investisseur',
   },
   admin: {
-    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/marketplace/buyer', '/marketplace/investor', '/iot', '/devices', '/ia', '/admin', '/settings', '/farmer-investments', '/voice', '/communaute', '/elearning', '/logistique', '/investisseur', '/veterinaire', '/acheteur', '/kyc'],
+    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/marketplace/buyer', '/marketplace/investor', '/iot', '/devices', '/ia', '/admin', '/settings', '/farmer-investments', '/voice', '/communaute', '/elearning', '/logistique', '/investisseur', '/veterinaire', '/acheteur', '/kyc', '/transactions'],
     navItems: ['/dashboard', '/agriculteur', '/cultures', '/betail', '/marketplace'],
-    menuItems: ['/parcelles', '/farmer-investments', '/iot', '/devices', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/admin', '/kyc', '/settings'],
+    menuItems: ['/parcelles', '/farmer-investments', '/transactions', '/iot', '/devices', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/admin', '/kyc', '/settings'],
     dashboardType: 'admin',
   },
 };

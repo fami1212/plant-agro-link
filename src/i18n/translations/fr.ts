@@ -15,6 +15,7 @@ export const fr = {
   "nav.animals": "Animaux",
   "nav.admin": "Admin",
   "nav.kyc": "Vérification KYC",
+  "nav.transactions": "Transactions",
   "nav.settings": "Paramètres",
 
   // Auth
