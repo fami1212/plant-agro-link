@@ -12,6 +12,7 @@ import { Moon, Sun, User, Bell, Shield, Globe, Sunrise, Check } from "lucide-rea
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { AvatarUpload } from "@/components/settings/AvatarUpload";
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
@@ -66,6 +67,8 @@ export default function Settings() {
           </div>
           <Separator className="mb-4" />
           <div className="space-y-3">
+            <AvatarUpload />
+            <Separator />
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">{t("settings.name")}</span>
               <span className="font-medium">{profile?.full_name || t("settings.notSet")}</span>
