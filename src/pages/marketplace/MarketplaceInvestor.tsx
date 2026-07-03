@@ -9,8 +9,9 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { 
   TrendingUp, Briefcase, Search, Loader2, MapPin,
-  Calendar, Percent, ArrowUpRight, Wallet
+  Calendar, Percent, ArrowUpRight, Wallet, Users
 } from "lucide-react";
+import { FarmerNetworkFeed } from "@/components/investor/FarmerNetworkFeed";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -262,7 +263,11 @@ export default function MarketplaceInvestor() {
 
       <div className="px-4 pb-24">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 h-12">
+          <TabsList className="grid w-full grid-cols-3 h-12">
+            <TabsTrigger value="network" className="flex flex-col gap-0.5 text-[11px]">
+              <Users className="w-4 h-4" />
+              Réseau
+            </TabsTrigger>
             <TabsTrigger value="opportunites" className="flex flex-col gap-0.5 text-[11px]">
               <TrendingUp className="w-4 h-4" />
               Opportunités
@@ -272,6 +277,10 @@ export default function MarketplaceInvestor() {
               Portfolio
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="network" className="mt-4">
+            <FarmerNetworkFeed />
+          </TabsContent>
 
           {/* OPPORTUNITÉS */}
           <TabsContent value="opportunites" className="mt-4 space-y-3">
