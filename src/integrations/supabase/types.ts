@@ -990,6 +990,81 @@ export type Database = {
           },
         ]
       }
+      investment_requests: {
+        Row: {
+          admin_id: string | null
+          admin_notes: string | null
+          amount: number
+          created_at: string
+          currency: string
+          duration_months: number | null
+          expected_return: number | null
+          farmer_agreed: boolean | null
+          farmer_id: string
+          farmer_response: string | null
+          id: string
+          investor_id: string
+          message: string | null
+          opportunity_id: string | null
+          status: string
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_id?: string | null
+          admin_notes?: string | null
+          amount: number
+          created_at?: string
+          currency?: string
+          duration_months?: number | null
+          expected_return?: number | null
+          farmer_agreed?: boolean | null
+          farmer_id: string
+          farmer_response?: string | null
+          id?: string
+          investor_id: string
+          message?: string | null
+          opportunity_id?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string | null
+          admin_notes?: string | null
+          amount?: number
+          created_at?: string
+          currency?: string
+          duration_months?: number | null
+          expected_return?: number | null
+          farmer_agreed?: boolean | null
+          farmer_id?: string
+          farmer_response?: string | null
+          id?: string
+          investor_id?: string
+          message?: string | null
+          opportunity_id?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_requests_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "investment_opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_requests_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investments: {
         Row: {
           actual_return_amount: number | null
@@ -2245,6 +2320,106 @@ export type Database = {
           whatsapp?: string | null
         }
         Relationships: []
+      }
+      transaction_dispute_messages: {
+        Row: {
+          attachments: string[] | null
+          created_at: string
+          dispute_id: string
+          id: string
+          is_admin_message: boolean | null
+          message: string
+          sender_id: string
+        }
+        Insert: {
+          attachments?: string[] | null
+          created_at?: string
+          dispute_id: string
+          id?: string
+          is_admin_message?: boolean | null
+          message: string
+          sender_id: string
+        }
+        Update: {
+          attachments?: string[] | null
+          created_at?: string
+          dispute_id?: string
+          id?: string
+          is_admin_message?: boolean | null
+          message?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_dispute_messages_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "transaction_disputes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transaction_disputes: {
+        Row: {
+          admin_decision: string | null
+          admin_id: string | null
+          admin_notes: string | null
+          buyer_refund_percent: number | null
+          created_at: string
+          description: string | null
+          evidence_urls: string[] | null
+          id: string
+          opened_by: string
+          reason: string
+          resolved_at: string | null
+          seller_payment_percent: number | null
+          status: string
+          transaction_id: string
+          updated_at: string
+        }
+        Insert: {
+          admin_decision?: string | null
+          admin_id?: string | null
+          admin_notes?: string | null
+          buyer_refund_percent?: number | null
+          created_at?: string
+          description?: string | null
+          evidence_urls?: string[] | null
+          id?: string
+          opened_by: string
+          reason: string
+          resolved_at?: string | null
+          seller_payment_percent?: number | null
+          status?: string
+          transaction_id: string
+          updated_at?: string
+        }
+        Update: {
+          admin_decision?: string | null
+          admin_id?: string | null
+          admin_notes?: string | null
+          buyer_refund_percent?: number | null
+          created_at?: string
+          description?: string | null
+          evidence_urls?: string[] | null
+          id?: string
+          opened_by?: string
+          reason?: string
+          resolved_at?: string | null
+          seller_payment_percent?: number | null
+          status?: string
+          transaction_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_disputes_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transaction_milestones: {
         Row: {
