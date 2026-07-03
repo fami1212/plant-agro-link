@@ -3,12 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, Loader2, Shield } from "lucide-react";
+import { CheckCircle2, Circle, Loader2, Shield, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { DisputeDialog } from "./DisputeDialog";
-import { AlertTriangle } from "lucide-react";
-import { useState as useStateAlias } from "react";
 
 interface Milestone {
   id: string;
