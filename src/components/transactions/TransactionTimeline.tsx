@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Circle, Loader2, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { DisputeDialog } from "./DisputeDialog";
+import { AlertTriangle } from "lucide-react";
+import { useState as useStateAlias } from "react";
 
 interface Milestone {
   id: string;
@@ -40,6 +43,7 @@ export function TransactionTimeline({
   const [items, setItems] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [disputeOpen, setDisputeOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -108,6 +112,11 @@ export function TransactionTimeline({
 
   return (
     <div className="space-y-3">
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" onClick={() => setDisputeOpen(true)}>
+          <AlertTriangle className="w-4 h-4 mr-1 text-destructive" /> Litige
+        </Button>
+      </div>
       {items.map((m, i) => {
         const done = m.status === "COMPLETED";
         return (
@@ -159,6 +168,7 @@ export function TransactionTimeline({
           </Card>
         );
       })}
+      <DisputeDialog transactionId={transactionId} open={disputeOpen} onOpenChange={setDisputeOpen} />
     </div>
   );
 }
