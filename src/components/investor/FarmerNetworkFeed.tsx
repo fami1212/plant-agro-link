@@ -117,7 +117,7 @@ export function FarmerNetworkFeed() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-semibold">{f.full_name}</p>
-                  {f.is_verified && <VerifiedBadge />}
+                  <VerifiedBadge verified={f.is_verified} />
                 </div>
                 {f.address && (
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
