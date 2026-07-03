@@ -35,6 +35,7 @@ import Marketplace from "./pages/Marketplace";
 import MarketplaceFarmer from "./pages/marketplace/MarketplaceFarmer";
 import MarketplaceBuyer from "./pages/marketplace/MarketplaceBuyer";
 import MarketplaceInvestor from "./pages/marketplace/MarketplaceInvestor";
+import MarketplaceVet from "./pages/marketplace/MarketplaceVet";
 import IoT from "./pages/IoT";
 import Devices from "./pages/Devices";
 import KycVerification from "./pages/KycVerification";
@@ -156,6 +157,14 @@ const App = () => (
                   element={
                     <ProtectedRoute allowedRoles={['investisseur', 'admin']}>
                       <MarketplaceInvestor />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/marketplace/vet"
+                  element={
+                    <ProtectedRoute allowedRoles={['veterinaire', 'admin']}>
+                      <MarketplaceVet />
                     </ProtectedRoute>
                   }
                 />
