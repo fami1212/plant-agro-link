@@ -4,7 +4,7 @@ import {
   Home, MapPin, Wheat, PawPrint, ShoppingBag, Menu,
   User, LogOut, Settings, Activity, Stethoscope,
   TrendingUp, Shield, Tractor, Brain, Users, GraduationCap, Truck, BadgeCheck,
-  Receipt,
+  Receipt, Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -44,6 +44,7 @@ const menuSections: MenuSection[] = [
     items: [
       { icon: Brain, labelKey: "nav.ai", path: "/ia", roles: ['agriculteur', 'admin'], highlight: true },
       { icon: Receipt, labelKey: "nav.transactions", path: "/transactions", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'], highlight: true },
+      { icon: Inbox, labelKey: "nav.requests", path: "/farmer-requests", roles: ['agriculteur', 'admin'], highlight: true },
       { icon: Wheat, labelKey: "nav.crops", path: "/cultures", roles: ['agriculteur', 'admin'] },
       { icon: PawPrint, labelKey: "nav.livestock", path: "/betail", roles: ['agriculteur', 'veterinaire', 'admin'] },
       { icon: MapPin, labelKey: "nav.parcels", path: "/parcelles", roles: ['agriculteur', 'admin'] },
