@@ -67,7 +67,9 @@ export default function FarmerRequests() {
       .select("*")
       .eq("farmer_id", user.id)
       .order("created_at", { ascending: false });
-    const invIds = Array.from(new Set((invs || []).map((r: any) => r.investor_id)));
+    const invIds = Array.from(
+      new Set((invs || []).map((r: any) => r.investor_id as string)),
+    ) as string[];
     const { data: invProfiles } = invIds.length
       ? await supabase.from("profiles").select("user_id,full_name").in("user_id", invIds)
       : { data: [] as any[] };
@@ -85,14 +87,16 @@ export default function FarmerRequests() {
       .select("*")
       .eq("client_id", user.id)
       .order("created_at", { ascending: false });
-    const provIds = Array.from(new Set((vets || []).map((v: any) => v.provider_id)));
+    const provIds = Array.from(
+      new Set((vets || []).map((v: any) => v.provider_id as string)),
+    ) as string[];
     const { data: providers } = provIds.length
       ? await supabase
           .from("service_providers")
           .select("id,user_id,business_name")
           .in("id", provIds)
       : { data: [] as any[] };
-    const userIds = (providers || []).map((p: any) => p.user_id);
+    const userIds = (providers || []).map((p: any) => p.user_id as string);
     const { data: provProfiles } = userIds.length
       ? await supabase.from("profiles").select("user_id,full_name").in("user_id", userIds)
       : { data: [] as any[] };
