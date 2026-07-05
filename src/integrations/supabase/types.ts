@@ -269,6 +269,51 @@ export type Database = {
           },
         ]
       }
+      contract_signatures: {
+        Row: {
+          contract_snapshot: Json | null
+          created_at: string
+          device: string | null
+          id: string
+          ip_address: string | null
+          signed_at: string
+          signer_name: string
+          signer_role: string | null
+          target_id: string | null
+          target_type: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          contract_snapshot?: Json | null
+          created_at?: string
+          device?: string | null
+          id?: string
+          ip_address?: string | null
+          signed_at?: string
+          signer_name: string
+          signer_role?: string | null
+          target_id?: string | null
+          target_type: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          contract_snapshot?: Json | null
+          created_at?: string
+          device?: string | null
+          id?: string
+          ip_address?: string | null
+          signed_at?: string
+          signer_name?: string
+          signer_role?: string | null
+          target_id?: string | null
+          target_type?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       crops: {
         Row: {
           actual_harvest_date: string | null

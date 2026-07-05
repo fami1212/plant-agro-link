@@ -11,9 +11,9 @@ interface RoleConfig {
 
 const roleConfigs: Record<AppRole, RoleConfig> = {
   agriculteur: {
-    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/iot', '/devices', '/ia', '/farmer-investments', '/settings', '/voice', '/communaute', '/elearning', '/logistique', '/kyc', '/transactions'],
+    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/iot', '/devices', '/ia', '/farmer-investments', '/farmer-requests', '/settings', '/voice', '/communaute', '/elearning', '/logistique', '/kyc', '/transactions'],
     navItems: ['/dashboard', '/agriculteur', '/cultures', '/betail', '/marketplace/farmer'],
-    menuItems: ['/parcelles', '/farmer-investments', '/transactions', '/iot', '/devices', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/kyc', '/settings'],
+    menuItems: ['/parcelles', '/farmer-requests', '/farmer-investments', '/transactions', '/iot', '/devices', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/kyc', '/settings'],
     dashboardType: 'agriculteur',
   },
   veterinaire: {
@@ -35,7 +35,7 @@ const roleConfigs: Record<AppRole, RoleConfig> = {
     dashboardType: 'investisseur',
   },
   admin: {
-    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/marketplace/buyer', '/marketplace/investor', '/marketplace/vet', '/iot', '/devices', '/ia', '/admin', '/settings', '/farmer-investments', '/voice', '/communaute', '/elearning', '/logistique', '/investisseur', '/veterinaire', '/acheteur', '/kyc', '/transactions'],
+    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/marketplace/buyer', '/marketplace/investor', '/marketplace/vet', '/iot', '/devices', '/ia', '/admin', '/settings', '/farmer-investments', '/farmer-requests', '/voice', '/communaute', '/elearning', '/logistique', '/investisseur', '/veterinaire', '/acheteur', '/kyc', '/transactions'],
     navItems: ['/dashboard', '/agriculteur', '/cultures', '/betail', '/marketplace'],
     menuItems: ['/parcelles', '/farmer-investments', '/transactions', '/iot', '/devices', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/admin', '/kyc', '/settings'],
     dashboardType: 'admin',

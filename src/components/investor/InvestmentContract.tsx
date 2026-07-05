@@ -3,12 +3,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { FileText, Shield, AlertTriangle, CheckCircle2, Download, Loader2 } from "lucide-react";
+import { FileText, Shield, AlertTriangle, CheckCircle2, Loader2, PenLine, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { AnchorButton } from "@/components/blockchain/AnchorButton";
+import { buildSignature, saveSignature, type SignaturePayload } from "@/lib/signature";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ContractData {
   projectTitle: string;
@@ -24,23 +27,54 @@ interface InvestmentContractProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   contractData: ContractData;
-  onSign: () => Promise<void>;
+  onSign: (signature?: SignaturePayload) => Promise<void>;
+  /** When provided, the signature is persisted and linked to this target. */
+  signatureTarget?: {
+    type: "transaction" | "investment" | "investment_request";
+    id: string | null;
+  };
 }
 
-export function InvestmentContract({ open, onOpenChange, contractData, onSign }: InvestmentContractProps) {
+export function InvestmentContract({ open, onOpenChange, contractData, onSign, signatureTarget }: InvestmentContractProps) {
+  const { user } = useAuth();
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedRisks, setAcceptedRisks] = useState(false);
   const [signing, setSigning] = useState(false);
   const [signed, setSigned] = useState(false);
+  const [signerName, setSignerName] = useState(contractData.investorName || "");
+  const [signature, setSignature] = useState<SignaturePayload | null>(null);
 
   const handleSign = async () => {
     if (!acceptedTerms || !acceptedRisks) {
       toast.error("Veuillez accepter toutes les conditions");
       return;
     }
+    if (!signerName.trim()) {
+      toast.error("Saisissez votre nom complet pour signer");
+      return;
+    }
     setSigning(true);
     try {
-      await onSign();
+      const sig = await buildSignature(signerName.trim(), {
+        signer_role: "investor",
+        contract_snapshot: {
+          projectTitle: contractData.projectTitle,
+          farmerName: contractData.farmerName,
+          investorName: signerName.trim(),
+          amount: contractData.amount,
+          returnPercent: contractData.returnPercent,
+          harvestDate: contractData.harvestDate,
+          contractDate: contractData.contractDate,
+        },
+      });
+      setSignature(sig);
+      await onSign(sig);
+      if (user && signatureTarget) {
+        await saveSignature(user.id, signatureTarget.type, signatureTarget.id, sig);
+      } else if (user) {
+        // Fallback: still persist the audit trail with no target link.
+        await saveSignature(user.id, "investment", null, sig);
+      }
       setSigned(true);
       toast.success("Contrat signé avec succès !");
     } catch {
@@ -59,6 +93,7 @@ export function InvestmentContract({ open, onOpenChange, contractData, onSign }:
       setAcceptedTerms(false);
       setAcceptedRisks(false);
       setSigned(false);
+      setSignature(null);
     }, 300);
   };
 
@@ -156,6 +191,20 @@ export function InvestmentContract({ open, onOpenChange, contractData, onSign }:
           {/* Acceptance */}
           {!signed && (
             <div className="space-y-3">
+              <div className="space-y-1.5">
+                <label htmlFor="signer-name" className="text-xs font-medium flex items-center gap-1">
+                  <PenLine className="w-3.5 h-3.5" /> Signature — Nom complet
+                </label>
+                <Input
+                  id="signer-name"
+                  value={signerName}
+                  onChange={(e) => setSignerName(e.target.value)}
+                  placeholder="Prénom Nom"
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  En signant, votre nom, l'horodatage, votre adresse IP et votre appareil seront enregistrés comme preuve d'accord.
+                </p>
+              </div>
               <div className="flex items-start gap-2">
                 <Checkbox id="terms" checked={acceptedTerms} onCheckedChange={(v) => setAcceptedTerms(!!v)} />
                 <label htmlFor="terms" className="text-xs leading-tight cursor-pointer">
@@ -177,8 +226,19 @@ export function InvestmentContract({ open, onOpenChange, contractData, onSign }:
               <CheckCircle2 className="w-10 h-10 text-success mx-auto" />
               <p className="font-semibold text-success">Contrat signé</p>
               <p className="text-xs text-muted-foreground">
-                Votre signature électronique a été enregistrée et le contrat est sécurisé sur la blockchain.
+                Votre signature électronique a été enregistrée.
               </p>
+              {signature && (
+                <div className="text-left text-[11px] bg-background/60 rounded-lg p-2 space-y-1 font-mono">
+                  <div><b>Signataire :</b> {signature.signer_name}</div>
+                  <div><b>Horodatage :</b> {new Date(signature.signed_at).toLocaleString()}</div>
+                  <div className="flex items-center gap-1">
+                    <Globe className="w-3 h-3" />
+                    <b>IP :</b> {signature.ip_address || "n/a"}
+                  </div>
+                  <div><b>Appareil :</b> {signature.device}</div>
+                </div>
+              )}
               <Badge variant="outline" className="font-mono text-xs">{contractId}</Badge>
               <div className="pt-2">
                 <AnchorButton

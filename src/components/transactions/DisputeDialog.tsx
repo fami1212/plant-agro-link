@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { AlertTriangle, Loader2, Paperclip, Send } from "lucide-react";
+import { AlertTriangle, Loader2, Paperclip, Send, FileText, ImageIcon, Scale, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props {
@@ -55,6 +55,7 @@ export function DisputeDialog({ transactionId, open, onOpenChange }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [newMsg, setNewMsg] = useState("");
+  const [evidenceUrls, setEvidenceUrls] = useState<{ path: string; url: string }[]>([]);
 
   const load = async () => {
     setLoading(true);
@@ -73,6 +74,21 @@ export function DisputeDialog({ transactionId, open, onOpenChange }: Props) {
         .eq("dispute_id", data.id)
         .order("created_at");
       setMessages(msgs || []);
+      // Resolve signed URLs for evidence attachments
+      const paths: string[] = data.evidence_urls || [];
+      if (paths.length) {
+        const signed = await Promise.all(
+          paths.map(async (p) => {
+            const { data: s } = await supabase.storage
+              .from("dispute-evidence")
+              .createSignedUrl(p, 3600);
+            return { path: p, url: s?.signedUrl || "" };
+          }),
+        );
+        setEvidenceUrls(signed.filter((s) => s.url));
+      } else {
+        setEvidenceUrls([]);
+      }
     }
     setLoading(false);
   };
@@ -154,6 +170,37 @@ export function DisputeDialog({ transactionId, open, onOpenChange }: Props) {
     cancelled: "Annulé",
   };
 
+  const decisionImpact = (status: string, d: Dispute) => {
+    switch (status) {
+      case "resolved_buyer":
+        return {
+          icon: <XCircle className="w-4 h-4 text-destructive" />,
+          text: `Remboursement de ${d.buyer_refund_percent}% versé à l'acheteur. Le paiement au vendeur est annulé.`,
+          tone: "bg-destructive/10 border-destructive/30",
+        };
+      case "resolved_seller":
+        return {
+          icon: <CheckCircle2 className="w-4 h-4 text-green-600" />,
+          text: `Le paiement de ${d.seller_payment_percent}% est libéré au vendeur. Aucun remboursement.`,
+          tone: "bg-green-500/10 border-green-500/30",
+        };
+      case "resolved_split":
+        return {
+          icon: <Scale className="w-4 h-4 text-amber-600" />,
+          text: `Partage : ${d.buyer_refund_percent}% remboursés à l'acheteur, ${d.seller_payment_percent}% libérés au vendeur.`,
+          tone: "bg-amber-500/10 border-amber-500/30",
+        };
+      case "cancelled":
+        return {
+          icon: <XCircle className="w-4 h-4 text-muted-foreground" />,
+          text: "Litige annulé. La transaction reprend son cours normal.",
+          tone: "bg-muted",
+        };
+      default:
+        return null;
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -182,15 +229,61 @@ export function DisputeDialog({ transactionId, open, onOpenChange }: Props) {
                 <p className="text-sm text-muted-foreground mt-1">{dispute.description}</p>
               )}
               {dispute.admin_decision && (
-                <div className="mt-3 pt-3 border-t border-destructive/20">
-                  <p className="text-xs font-semibold">Décision admin :</p>
-                  <p className="text-sm">{dispute.admin_decision}</p>
-                  {dispute.admin_notes && (
-                    <p className="text-xs text-muted-foreground mt-1">{dispute.admin_notes}</p>
-                  )}
+                <div className="mt-3 pt-3 border-t border-destructive/20 space-y-2">
+                  <div>
+                    <p className="text-xs font-semibold">Décision admin :</p>
+                    <p className="text-sm">{dispute.admin_decision}</p>
+                    {dispute.admin_notes && (
+                      <p className="text-xs text-muted-foreground mt-1">{dispute.admin_notes}</p>
+                    )}
+                  </div>
+                  {(() => {
+                    const impact = decisionImpact(dispute.status, dispute);
+                    if (!impact) return null;
+                    return (
+                      <div className={`flex items-start gap-2 rounded-lg border p-2 ${impact.tone}`}>
+                        {impact.icon}
+                        <p className="text-xs">{impact.text}</p>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </Card>
+
+            {evidenceUrls.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-xs font-semibold flex items-center gap-1">
+                  <Paperclip className="w-3.5 h-3.5" /> Preuves ({evidenceUrls.length})
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {evidenceUrls.map(({ path, url }) => {
+                    const isImg = /\.(png|jpe?g|gif|webp|heic)$/i.test(path);
+                    return (
+                      <a
+                        key={path}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block aspect-square rounded-lg border border-border/60 overflow-hidden bg-muted/30 hover:border-primary/60 transition-colors"
+                        title={path.split("/").pop() || "preuve"}
+                      >
+                        {isImg ? (
+                          <img src={url} alt="preuve" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-muted-foreground p-2">
+                            <FileText className="w-6 h-6" />
+                            <span className="text-[9px] truncate w-full text-center">
+                              {path.split("/").pop()}
+                            </span>
+                          </div>
+                        )}
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {messages.map((m) => (

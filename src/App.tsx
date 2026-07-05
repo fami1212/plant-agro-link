@@ -3,6 +3,7 @@ import Investisseur from "./pages/Investisseur";
 import Veterinaire from "./pages/Veterinaire";
 import Settings from "./pages/Settings";
 import FarmerInvestments from "./pages/FarmerInvestments";
+import FarmerRequests from "./pages/FarmerRequests";
 import Trace from "./pages/Trace";
 import Admin from "./pages/Admin";
 import Agriculteur from "./pages/Agriculteur";
@@ -235,6 +236,14 @@ const App = () => (
                   element={
                     <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
                       <FarmerInvestments />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/farmer-requests"
+                  element={
+                    <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
+                      <FarmerRequests />
                     </ProtectedRoute>
                   }
                 />
