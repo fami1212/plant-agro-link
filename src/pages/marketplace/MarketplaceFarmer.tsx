@@ -540,6 +540,16 @@ export default function MarketplaceFarmer() {
           onSuccess={handlePaymentSuccess}
         />
       )}
+
+      {chatWith && (
+        <DirectMessageDialog
+          open={!!chatWith}
+          onOpenChange={(o) => !o && setChatWith(null)}
+          otherUserId={chatWith.userId}
+          otherUserName={chatWith.name}
+          context={chatWith.context}
+        />
+      )}
         </>
       )}
     </AppLayout>
