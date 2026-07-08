@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
   Plus, Search, ShoppingBag, Store, HandCoins, 
-  Package, Loader2, Check, X, Eye
+  Package, Loader2, Check, X, Eye, MessageCircle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +18,7 @@ import { SimpleHub, type HubAction } from "@/components/marketplace/SimpleHub";
 import { ViewModeToggle } from "@/components/marketplace/ViewModeToggle";
 import { useViewMode } from "@/hooks/useViewMode";
 import { PublishHarvestWizard } from "@/components/marketplace/PublishHarvestWizard";
+import { DirectMessageDialog } from "@/components/messaging/DirectMessageDialog";
 import type { Database } from "@/integrations/supabase/types";
 
 type Listing = Database["public"]["Tables"]["marketplace_listings"]["Row"];
@@ -38,6 +39,7 @@ export default function MarketplaceFarmer() {
   // Payment state
   const [showPayment, setShowPayment] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Listing | null>(null);
+  const [chatWith, setChatWith] = useState<{ userId: string; name: string; context?: string } | null>(null);
   
   const [listings, setListings] = useState<Listing[]>([]);
   const [sellerNames, setSellerNames] = useState<Record<string, string>>({});
@@ -455,6 +457,14 @@ export default function MarketplaceFarmer() {
                           onClick={() => handleOfferAction(offer.id, "acceptee")}
                         >
                           <Check className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-8 w-8"
+                          onClick={() => setChatWith({ userId: offer.buyer_id, name: offer.buyer_name || "Acheteur", context: offer.listing?.title })}
+                        >
+                          <MessageCircle className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
