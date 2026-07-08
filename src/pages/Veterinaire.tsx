@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { AIContextualTip } from "@/components/ai/AIContextualTip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { TabsContent } from "@/components/ui/tabs";
 import { HubTabs } from "@/components/common/HubTabs";
 import {
@@ -30,6 +31,8 @@ import { VetMedicalRecords } from "@/components/veterinaire/VetMedicalRecords";
 import { AnimalPatientDetails } from "@/components/veterinaire/AnimalPatientDetails";
 import { VetBilling } from "@/components/veterinaire/VetBilling";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useNavigate } from "react-router-dom";
+import { Heart as HeartIcon } from "lucide-react";
 
 interface Booking {
   id: string;
@@ -77,6 +80,7 @@ interface MedicalRecord {
 export default function Veterinaire() {
   const { user, profile } = useAuth();
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("rdv");
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -264,6 +268,23 @@ export default function Veterinaire() {
           </Button>
         }
       />
+
+      {/* Sick livestock shortcut - integrates ex-marketplace */}
+      <div className="px-4 mb-3">
+        <Button
+          variant="outline"
+          className="w-full justify-between h-auto py-3"
+          onClick={() => navigate("/marketplace/vet")}
+        >
+          <span className="flex items-center gap-2 text-sm">
+            <HeartIcon className="w-4 h-4 text-destructive" />
+            Bétail malade à consulter
+          </span>
+          <Badge variant="secondary" className="text-[10px]">
+            {patients.filter(p => p.health_status === "malade" || p.health_status === "traitement").length}
+          </Badge>
+        </Button>
+      </div>
 
       {/* AI Contextual Tip */}
       <div className="px-4 mb-4">
