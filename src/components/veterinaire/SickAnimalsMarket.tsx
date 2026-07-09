@@ -277,6 +277,6 @@ export function SickAnimalsMarket() {
           )}
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </>
   );
 }
