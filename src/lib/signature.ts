@@ -107,3 +107,33 @@ export async function saveSignature(
 
   return data?.id ?? null;
 }
+
+/** Fetch every signature already stored for a given target. */
+export async function getSignatures(
+  target_type: string,
+  target_id: string,
+): Promise<Array<SignaturePayload & { user_id: string; id: string }>> {
+  const { data } = await (supabase as any)
+    .from("contract_signatures")
+    .select("*")
+    .eq("target_type", target_type)
+    .eq("target_id", target_id)
+    .order("signed_at", { ascending: true });
+  return (data as any[]) || [];
+}
+
+/** True if `userId` already signed a given target. */
+export async function hasSignedBy(
+  userId: string,
+  target_type: string,
+  target_id: string,
+): Promise<boolean> {
+  const { data } = await (supabase as any)
+    .from("contract_signatures")
+    .select("id")
+    .eq("target_type", target_type)
+    .eq("target_id", target_id)
+    .eq("user_id", userId)
+    .limit(1);
+  return Array.isArray(data) && data.length > 0;
+}
