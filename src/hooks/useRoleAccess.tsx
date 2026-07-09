@@ -17,7 +17,7 @@ const roleConfigs: Record<AppRole, RoleConfig> = {
     dashboardType: 'agriculteur',
   },
   veterinaire: {
-    allowedRoutes: ['/dashboard', '/betail', '/marketplace/vet', '/veterinaire', '/settings', '/communaute', '/elearning', '/kyc', '/transactions'],
+    allowedRoutes: ['/dashboard', '/betail', '/veterinaire', '/settings', '/communaute', '/elearning', '/kyc', '/transactions'],
     navItems: ['/dashboard', '/veterinaire', '/betail'],
     menuItems: ['/transactions', '/communaute', '/elearning', '/kyc', '/settings'],
     dashboardType: 'veterinaire',
@@ -35,7 +35,7 @@ const roleConfigs: Record<AppRole, RoleConfig> = {
     dashboardType: 'investisseur',
   },
   admin: {
-    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/marketplace/buyer', '/marketplace/investor', '/marketplace/vet', '/iot', '/devices', '/ia', '/admin', '/settings', '/farmer-investments', '/farmer-requests', '/voice', '/communaute', '/elearning', '/logistique', '/investisseur', '/veterinaire', '/acheteur', '/kyc', '/transactions'],
+    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/marketplace/buyer', '/marketplace/investor', '/iot', '/devices', '/ia', '/admin', '/settings', '/farmer-investments', '/farmer-requests', '/voice', '/communaute', '/elearning', '/logistique', '/investisseur', '/veterinaire', '/acheteur', '/kyc', '/transactions'],
     navItems: ['/dashboard', '/agriculteur', '/cultures', '/betail', '/marketplace'],
     menuItems: ['/parcelles', '/farmer-investments', '/transactions', '/iot', '/devices', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/admin', '/kyc', '/settings'],
     dashboardType: 'admin',
