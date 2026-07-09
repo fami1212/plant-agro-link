@@ -162,6 +162,41 @@ export function InvestmentContract({
         </DialogHeader>
 
         <div className="space-y-4 py-2">
+          {/* Bilateral signature status */}
+          {signatureTarget?.id && (
+            <div
+              className={`rounded-lg border p-3 text-xs space-y-1 ${
+                bothSigned
+                  ? "bg-green-500/10 border-green-500/30"
+                  : "bg-muted/40 border-border"
+              }`}
+            >
+              <p className="font-semibold">
+                {bothSigned
+                  ? "✅ Contrat signé par les deux parties"
+                  : "En attente des deux signatures"}
+              </p>
+              <p>
+                Investisseur :{" "}
+                {allSignatures.find((s: any) => s.signer_role === "investor")
+                  ? "✔ signé"
+                  : "— en attente"}
+              </p>
+              <p>
+                Agriculteur :{" "}
+                {allSignatures.find((s: any) => s.signer_role === "farmer")
+                  ? "✔ signé"
+                  : "— en attente"}
+              </p>
+              {counterpartSignature && (
+                <p className="pt-1 border-t border-border/40 text-muted-foreground">
+                  Contrepartie : <b>{counterpartSignature.signer_name}</b> le{" "}
+                  {new Date(counterpartSignature.signed_at).toLocaleString()}
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Contract Header */}
           <div className="text-center p-4 rounded-xl bg-muted/50 border">
             <p className="text-xs text-muted-foreground">Contrat N°</p>
