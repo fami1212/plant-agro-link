@@ -511,6 +511,16 @@ export default function MarketplaceFarmer() {
                         </div>
                         {getStatusBadge(offer.status)}
                       </div>
+                      {offer.status === "acceptee" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full mt-2 gap-1.5"
+                          onClick={() => navigate("/transactions")}
+                        >
+                          <Receipt className="w-3.5 h-3.5" /> Voir suivi escrow & litiges
+                        </Button>
+                      )}
                     </Card>
                   ))}
                 </>
