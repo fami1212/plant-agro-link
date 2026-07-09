@@ -37,6 +37,7 @@ import { AnchorButton } from "@/components/blockchain/AnchorButton";
 import { DirectMessageDialog } from "@/components/messaging/DirectMessageDialog";
 import { DisputeDialog } from "@/components/transactions/DisputeDialog";
 import { AlertTriangle } from "lucide-react";
+import { TransactionTimeline } from "@/components/transactions/TransactionTimeline";
 
 interface Order {
   id: string;
@@ -83,6 +84,7 @@ export function BuyerOrderTracking() {
   const [chatOrder, setChatOrder] = useState<Order | null>(null);
   const [disputeOrder, setDisputeOrder] = useState<Order | null>(null);
   const [disputeTxId, setDisputeTxId] = useState<string | null>(null);
+  const [selectedOrderTxId, setSelectedOrderTxId] = useState<string | null>(null);
 
   const openDispute = async (order: Order) => {
     // Try to find a linked transaction via metadata.offer_id
@@ -99,6 +101,23 @@ export function BuyerOrderTracking() {
     setDisputeTxId(tx.id);
     setDisputeOrder(order);
   };
+
+  // When the detail dialog opens, look up any linked escrow transaction.
+  useEffect(() => {
+    if (!selectedOrder) {
+      setSelectedOrderTxId(null);
+      return;
+    }
+    (async () => {
+      const { data: tx } = await supabase
+        .from("transactions")
+        .select("id")
+        .eq("type", "PRODUCT_SALE")
+        .contains("metadata", { offer_id: selectedOrder.id })
+        .maybeSingle();
+      setSelectedOrderTxId(tx?.id || null);
+    })();
+  }, [selectedOrder]);
 
   useEffect(() => {
     if (user) fetchOrders();
@@ -468,6 +487,17 @@ export function BuyerOrderTracking() {
                   <AlertTriangle className="w-4 h-4" />
                   Signaler un problème (litige)
                 </Button>
+              )}
+
+              {/* Escrow timeline */}
+              {selectedOrderTxId && (
+                <div className="space-y-2 pt-2 border-t">
+                  <p className="text-sm font-medium">Suivi escrow (contrat)</p>
+                  <TransactionTimeline
+                    transactionId={selectedOrderTxId}
+                    currentUserIsInitiator={true}
+                  />
+                </div>
               )}
 
               {/* Blockchain anchoring */}

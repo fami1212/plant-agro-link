@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { AppLayout } from "@/components/layout/AppLayout";
-import { PageHeader } from "@/components/common/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,7 +41,7 @@ interface SickAnimal {
   last_symptom: string | null;
 }
 
-export default function MarketplaceVet() {
+export function SickAnimalsMarket() {
   const { user } = useAuth();
   const [items, setItems] = useState<SickAnimal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -160,12 +158,8 @@ export default function MarketplaceVet() {
   };
 
   return (
-    <AppLayout>
-      <PageHeader
-        title="Cabinet — animaux malades"
-        subtitle="Trouvez des cas à traiter et proposez des consultations."
-      />
-      <div className="px-4 pb-24 space-y-3">
+    <>
+      <div className="space-y-3">
         {loading ? (
           <div className="flex justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin" />
@@ -283,6 +277,6 @@ export default function MarketplaceVet() {
           )}
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </>
   );
 }

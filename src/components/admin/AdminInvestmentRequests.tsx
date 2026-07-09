@@ -81,7 +81,7 @@ export function AdminInvestmentRequests() {
         .from("transactions")
         .insert({
           type: "INVESTMENT",
-          status: "SIGNED",
+          status: "AWAITING_SIGNATURES",
           initiator_id: r.investor_id,
           receiver_id: r.farmer_id,
           amount: r.amount,
@@ -96,6 +96,23 @@ export function AdminInvestmentRequests() {
         await (supabase as any).rpc("seed_default_milestones", { _tx_id: tx.id });
         patch.transaction_id = tx.id;
         patch.status = "contract_created";
+        // Notify parties of contract to sign
+        await (supabase as any).from("notifications").insert([
+          {
+            user_id: r.investor_id,
+            type: "contract_ready",
+            title: "📝 Contrat prêt à signer",
+            message: "Votre contrat d'investissement est prêt. Signez-le pour démarrer l'escrow.",
+            data: { transaction_id: tx.id },
+          },
+          {
+            user_id: r.farmer_id,
+            type: "contract_ready",
+            title: "📝 Contrat prêt à signer",
+            message: "Un contrat d'investissement vous attend pour signature.",
+            data: { transaction_id: tx.id },
+          },
+        ]);
       }
     }
     const { error } = await (supabase as any).from("investment_requests").update(patch).eq("id", r.id);

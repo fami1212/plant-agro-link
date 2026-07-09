@@ -36,11 +36,11 @@ import Marketplace from "./pages/Marketplace";
 import MarketplaceFarmer from "./pages/marketplace/MarketplaceFarmer";
 import MarketplaceBuyer from "./pages/marketplace/MarketplaceBuyer";
 import MarketplaceInvestor from "./pages/marketplace/MarketplaceInvestor";
-import MarketplaceVet from "./pages/marketplace/MarketplaceVet";
 import IoT from "./pages/IoT";
 import Devices from "./pages/Devices";
 import KycVerification from "./pages/KycVerification";
 import Transactions from "./pages/Transactions";
+import ContractSign from "./pages/ContractSign";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -162,10 +162,10 @@ const App = () => (
                   }
                 />
                 <Route
-                  path="/marketplace/vet"
+                  path="/contract/:transactionId"
                   element={
-                    <ProtectedRoute allowedRoles={['veterinaire', 'admin']}>
-                      <MarketplaceVet />
+                    <ProtectedRoute>
+                      <ContractSign />
                     </ProtectedRoute>
                   }
                 />
