@@ -489,6 +489,17 @@ export function BuyerOrderTracking() {
                 </Button>
               )}
 
+              {/* Escrow timeline */}
+              {selectedOrderTxId && (
+                <div className="space-y-2 pt-2 border-t">
+                  <p className="text-sm font-medium">Suivi escrow (contrat)</p>
+                  <TransactionTimeline
+                    transactionId={selectedOrderTxId}
+                    currentUserIsInitiator={true}
+                  />
+                </div>
+              )}
+
               {/* Blockchain anchoring */}
               {["acceptee", "en_cours", "livree"].includes(selectedOrder.status) && (
                 <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
