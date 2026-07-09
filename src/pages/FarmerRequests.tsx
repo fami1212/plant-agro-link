@@ -18,6 +18,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { FileText } from "lucide-react";
 
 interface InvReq {
   id: string;
@@ -33,6 +35,7 @@ interface InvReq {
   created_at: string;
   investor_id: string;
   investor_name?: string;
+  transaction_id?: string | null;
 }
 
 interface VetReq {
@@ -51,6 +54,7 @@ interface VetReq {
 
 export default function FarmerRequests() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [tab, setTab] = useState("investments");
   const [invRequests, setInvRequests] = useState<InvReq[]>([]);
   const [vetRequests, setVetRequests] = useState<VetReq[]>([]);
@@ -285,6 +289,15 @@ export default function FarmerRequests() {
                         <div className="text-xs bg-muted/40 rounded p-2">
                           <b>Votre réponse :</b> {r.farmer_response}
                         </div>
+                      )}
+
+                      {r.status === "contract_created" && r.transaction_id && (
+                        <Button
+                          className="w-full"
+                          onClick={() => navigate(`/contract/${r.transaction_id}`)}
+                        >
+                          <FileText className="w-4 h-4 mr-1" /> Voir & signer le contrat
+                        </Button>
                       )}
 
                       {r.status === "pending" && (
