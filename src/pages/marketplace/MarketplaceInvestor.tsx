@@ -223,6 +223,33 @@ export default function MarketplaceInvestor() {
 
       {!isSimple && (
         <>
+      {/* Pending contracts to sign */}
+      {pendingContracts.length > 0 && (
+        <div className="px-4 mb-3 space-y-2">
+          {pendingContracts.map((c) => (
+            <Card
+              key={c.id}
+              className="p-3 bg-primary/5 border-primary/30 flex items-center gap-3"
+            >
+              <FileText className="w-5 h-5 text-primary shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate">
+                  Contrat prêt à signer — {c.farmer_name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {c.amount.toLocaleString()} FCFA
+                </p>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => navigate(`/contract/${c.transaction_id}`)}
+              >
+                Signer
+              </Button>
+            </Card>
+          ))}
+        </div>
+      )}
       {/* Portfolio Summary */}
       <div className="px-4 mb-4">
         <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20 overflow-hidden relative">
