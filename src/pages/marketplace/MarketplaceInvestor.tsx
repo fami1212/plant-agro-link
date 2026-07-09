@@ -334,7 +334,7 @@ export default function MarketplaceInvestor() {
                           disabled={remaining <= 0}
                         >
                           <Wallet className="w-4 h-4 mr-1" />
-                          Investir maintenant
+                          Demander à investir
                         </Button>
                       </CardContent>
                     </Card>
