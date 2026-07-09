@@ -30,8 +30,8 @@ import { VetPatientsList } from "@/components/veterinaire/VetPatientsList";
 import { VetMedicalRecords } from "@/components/veterinaire/VetMedicalRecords";
 import { AnimalPatientDetails } from "@/components/veterinaire/AnimalPatientDetails";
 import { VetBilling } from "@/components/veterinaire/VetBilling";
+import { SickAnimalsMarket } from "@/components/veterinaire/SickAnimalsMarket";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { useNavigate } from "react-router-dom";
 import { Heart as HeartIcon } from "lucide-react";
 
 interface Booking {
@@ -80,7 +80,6 @@ interface MedicalRecord {
 export default function Veterinaire() {
   const { user, profile } = useAuth();
   const { t } = useLanguage();
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("rdv");
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -269,19 +268,19 @@ export default function Veterinaire() {
         }
       />
 
-      {/* Sick livestock shortcut - integrates ex-marketplace */}
+      {/* Sick livestock shortcut - jumps to integrated tab */}
       <div className="px-4 mb-3">
         <Button
           variant="outline"
           className="w-full justify-between h-auto py-3"
-          onClick={() => navigate("/marketplace/vet")}
+          onClick={() => setActiveTab("sick")}
         >
           <span className="flex items-center gap-2 text-sm">
             <HeartIcon className="w-4 h-4 text-destructive" />
             Bétail malade à consulter
           </span>
           <Badge variant="secondary" className="text-[10px]">
-            {patients.filter(p => p.health_status === "malade" || p.health_status === "traitement").length}
+            {sickPatients}
           </Badge>
         </Button>
       </div>
@@ -320,6 +319,7 @@ export default function Veterinaire() {
           items={[
             { value: "rdv", label: t("vet.appointments"), icon: Calendar },
             { value: "patients", label: t("vet.patients"), icon: Users },
+            { value: "sick", label: "Bétail malade", icon: HeartIcon },
             { value: "dossiers", label: t("vet.records"), icon: FolderOpen },
             { value: "diagnostic", label: t("vet.aiDiagnosis"), icon: Stethoscope },
             { value: "billing", label: t("vet.revenue"), icon: Heart },
@@ -342,6 +342,10 @@ export default function Veterinaire() {
               onUpdate={openUpdate}
               onViewDetails={openDetails}
             />
+          </TabsContent>
+
+          <TabsContent value="sick" className="mt-0">
+            <SickAnimalsMarket />
           </TabsContent>
 
           {/* Medical Records Tab */}
