@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, Loader2, Shield, AlertTriangle } from "lucide-react";
+import { CheckCircle2, Circle, Loader2, Shield, AlertTriangle, Scale } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { DisputeDialog } from "./DisputeDialog";
@@ -42,15 +43,33 @@ export function TransactionTimeline({
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [disputeOpen, setDisputeOpen] = useState(false);
+  const [dispute, setDispute] = useState<{
+    id: string;
+    status: string;
+    reason: string;
+    admin_decision: string | null;
+    buyer_refund_percent: number;
+    seller_payment_percent: number;
+  } | null>(null);
 
   const load = async () => {
     setLoading(true);
-    const { data } = await (supabase as any)
+    const [{ data }, { data: d }] = await Promise.all([
+      (supabase as any)
       .from("transaction_milestones")
       .select("*")
       .eq("transaction_id", transactionId)
-      .order("order_index");
+      .order("order_index"),
+      (supabase as any)
+        .from("transaction_disputes")
+        .select("id,status,reason,admin_decision,buyer_refund_percent,seller_payment_percent")
+        .eq("transaction_id", transactionId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
     setItems((data as Milestone[]) || []);
+    setDispute((d as any) || null);
     setLoading(false);
   };
 
@@ -64,6 +83,16 @@ export function TransactionTimeline({
           event: "*",
           schema: "public",
           table: "transaction_milestones",
+          filter: `transaction_id=eq.${transactionId}`,
+        },
+        load,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "transaction_disputes",
           filter: `transaction_id=eq.${transactionId}`,
         },
         load,
@@ -108,11 +137,79 @@ export function TransactionTimeline({
       </Card>
     );
 
+  const doneCount = items.filter((m) => m.status === "COMPLETED").length;
+  const percent = Math.round((doneCount / items.length) * 100);
+  const unlockedAmount = items
+    .filter((m) => m.status === "COMPLETED")
+    .reduce((s, m) => s + Number(m.amount || 0), 0);
+  const totalAmount = items.reduce((s, m) => s + Number(m.amount || 0), 0);
+
+  const disputeBanner = dispute && (
+    <Card
+      className={`p-3 border ${
+        dispute.status.startsWith("resolved")
+          ? "bg-green-500/5 border-green-500/30"
+          : "bg-destructive/5 border-destructive/40"
+      }`}
+    >
+      <div className="flex items-start gap-2">
+        {dispute.status.startsWith("resolved") ? (
+          <Scale className="w-4 h-4 mt-0.5 text-green-600" />
+        ) : (
+          <AlertTriangle className="w-4 h-4 mt-0.5 text-destructive" />
+        )}
+        <div className="flex-1 text-sm">
+          <p className="font-semibold">
+            {dispute.status === "open" || dispute.status === "under_review"
+              ? "Litige en cours"
+              : "Litige résolu"}
+          </p>
+          <p className="text-xs text-muted-foreground">{dispute.reason}</p>
+          {dispute.admin_decision && (
+            <p className="text-xs mt-1">
+              <b>Décision admin :</b> {dispute.admin_decision}
+              {" — "}Remboursement acheteur {dispute.buyer_refund_percent}% / paiement vendeur{" "}
+              {dispute.seller_payment_percent}%.
+            </p>
+          )}
+          <Button
+            variant="link"
+            size="sm"
+            className="h-auto p-0 text-xs mt-1"
+            onClick={() => setDisputeOpen(true)}
+          >
+            Voir le détail du litige
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+
   return (
     <div className="space-y-3">
+      {/* Overall progress */}
+      <Card className="p-3">
+        <div className="flex items-center justify-between text-xs mb-1">
+          <span className="font-medium">Progression contrat</span>
+          <span className="text-muted-foreground">
+            {doneCount}/{items.length} étapes · {percent}%
+          </span>
+        </div>
+        <Progress value={percent} className="h-2" />
+        {totalAmount > 0 && (
+          <p className="text-xs text-muted-foreground mt-2">
+            <b>{unlockedAmount.toLocaleString()}</b> {currency} libérés sur{" "}
+            {totalAmount.toLocaleString()} {currency}
+          </p>
+        )}
+      </Card>
+
+      {disputeBanner}
+
       <div className="flex justify-end">
         <Button variant="outline" size="sm" onClick={() => setDisputeOpen(true)}>
-          <AlertTriangle className="w-4 h-4 mr-1 text-destructive" /> Litige
+          <AlertTriangle className="w-4 h-4 mr-1 text-destructive" />{" "}
+          {dispute ? "Suivre le litige" : "Ouvrir un litige"}
         </Button>
       </div>
       {items.map((m, i) => {
