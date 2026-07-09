@@ -1,75 +1,73 @@
-# Plan : KYC + Rebrand PlantErea + Auto-confirm email + Domaine plant-erea.com
+## Objectif
 
-## 1. Rebrand "Plantéra" → "PlantErea"
-- Remplacer le logo `src/assets/plantera-icon.png` par le nouveau logo uploadé
-- Chercher/remplacer toutes les occurrences de "Plantera", "Plantéra", "plantera" → "PlantErea" / "planterea" dans :
-  - `index.html` (title, meta, manifest)
-  - `public/manifest.json`
-  - `capacitor.config.ts` (appName, appId → `com.planterea.app`)
-  - `android/app/src/main/res/values/strings.xml`
-  - Composants React qui affichent le nom
-  - Traductions i18n (fr/en/wo)
-  - README
+Corriger le flux investisseur (contrat + escrow), supprimer les pages marketplace investisseur↔agriculteur et vétérinaire↔agriculteur pour les reconstruire proprement autour du moteur `transactions` existant, puis enrichir le suivi acheteur/vendeur.
 
-## 2. KYC — Vérification & approbation admin
+## 1. Fix contrat investisseur (bug signature)
 
-### Nouvelle table `kyc_verifications`
-- `user_id`, `status` (`pending`|`submitted`|`approved`|`rejected`), `role_requested`
-- `full_name`, `birth_date`, `id_type` (CNI/passport/permis), `id_number`
-- `id_front_url`, `id_back_url`, `selfie_url` (bucket `kyc-documents` privé)
-- `address`, `city`, `country`
-- Rôle-spécifique : `farm_name`, `farm_location`, `farm_size_ha` (agriculteur) / `license_number`, `specialty` (vétérinaire) / `company_name`, `business_reg_number` (acheteur) / `investor_type`, `capital_range` (investisseur)
-- `admin_notes`, `reviewed_by`, `reviewed_at`, `submitted_at`
-- Bucket privé `kyc-documents` avec RLS (user upload / admin lecture)
+- `InvestmentContract.tsx` : au montage, charger la dernière signature depuis `contract_signatures` pour `signatureTarget` et pré-passer en état "signé" si trouvée. Plus de re-demande.
+- Ajouter un champ `counterparty_signature` : si `signatureTarget.type = 'transaction'` et que la contrepartie (agriculteur) a signé, l'afficher côté investisseur (et inversement). Statut passe à `SIGNED` seulement quand les 2 signatures existent.
+- Exposer un helper `hasSignedBy(userId, targetId)` dans `src/lib/signature.ts`.
 
-### RLS
-- User : select/insert/update ses propres KYC (uniquement si status `pending` ou `rejected`)
-- Admin : full via `has_role`
+## 2. Refonte investisseur → agriculteur (via admin)
 
-### Hook `useKycStatus()`
-Retourne `{ status, isApproved, loading }`.
+Le flux "Investir maintenant" actuel appelle `MobileMoneyPayment` et crée directement une `investments` : c'est ce qui casse (pas de contrat, pas d'escrow admin-médiatisé).
 
-### Composant `<KycGuard>`
-Wrap les actions sensibles :
-- Publier annonce, faire offre, payer, réserver vétérinaire, investir, publier projet, ajouter récolte, etc.
-- Si non approuvé → dialog "Vérification requise" avec bouton "Compléter ma vérification" → `/kyc`
+- **Supprimer UI** : `src/components/investor/RequestInvestmentDialog.tsx` (garder + réécrire), `src/components/investment/InvestmentOpportunityForm.tsx` (garder tel quel côté agriculteur).
+- `MarketplaceInvestor.tsx` : remplacer bouton "Investir maintenant" par "Demander à investir via PlantErea" → ouvre `RequestInvestmentDialog` (crée `investment_requests`, pas de paiement direct).
+- `AdminInvestmentRequests.tsx` : à l'approbation, créer la `transaction` (INVESTMENT) + seed milestones, PUIS créer un `investment_requests.contract_ready = true` pour déclencher signature.
+- Nouvelle page `ContractSignaturePage` accessible par un lien dans `FarmerRequests` et le portfolio investisseur : rendu commun de `InvestmentContract` en mode bilatéral.
 
-### Page `/kyc` (formulaire wizard 3 étapes)
-1. Infos personnelles + adresse
-2. Pièce d'identité (recto/verso) + selfie
-3. Infos professionnelles (selon rôle) + soumission
+## 3. Refonte vétérinaire → agriculteur
 
-### Bannière globale
-Dans `AppLayout` : bandeau jaune si `status !== approved` avec CTA vers `/kyc`.
+- **Supprimer UI** : `src/pages/marketplace/MarketplaceVet.tsx`, `src/components/marketplace/VetServiceCard.tsx` côté marketplace agriculteur.
+- Consolider dans `/veterinaire` : nouvel onglet "Cabinet → Bétail à consulter" avec la même liste (livestock malade). Réservation crée un `service_bookings` → trigger existant crée la `transaction` VET_SERVICE avec milestones.
+- Retirer `/marketplace/vet` de `useRoleAccess`, `App.tsx`, `BottomNav`.
 
-### Ce qui reste accessible sans KYC (lecture seule)
-- Dashboard, profil, paramètres, communauté (lecture), e-learning, catalogue marketplace (browse), KYC page elle-même.
+## 4. Marketplace agriculteur/acheteur — escrow complet
 
-### Ce qui est BLOQUÉ tant que non approuvé
-Toutes les actions d'écriture métier : créer annonce, acheter, offrir, investir, publier projet, réserver service, ajouter animal/culture/parcelle, envoyer message direct commercial.
+Le trigger DB `tx_from_accepted_offer` + `seed_default_milestones` crée déjà les étapes {accord prix, acompte, livraison, validation, paiement libéré}. À câbler côté UI :
 
-## 3. Admin — gestion KYC
-Nouveau composant `<AdminKycPanel />` intégré dans `/admin` :
-- Liste des demandes (filtres : pending/submitted/approved/rejected + par rôle)
-- Détail : photos pièces + selfie + infos + notes
-- Actions : Approuver / Rejeter (avec note) / Demander compléments
-- Compteur "en attente" visible
+- `MarketplaceFarmer.tsx` : chaque offre acceptée affiche un mini `TransactionTimeline` compact avec badge % débloqué. Filtres : "En négociation / En cours / Terminé / Litige".
+- `BuyerOrderTracking.tsx` : remplacer le suivi actuel par le vrai `TransactionTimeline` (rôle = buyer). Sections : progression %, montant en escrow, actions selon rôle, bouton litige.
+- Suppression du `MarketplacePaymentDialog` legacy quand une `transaction` existe déjà (l'acompte devient un milestone à valider).
 
-## 4. Auto-confirm email
-- `supabase--configure_auth` : `auto_confirm_email: true`
+## 5. Litiges depuis suivi commande
 
-## 5. Domaine plant-erea.com
-- `capacitor.config.ts` : supprimer toute URL Lovable si présente, `appId: com.planterea.app`, `appName: PlantErea`, ajouter `server.url: https://plant-erea.com` (optionnel prod) — ou retirer complètement pour builder localement
-- `README.md` : URLs → plant-erea.com
-- `index.html` : og:url, canonical → plant-erea.com
-- `public/manifest.json` : `start_url` = `/`, `scope` = `/`
-- Vérifier les edge functions & code : aucune référence hardcodée à lovable.app / lovableproject.com (à part `id-preview` supabase auto-gen qu'on ne touche pas)
+- `BuyerOrderTracking` et `MarketplaceFarmer` : bouton "Ouvrir un litige" utilise `DisputeDialog` existant (upload preuves bucket `dispute-evidence`, statut `DISPUTED`).
+- `TransactionTimeline` : bannière rouge quand statut = `DISPUTED`, montre la décision admin quand `resolved_*`, avec impact (montant remboursé, libéré, split).
+- Realtime : abonner `transaction_disputes` sur ID de tx.
 
-## Livraison
-Une seule vague — migration + code + config auth + rebrand assets + guard + admin panel.
+## 6. Sync temps réel offres ↔ transactions
 
-## Notes techniques
-- Storage bucket `kyc-documents` privé (pas listing-images qui est public)
-- Signed URLs pour l'admin qui consulte les pièces
-- Le trigger `handle_new_user` reste inchangé ; on crée une ligne `kyc_verifications` status `pending` dans le même trigger
-- Aucun changement business-logic hors garde d'accès
+- Hook interne dans `MarketplaceFarmer` et `BuyerOrderTracking` : channels Supabase sur `marketplace_offers`, `transactions`, `transaction_milestones` filtrés par user.
+- Filtres partagés dans un petit composant `TxStatusFilter` (En attente / Acompte / Livraison / Validation / Payé / Litige / Terminé).
+
+## Fichiers touchés
+
+**Créés**
+- `src/components/transactions/OfferTimelineCard.tsx` (mini timeline pour listes)
+- `src/components/transactions/TxStatusFilter.tsx`
+- `src/pages/ContractSign.tsx` (route `/contract/:transactionId`)
+
+**Édités**
+- `src/components/investor/InvestmentContract.tsx` (charge signature existante, mode bilatéral)
+- `src/lib/signature.ts` (helpers `getSignatures`, `hasSignedBy`)
+- `src/pages/marketplace/MarketplaceInvestor.tsx` (bouton request via admin)
+- `src/components/investor/RequestInvestmentDialog.tsx` (reste, léger polish)
+- `src/components/admin/AdminInvestmentRequests.tsx` (marquer `contract_ready`)
+- `src/pages/FarmerRequests.tsx` (bouton "Voir & signer le contrat" pour investissements approuvés)
+- `src/pages/marketplace/MarketplaceFarmer.tsx` (timeline compacte + filtres)
+- `src/components/buyer/BuyerOrderTracking.tsx` (timeline complète + litige)
+- `src/components/transactions/TransactionTimeline.tsx` (bannière dispute + décision admin)
+- `src/pages/Veterinaire.tsx` (onglet bétail à consulter intégré)
+- `src/hooks/useRoleAccess.tsx` + `src/App.tsx` + `src/components/layout/BottomNav.tsx` (retrait `/marketplace/vet`)
+
+**Supprimés** (UI seulement, DB intacte)
+- `src/pages/marketplace/MarketplaceVet.tsx`
+- `src/components/marketplace/VetServiceCard.tsx` (si non utilisé ailleurs après retrait)
+
+## Notes
+
+- Aucune migration SQL : tables `transactions`, `transaction_milestones`, `transaction_disputes`, `contract_signatures`, triggers `tx_from_*` déjà en place.
+- Signature bilatérale = 2 lignes dans `contract_signatures` (rôles `investor` et `farmer`). La transaction passe à `SIGNED` via update explicite quand les 2 existent.
+- Tout est temps réel via canaux Supabase (déjà pattern utilisé partout).
