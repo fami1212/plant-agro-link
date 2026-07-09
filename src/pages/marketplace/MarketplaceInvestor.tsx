@@ -15,7 +15,7 @@ import { FarmerNetworkFeed } from "@/components/investor/FarmerNetworkFeed";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { MobileMoneyPayment } from "@/components/payment/MobileMoneyPayment";
+import { RequestInvestmentDialog } from "@/components/investor/RequestInvestmentDialog";
 import { SimpleHub } from "@/components/marketplace/SimpleHub";
 import { ViewModeToggle } from "@/components/marketplace/ViewModeToggle";
 import { useViewMode } from "@/hooks/useViewMode";
@@ -31,9 +31,10 @@ export default function MarketplaceInvestor() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   
-  // Payment state
-  const [showPayment, setShowPayment] = useState(false);
+  // Investment request state (via admin mediation)
+  const [showRequest, setShowRequest] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState<InvestmentOpportunity | null>(null);
+  const [farmerName, setFarmerName] = useState("Agriculteur");
   const [investAmount, setInvestAmount] = useState(0);
   
   const [opportunities, setOpportunities] = useState<InvestmentOpportunity[]>([]);
@@ -83,42 +84,18 @@ export default function MarketplaceInvestor() {
     setStats({ total, gains, active });
   };
 
-  const handleInvest = (opp: InvestmentOpportunity) => {
+  const handleInvest = async (opp: InvestmentOpportunity) => {
     const remaining = opp.target_amount - (opp.current_amount || 0);
     setSelectedOpportunity(opp);
-    setInvestAmount(Math.min(100000, remaining)); // Default 100k or remaining
-    setShowPayment(true);
-  };
-
-  const handlePaymentSuccess = async () => {
-    if (!selectedOpportunity || !user) return;
-    
-    // Create investment record
-    await supabase.from("investments").insert({
-      investor_id: user.id,
-      farmer_id: selectedOpportunity.farmer_id,
-      title: selectedOpportunity.title,
-      description: selectedOpportunity.description,
-      amount_invested: investAmount,
-      expected_return_percent: selectedOpportunity.expected_return_percent,
-      expected_harvest_date: selectedOpportunity.expected_harvest_date,
-      field_id: selectedOpportunity.field_id,
-      crop_id: selectedOpportunity.crop_id,
-      status: "actif",
-    });
-
-    // Update opportunity current_amount
-    await supabase
-      .from("investment_opportunities")
-      .update({ 
-        current_amount: (selectedOpportunity.current_amount || 0) + investAmount 
-      })
-      .eq("id", selectedOpportunity.id);
-    
-    setShowPayment(false);
-    setSelectedOpportunity(null);
-    toast.success("Investissement effectué !");
-    fetchData();
+    setInvestAmount(Math.min(100000, remaining));
+    // Resolve farmer name for the dialog
+    const { data: farmer } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("user_id", opp.farmer_id)
+      .maybeSingle();
+    setFarmerName(farmer?.full_name || "Agriculteur");
+    setShowRequest(true);
   };
 
   const filteredOpportunities = opportunities.filter((opp) =>
@@ -425,16 +402,15 @@ export default function MarketplaceInvestor() {
         </Tabs>
       </div>
 
-      {/* Mobile Money Payment */}
+      {/* Admin-mediated investment request */}
       {selectedOpportunity && (
-        <MobileMoneyPayment
-          open={showPayment}
-          onOpenChange={setShowPayment}
-          amount={investAmount}
-          description={`Investissement: ${selectedOpportunity.title}`}
-          paymentType="marketplace"
-          referenceId={selectedOpportunity.id}
-          onSuccess={handlePaymentSuccess}
+        <RequestInvestmentDialog
+          open={showRequest}
+          onOpenChange={setShowRequest}
+          farmerId={selectedOpportunity.farmer_id}
+          farmerName={farmerName}
+          opportunityId={selectedOpportunity.id}
+          suggestedAmount={investAmount}
         />
       )}
         </>
