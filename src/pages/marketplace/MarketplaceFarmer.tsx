@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
   Plus, Search, ShoppingBag, Store, HandCoins, 
-  Package, Loader2, Check, X, Eye, MessageCircle
+  Package, Loader2, Check, X, Eye, MessageCircle, Receipt
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ type Offer = Database["public"]["Tables"]["marketplace_offers"]["Row"] & {
 
 export default function MarketplaceFarmer() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { isSimple, setMode } = useViewMode();
   const [activeTab, setActiveTab] = useState("acheter");
   const [searchQuery, setSearchQuery] = useState("");
