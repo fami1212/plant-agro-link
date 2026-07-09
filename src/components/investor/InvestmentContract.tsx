@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +11,12 @@ import {
 import { FileText, Shield, AlertTriangle, CheckCircle2, Loader2, PenLine, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { AnchorButton } from "@/components/blockchain/AnchorButton";
-import { buildSignature, saveSignature, type SignaturePayload } from "@/lib/signature";
+import {
+  buildSignature,
+  saveSignature,
+  getSignatures,
+  type SignaturePayload,
+} from "@/lib/signature";
 import { useAuth } from "@/hooks/useAuth";
 
 interface ContractData {
@@ -33,16 +39,42 @@ interface InvestmentContractProps {
     type: "transaction" | "investment" | "investment_request";
     id: string | null;
   };
+  /** Which side the current user is signing as. */
+  signerRole?: "investor" | "farmer" | "witness";
 }
 
-export function InvestmentContract({ open, onOpenChange, contractData, onSign, signatureTarget }: InvestmentContractProps) {
+export function InvestmentContract({
+  open,
+  onOpenChange,
+  contractData,
+  onSign,
+  signatureTarget,
+  signerRole = "investor",
+}: InvestmentContractProps) {
   const { user } = useAuth();
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedRisks, setAcceptedRisks] = useState(false);
   const [signing, setSigning] = useState(false);
   const [signed, setSigned] = useState(false);
-  const [signerName, setSignerName] = useState(contractData.investorName || "");
+  const [signerName, setSignerName] = useState(
+    signerRole === "farmer" ? contractData.farmerName || "" : contractData.investorName || "",
+  );
   const [signature, setSignature] = useState<SignaturePayload | null>(null);
+  const [allSignatures, setAllSignatures] = useState<Array<SignaturePayload & { user_id: string }>>([]);
+
+  // Load existing signatures for the target to avoid double-signing bug.
+  useEffect(() => {
+    if (!open || !signatureTarget?.id) return;
+    (async () => {
+      const list = await getSignatures(signatureTarget.type, signatureTarget.id!);
+      setAllSignatures(list as any);
+      const mine = user ? list.find((s: any) => s.user_id === user.id) : null;
+      if (mine) {
+        setSignature(mine);
+        setSigned(true);
+      }
+    })();
+  }, [open, signatureTarget?.id, signatureTarget?.type, user?.id]);
 
   const handleSign = async () => {
     if (!acceptedTerms || !acceptedRisks) {
@@ -56,7 +88,7 @@ export function InvestmentContract({ open, onOpenChange, contractData, onSign, s
     setSigning(true);
     try {
       const sig = await buildSignature(signerName.trim(), {
-        signer_role: "investor",
+        signer_role: signerRole,
         contract_snapshot: {
           projectTitle: contractData.projectTitle,
           farmerName: contractData.farmerName,
@@ -75,6 +107,22 @@ export function InvestmentContract({ open, onOpenChange, contractData, onSign, s
         // Fallback: still persist the audit trail with no target link.
         await saveSignature(user.id, "investment", null, sig);
       }
+      // Refresh the aggregated list for the counterparty banner.
+      if (signatureTarget?.id) {
+        const list = await getSignatures(signatureTarget.type, signatureTarget.id);
+        setAllSignatures(list as any);
+        // If both sides signed, flip transaction status to SIGNED.
+        if (
+          signatureTarget.type === "transaction" &&
+          list.some((s: any) => s.signer_role === "investor") &&
+          list.some((s: any) => s.signer_role === "farmer")
+        ) {
+          await (supabase as any)
+            .from("transactions")
+            .update({ status: "SIGNED", signed_at: new Date().toISOString() })
+            .eq("id", signatureTarget.id);
+        }
+      }
       setSigned(true);
       toast.success("Contrat signé avec succès !");
     } catch {
@@ -89,13 +137,19 @@ export function InvestmentContract({ open, onOpenChange, contractData, onSign, s
 
   const handleClose = () => {
     onOpenChange(false);
+    // Do NOT reset `signed`/`signature` — they may be already-persisted state
+    // (avoids the "please sign again" bug when reopening).
     setTimeout(() => {
       setAcceptedTerms(false);
       setAcceptedRisks(false);
-      setSigned(false);
-      setSignature(null);
     }, 300);
   };
+
+  const counterpartRole = signerRole === "investor" ? "farmer" : "investor";
+  const counterpartSignature = allSignatures.find((s: any) => s.signer_role === counterpartRole);
+  const bothSigned =
+    allSignatures.some((s: any) => s.signer_role === "investor") &&
+    allSignatures.some((s: any) => s.signer_role === "farmer");
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
