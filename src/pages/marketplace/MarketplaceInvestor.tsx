@@ -9,8 +9,9 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { 
   TrendingUp, Briefcase, Search, Loader2, MapPin,
-  Calendar, Percent, ArrowUpRight, Wallet, Users
+  Calendar, Percent, ArrowUpRight, Wallet, Users, FileText
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { FarmerNetworkFeed } from "@/components/investor/FarmerNetworkFeed";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,6 +27,7 @@ type Investment = Database["public"]["Tables"]["investments"]["Row"];
 
 export default function MarketplaceInvestor() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { isSimple, setMode } = useViewMode();
   const [activeTab, setActiveTab] = useState("opportunites");
   const [searchQuery, setSearchQuery] = useState("");
@@ -39,6 +41,9 @@ export default function MarketplaceInvestor() {
   
   const [opportunities, setOpportunities] = useState<InvestmentOpportunity[]>([]);
   const [myInvestments, setMyInvestments] = useState<Investment[]>([]);
+  const [pendingContracts, setPendingContracts] = useState<
+    Array<{ id: string; transaction_id: string; farmer_name: string; amount: number }>
+  >([]);
   const [stats, setStats] = useState({
     total: 0,
     gains: 0,
@@ -46,7 +51,10 @@ export default function MarketplaceInvestor() {
   });
 
   useEffect(() => {
-    if (user) fetchData();
+    if (user) {
+      fetchData();
+      fetchPendingContracts();
+    }
   }, [user]);
 
   const fetchData = async () => {
@@ -82,6 +90,32 @@ export default function MarketplaceInvestor() {
     const active = investments.filter(inv => inv.status === "actif").length;
     
     setStats({ total, gains, active });
+  };
+
+  const fetchPendingContracts = async () => {
+    if (!user) return;
+    const { data } = await (supabase as any)
+      .from("investment_requests")
+      .select("id, transaction_id, farmer_id, amount")
+      .eq("investor_id", user.id)
+      .eq("status", "contract_created")
+      .not("transaction_id", "is", null);
+    const rows = (data as any[]) || [];
+    if (rows.length === 0) return setPendingContracts([]);
+    const ids = Array.from(new Set(rows.map((r) => r.farmer_id)));
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id,full_name")
+      .in("user_id", ids);
+    const map = new Map((profiles || []).map((p: any) => [p.user_id, p.full_name]));
+    setPendingContracts(
+      rows.map((r) => ({
+        id: r.id,
+        transaction_id: r.transaction_id,
+        farmer_name: map.get(r.farmer_id) || "Agriculteur",
+        amount: r.amount,
+      })),
+    );
   };
 
   const handleInvest = async (opp: InvestmentOpportunity) => {
