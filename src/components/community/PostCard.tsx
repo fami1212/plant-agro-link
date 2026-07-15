@@ -48,7 +48,7 @@ export function PostCard({ post, onComment, onRefresh, initialLiked = false }: P
   const handleShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: post.author_name || "Plantéra", text: post.content.slice(0, 100) });
+        await navigator.share({ title: post.author_name || "PlantErea", text: post.content.slice(0, 100) });
       } catch { /* user cancelled */ }
     } else {
       await navigator.clipboard.writeText(post.content);

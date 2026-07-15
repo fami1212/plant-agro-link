@@ -269,6 +269,51 @@ export type Database = {
           },
         ]
       }
+      contract_signatures: {
+        Row: {
+          contract_snapshot: Json | null
+          created_at: string
+          device: string | null
+          id: string
+          ip_address: string | null
+          signed_at: string
+          signer_name: string
+          signer_role: string | null
+          target_id: string | null
+          target_type: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          contract_snapshot?: Json | null
+          created_at?: string
+          device?: string | null
+          id?: string
+          ip_address?: string | null
+          signed_at?: string
+          signer_name: string
+          signer_role?: string | null
+          target_id?: string | null
+          target_type: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          contract_snapshot?: Json | null
+          created_at?: string
+          device?: string | null
+          id?: string
+          ip_address?: string | null
+          signed_at?: string
+          signer_name?: string
+          signer_role?: string | null
+          target_id?: string | null
+          target_type?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       crops: {
         Row: {
           actual_harvest_date: string | null
@@ -990,6 +1035,81 @@ export type Database = {
           },
         ]
       }
+      investment_requests: {
+        Row: {
+          admin_id: string | null
+          admin_notes: string | null
+          amount: number
+          created_at: string
+          currency: string
+          duration_months: number | null
+          expected_return: number | null
+          farmer_agreed: boolean | null
+          farmer_id: string
+          farmer_response: string | null
+          id: string
+          investor_id: string
+          message: string | null
+          opportunity_id: string | null
+          status: string
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_id?: string | null
+          admin_notes?: string | null
+          amount: number
+          created_at?: string
+          currency?: string
+          duration_months?: number | null
+          expected_return?: number | null
+          farmer_agreed?: boolean | null
+          farmer_id: string
+          farmer_response?: string | null
+          id?: string
+          investor_id: string
+          message?: string | null
+          opportunity_id?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string | null
+          admin_notes?: string | null
+          amount?: number
+          created_at?: string
+          currency?: string
+          duration_months?: number | null
+          expected_return?: number | null
+          farmer_agreed?: boolean | null
+          farmer_id?: string
+          farmer_response?: string | null
+          id?: string
+          investor_id?: string
+          message?: string | null
+          opportunity_id?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_requests_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "investment_opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_requests_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investments: {
         Row: {
           actual_return_amount: number | null
@@ -1211,6 +1331,102 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      kyc_verifications: {
+        Row: {
+          address: string | null
+          admin_notes: string | null
+          birth_date: string | null
+          business_reg_number: string | null
+          capital_range: string | null
+          city: string | null
+          company_name: string | null
+          country: string | null
+          created_at: string
+          farm_location: string | null
+          farm_name: string | null
+          farm_size_ha: number | null
+          full_name: string | null
+          id: string
+          id_back_url: string | null
+          id_front_url: string | null
+          id_number: string | null
+          id_type: string | null
+          investor_type: string | null
+          license_number: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          role_requested: Database["public"]["Enums"]["app_role"] | null
+          selfie_url: string | null
+          specialty: string | null
+          status: Database["public"]["Enums"]["kyc_status"]
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          admin_notes?: string | null
+          birth_date?: string | null
+          business_reg_number?: string | null
+          capital_range?: string | null
+          city?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          farm_location?: string | null
+          farm_name?: string | null
+          farm_size_ha?: number | null
+          full_name?: string | null
+          id?: string
+          id_back_url?: string | null
+          id_front_url?: string | null
+          id_number?: string | null
+          id_type?: string | null
+          investor_type?: string | null
+          license_number?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role_requested?: Database["public"]["Enums"]["app_role"] | null
+          selfie_url?: string | null
+          specialty?: string | null
+          status?: Database["public"]["Enums"]["kyc_status"]
+          submitted_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          admin_notes?: string | null
+          birth_date?: string | null
+          business_reg_number?: string | null
+          capital_range?: string | null
+          city?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          farm_location?: string | null
+          farm_name?: string | null
+          farm_size_ha?: number | null
+          full_name?: string | null
+          id?: string
+          id_back_url?: string | null
+          id_front_url?: string | null
+          id_number?: string | null
+          id_type?: string | null
+          investor_type?: string | null
+          license_number?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role_requested?: Database["public"]["Enums"]["app_role"] | null
+          selfie_url?: string | null
+          specialty?: string | null
+          status?: Database["public"]["Enums"]["kyc_status"]
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       livestock: {
         Row: {
@@ -2150,6 +2366,243 @@ export type Database = {
         }
         Relationships: []
       }
+      transaction_dispute_messages: {
+        Row: {
+          attachments: string[] | null
+          created_at: string
+          dispute_id: string
+          id: string
+          is_admin_message: boolean | null
+          message: string
+          sender_id: string
+        }
+        Insert: {
+          attachments?: string[] | null
+          created_at?: string
+          dispute_id: string
+          id?: string
+          is_admin_message?: boolean | null
+          message: string
+          sender_id: string
+        }
+        Update: {
+          attachments?: string[] | null
+          created_at?: string
+          dispute_id?: string
+          id?: string
+          is_admin_message?: boolean | null
+          message?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_dispute_messages_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "transaction_disputes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transaction_disputes: {
+        Row: {
+          admin_decision: string | null
+          admin_id: string | null
+          admin_notes: string | null
+          buyer_refund_percent: number | null
+          created_at: string
+          description: string | null
+          evidence_urls: string[] | null
+          id: string
+          opened_by: string
+          reason: string
+          resolved_at: string | null
+          seller_payment_percent: number | null
+          status: string
+          transaction_id: string
+          updated_at: string
+        }
+        Insert: {
+          admin_decision?: string | null
+          admin_id?: string | null
+          admin_notes?: string | null
+          buyer_refund_percent?: number | null
+          created_at?: string
+          description?: string | null
+          evidence_urls?: string[] | null
+          id?: string
+          opened_by: string
+          reason: string
+          resolved_at?: string | null
+          seller_payment_percent?: number | null
+          status?: string
+          transaction_id: string
+          updated_at?: string
+        }
+        Update: {
+          admin_decision?: string | null
+          admin_id?: string | null
+          admin_notes?: string | null
+          buyer_refund_percent?: number | null
+          created_at?: string
+          description?: string | null
+          evidence_urls?: string[] | null
+          id?: string
+          opened_by?: string
+          reason?: string
+          resolved_at?: string | null
+          seller_payment_percent?: number | null
+          status?: string
+          transaction_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_disputes_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transaction_milestones: {
+        Row: {
+          amount: number
+          amount_percent: number
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          id: string
+          label: string
+          notes: string | null
+          order_index: number
+          proof_url: string | null
+          status: Database["public"]["Enums"]["milestone_status"]
+          transaction_id: string
+          updated_at: string
+          validator_role: string
+        }
+        Insert: {
+          amount?: number
+          amount_percent?: number
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          label: string
+          notes?: string | null
+          order_index: number
+          proof_url?: string | null
+          status?: Database["public"]["Enums"]["milestone_status"]
+          transaction_id: string
+          updated_at?: string
+          validator_role?: string
+        }
+        Update: {
+          amount?: number
+          amount_percent?: number
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          label?: string
+          notes?: string | null
+          order_index?: number
+          proof_url?: string | null
+          status?: Database["public"]["Enums"]["milestone_status"]
+          transaction_id?: string
+          updated_at?: string
+          validator_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_milestones_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          amount_locked: number
+          amount_released: number
+          booking_id: string | null
+          cancelled_at: string | null
+          completed_at: string | null
+          contract_blockchain_tx: string | null
+          contract_hash: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          escrow_enabled: boolean
+          id: string
+          initiator_id: string
+          listing_id: string | null
+          metadata: Json | null
+          opportunity_id: string | null
+          receiver_id: string
+          signed_at: string | null
+          status: Database["public"]["Enums"]["transaction_status"]
+          title: string | null
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          amount_locked?: number
+          amount_released?: number
+          booking_id?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          contract_blockchain_tx?: string | null
+          contract_hash?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          escrow_enabled?: boolean
+          id?: string
+          initiator_id: string
+          listing_id?: string | null
+          metadata?: Json | null
+          opportunity_id?: string | null
+          receiver_id: string
+          signed_at?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          title?: string | null
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          amount_locked?: number
+          amount_released?: number
+          booking_id?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          contract_blockchain_tx?: string | null
+          contract_hash?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          escrow_enabled?: boolean
+          id?: string
+          initiator_id?: string
+          listing_id?: string | null
+          metadata?: Json | null
+          opportunity_id?: string | null
+          receiver_id?: string
+          signed_at?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          title?: string | null
+          type?: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       typing_indicators: {
         Row: {
           conversation_id: string
@@ -2288,6 +2741,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_kyc_duplicate_groups: {
+        Args: never
+        Returns: {
+          count: number
+          id_number: string
+          user_ids: string[]
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2295,10 +2756,12 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_user_approved: { Args: { _user_id: string }; Returns: boolean }
       recalculate_opportunity_amount: {
         Args: { opp_id: string }
         Returns: undefined
       }
+      seed_default_milestones: { Args: { _tx_id: string }; Returns: undefined }
     }
     Enums: {
       app_role:
@@ -2332,6 +2795,7 @@ export type Database = {
         | "irrigation"
         | "phytosanitaire"
         | "autre"
+      kyc_status: "pending" | "submitted" | "approved" | "rejected"
       listing_status:
         | "brouillon"
         | "publie"
@@ -2355,6 +2819,7 @@ export type Database = {
         | "porcin"
         | "equin"
         | "autre"
+      milestone_status: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "SKIPPED"
       offer_status:
         | "en_attente"
         | "acceptee"
@@ -2375,6 +2840,16 @@ export type Database = {
         | "calcaire"
         | "humifere"
         | "mixte"
+      transaction_status:
+        | "DRAFT"
+        | "NEGOTIATION"
+        | "CONTRACT_PENDING"
+        | "SIGNED"
+        | "IN_PROGRESS"
+        | "COMPLETED"
+        | "DISPUTED"
+        | "CANCELLED"
+      transaction_type: "PRODUCT_SALE" | "INVESTMENT" | "VET_SERVICE"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2537,6 +3012,7 @@ export const Constants = {
         "phytosanitaire",
         "autre",
       ],
+      kyc_status: ["pending", "submitted", "approved", "rejected"],
       listing_status: [
         "brouillon",
         "publie",
@@ -2563,6 +3039,7 @@ export const Constants = {
         "equin",
         "autre",
       ],
+      milestone_status: ["PENDING", "IN_PROGRESS", "COMPLETED", "SKIPPED"],
       offer_status: [
         "en_attente",
         "acceptee",
@@ -2586,6 +3063,17 @@ export const Constants = {
         "humifere",
         "mixte",
       ],
+      transaction_status: [
+        "DRAFT",
+        "NEGOTIATION",
+        "CONTRACT_PENDING",
+        "SIGNED",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "DISPUTED",
+        "CANCELLED",
+      ],
+      transaction_type: ["PRODUCT_SALE", "INVESTMENT", "VET_SERVICE"],
     },
   },
 } as const

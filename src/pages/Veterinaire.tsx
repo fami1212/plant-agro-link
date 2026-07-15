@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { AIContextualTip } from "@/components/ai/AIContextualTip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { TabsContent } from "@/components/ui/tabs";
 import { HubTabs } from "@/components/common/HubTabs";
 import {
@@ -29,7 +30,9 @@ import { VetPatientsList } from "@/components/veterinaire/VetPatientsList";
 import { VetMedicalRecords } from "@/components/veterinaire/VetMedicalRecords";
 import { AnimalPatientDetails } from "@/components/veterinaire/AnimalPatientDetails";
 import { VetBilling } from "@/components/veterinaire/VetBilling";
+import { SickAnimalsMarket } from "@/components/veterinaire/SickAnimalsMarket";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { Heart as HeartIcon } from "lucide-react";
 
 interface Booking {
   id: string;
@@ -265,6 +268,23 @@ export default function Veterinaire() {
         }
       />
 
+      {/* Sick livestock shortcut - jumps to integrated tab */}
+      <div className="px-4 mb-3">
+        <Button
+          variant="outline"
+          className="w-full justify-between h-auto py-3"
+          onClick={() => setActiveTab("sick")}
+        >
+          <span className="flex items-center gap-2 text-sm">
+            <HeartIcon className="w-4 h-4 text-destructive" />
+            Bétail malade à consulter
+          </span>
+          <Badge variant="secondary" className="text-[10px]">
+            {sickPatients}
+          </Badge>
+        </Button>
+      </div>
+
       {/* AI Contextual Tip */}
       <div className="px-4 mb-4">
         <AIContextualTip
@@ -299,6 +319,7 @@ export default function Veterinaire() {
           items={[
             { value: "rdv", label: t("vet.appointments"), icon: Calendar },
             { value: "patients", label: t("vet.patients"), icon: Users },
+            { value: "sick", label: "Bétail malade", icon: HeartIcon },
             { value: "dossiers", label: t("vet.records"), icon: FolderOpen },
             { value: "diagnostic", label: t("vet.aiDiagnosis"), icon: Stethoscope },
             { value: "billing", label: t("vet.revenue"), icon: Heart },
@@ -321,6 +342,10 @@ export default function Veterinaire() {
               onUpdate={openUpdate}
               onViewDetails={openDetails}
             />
+          </TabsContent>
+
+          <TabsContent value="sick" className="mt-0">
+            <SickAnimalsMarket />
           </TabsContent>
 
           {/* Medical Records Tab */}

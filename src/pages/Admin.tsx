@@ -60,6 +60,9 @@ import { AdminUserModeration } from "@/components/admin/AdminUserModeration";
 import { AdminListingModeration } from "@/components/admin/AdminListingModeration";
 import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
 import { AdminServiceProviders } from "@/components/admin/AdminServiceProviders";
+import { AdminKycPanel } from "@/components/admin/AdminKycPanel";
+import { AdminTransactionDisputes } from "@/components/admin/AdminTransactionDisputes";
+import { AdminInvestmentRequests } from "@/components/admin/AdminInvestmentRequests";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 type Profile = DatabaseTypes["public"]["Tables"]["profiles"]["Row"];
@@ -372,6 +375,10 @@ export default function Admin() {
               <Scale className="w-4 h-4" />
               <span className="text-sm">{t("admin.disputes")}</span>
             </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="invrequests" className="flex items-center gap-2 px-4">
+              <TrendingUp className="w-4 h-4" />
+              <span className="text-sm">Demandes invest.</span>
+            </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="transactions" className="flex items-center gap-2 px-4">
               <DollarSign className="w-4 h-4" />
               <span className="text-sm">{t("admin.payments")}</span>
@@ -383,6 +390,10 @@ export default function Admin() {
             <ScrollableTabsTrigger value="providers" className="flex items-center gap-2 px-4">
               <Activity className="w-4 h-4" />
               <span className="text-sm">{t("admin.providers")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="kyc" className="flex items-center gap-2 px-4">
+              <UserCheck className="w-4 h-4" />
+              <span className="text-sm">KYC</span>
             </ScrollableTabsTrigger>
           </ScrollableTabsList>
 
@@ -403,7 +414,14 @@ export default function Admin() {
 
           {/* Disputes Tab */}
           <ScrollableTabsContent value="disputes">
-            <AdminDisputePanel />
+            <div className="space-y-6">
+              <AdminTransactionDisputes />
+              <AdminDisputePanel />
+            </div>
+          </ScrollableTabsContent>
+
+          <ScrollableTabsContent value="invrequests">
+            <AdminInvestmentRequests />
           </ScrollableTabsContent>
 
           {/* Transactions Tab */}
@@ -443,6 +461,11 @@ export default function Admin() {
           {/* Service Providers Tab */}
           <ScrollableTabsContent value="providers">
             <AdminServiceProviders />
+          </ScrollableTabsContent>
+
+          {/* KYC Verification Tab */}
+          <ScrollableTabsContent value="kyc">
+            <AdminKycPanel />
           </ScrollableTabsContent>
         </ScrollableTabs>
       </div>

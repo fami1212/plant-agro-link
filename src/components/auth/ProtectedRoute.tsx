@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
+import { useKycStatus } from '@/hooks/useKycStatus';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -13,11 +14,12 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, requiredRole, allowedRoles }: ProtectedRouteProps) {
   const { user, loading, rolesLoading, hasRole } = useAuth();
   const { canAccessRoute } = useRoleAccess();
+  const { kyc, loading: kycLoading, isApproved } = useKycStatus();
   const location = useLocation();
 
   // Wait for both session AND roles to load before any access decision,
   // otherwise users get redirected to /dashboard with an empty roles list.
-  if (loading || (user && rolesLoading)) {
+  if (loading || (user && (rolesLoading || kycLoading))) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
@@ -30,6 +32,16 @@ export function ProtectedRoute({ children, requiredRole, allowedRoles }: Protect
 
   if (!user) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  // Force KYC completion and admin approval before allowing app access.
+  // Admins bypass; /kyc, /settings, /auth remain reachable so users can act.
+  const kycExempt =
+    location.pathname.startsWith('/kyc') ||
+    location.pathname.startsWith('/settings') ||
+    location.pathname.startsWith('/auth');
+  if (!hasRole('admin') && !isApproved && !kycExempt) {
+    return <Navigate to="/kyc" replace state={{ reason: kyc?.status ?? 'pending' }} />;
   }
 
   // Check if route is accessible based on role

@@ -3,6 +3,7 @@ import Investisseur from "./pages/Investisseur";
 import Veterinaire from "./pages/Veterinaire";
 import Settings from "./pages/Settings";
 import FarmerInvestments from "./pages/FarmerInvestments";
+import FarmerRequests from "./pages/FarmerRequests";
 import Trace from "./pages/Trace";
 import Admin from "./pages/Admin";
 import Agriculteur from "./pages/Agriculteur";
@@ -37,6 +38,9 @@ import MarketplaceBuyer from "./pages/marketplace/MarketplaceBuyer";
 import MarketplaceInvestor from "./pages/marketplace/MarketplaceInvestor";
 import IoT from "./pages/IoT";
 import Devices from "./pages/Devices";
+import KycVerification from "./pages/KycVerification";
+import Transactions from "./pages/Transactions";
+import ContractSign from "./pages/ContractSign";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -71,6 +75,22 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/kyc"
+                  element={
+                    <ProtectedRoute>
+                      <KycVerification />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/transactions"
+                  element={
+                    <ProtectedRoute>
+                      <Transactions />
                     </ProtectedRoute>
                   }
                 />
@@ -141,6 +161,14 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/contract/:transactionId"
+                  element={
+                    <ProtectedRoute>
+                      <ContractSign />
+                    </ProtectedRoute>
+                  }
+                />
                 {/* Agriculteur IoT */}
                 <Route
                   path="/iot"
@@ -208,6 +236,14 @@ const App = () => (
                   element={
                     <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
                       <FarmerInvestments />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/farmer-requests"
+                  element={
+                    <ProtectedRoute allowedRoles={['agriculteur', 'admin']}>
+                      <FarmerRequests />
                     </ProtectedRoute>
                   }
                 />

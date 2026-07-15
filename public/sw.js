@@ -62,7 +62,7 @@ self.addEventListener('fetch', (event) => {
 // Push notification handler
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
-  const title = data.title || 'Plantéra';
+  const title = data.title || 'PlantErea';
   const options = {
     body: data.message || 'Nouvelle notification',
     icon: '/icons/icon-192.png',

@@ -9,12 +9,14 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { 
   TrendingUp, Briefcase, Search, Loader2, MapPin,
-  Calendar, Percent, ArrowUpRight, Wallet
+  Calendar, Percent, ArrowUpRight, Wallet, Users, FileText
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { FarmerNetworkFeed } from "@/components/investor/FarmerNetworkFeed";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { MobileMoneyPayment } from "@/components/payment/MobileMoneyPayment";
+import { RequestInvestmentDialog } from "@/components/investor/RequestInvestmentDialog";
 import { SimpleHub } from "@/components/marketplace/SimpleHub";
 import { ViewModeToggle } from "@/components/marketplace/ViewModeToggle";
 import { useViewMode } from "@/hooks/useViewMode";
@@ -25,18 +27,23 @@ type Investment = Database["public"]["Tables"]["investments"]["Row"];
 
 export default function MarketplaceInvestor() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { isSimple, setMode } = useViewMode();
   const [activeTab, setActiveTab] = useState("opportunites");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   
-  // Payment state
-  const [showPayment, setShowPayment] = useState(false);
+  // Investment request state (via admin mediation)
+  const [showRequest, setShowRequest] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState<InvestmentOpportunity | null>(null);
+  const [farmerName, setFarmerName] = useState("Agriculteur");
   const [investAmount, setInvestAmount] = useState(0);
   
   const [opportunities, setOpportunities] = useState<InvestmentOpportunity[]>([]);
   const [myInvestments, setMyInvestments] = useState<Investment[]>([]);
+  const [pendingContracts, setPendingContracts] = useState<
+    Array<{ id: string; transaction_id: string; farmer_name: string; amount: number }>
+  >([]);
   const [stats, setStats] = useState({
     total: 0,
     gains: 0,
@@ -44,7 +51,10 @@ export default function MarketplaceInvestor() {
   });
 
   useEffect(() => {
-    if (user) fetchData();
+    if (user) {
+      fetchData();
+      fetchPendingContracts();
+    }
   }, [user]);
 
   const fetchData = async () => {
@@ -82,42 +92,44 @@ export default function MarketplaceInvestor() {
     setStats({ total, gains, active });
   };
 
-  const handleInvest = (opp: InvestmentOpportunity) => {
-    const remaining = opp.target_amount - (opp.current_amount || 0);
-    setSelectedOpportunity(opp);
-    setInvestAmount(Math.min(100000, remaining)); // Default 100k or remaining
-    setShowPayment(true);
+  const fetchPendingContracts = async () => {
+    if (!user) return;
+    const { data } = await (supabase as any)
+      .from("investment_requests")
+      .select("id, transaction_id, farmer_id, amount")
+      .eq("investor_id", user.id)
+      .eq("status", "contract_created")
+      .not("transaction_id", "is", null);
+    const rows = (data as any[]) || [];
+    if (rows.length === 0) return setPendingContracts([]);
+    const ids = Array.from(new Set(rows.map((r) => r.farmer_id)));
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id,full_name")
+      .in("user_id", ids);
+    const map = new Map((profiles || []).map((p: any) => [p.user_id, p.full_name]));
+    setPendingContracts(
+      rows.map((r) => ({
+        id: r.id,
+        transaction_id: r.transaction_id,
+        farmer_name: map.get(r.farmer_id) || "Agriculteur",
+        amount: r.amount,
+      })),
+    );
   };
 
-  const handlePaymentSuccess = async () => {
-    if (!selectedOpportunity || !user) return;
-    
-    // Create investment record
-    await supabase.from("investments").insert({
-      investor_id: user.id,
-      farmer_id: selectedOpportunity.farmer_id,
-      title: selectedOpportunity.title,
-      description: selectedOpportunity.description,
-      amount_invested: investAmount,
-      expected_return_percent: selectedOpportunity.expected_return_percent,
-      expected_harvest_date: selectedOpportunity.expected_harvest_date,
-      field_id: selectedOpportunity.field_id,
-      crop_id: selectedOpportunity.crop_id,
-      status: "actif",
-    });
-
-    // Update opportunity current_amount
-    await supabase
-      .from("investment_opportunities")
-      .update({ 
-        current_amount: (selectedOpportunity.current_amount || 0) + investAmount 
-      })
-      .eq("id", selectedOpportunity.id);
-    
-    setShowPayment(false);
-    setSelectedOpportunity(null);
-    toast.success("Investissement effectué !");
-    fetchData();
+  const handleInvest = async (opp: InvestmentOpportunity) => {
+    const remaining = opp.target_amount - (opp.current_amount || 0);
+    setSelectedOpportunity(opp);
+    setInvestAmount(Math.min(100000, remaining));
+    // Resolve farmer name for the dialog
+    const { data: farmer } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("user_id", opp.farmer_id)
+      .maybeSingle();
+    setFarmerName(farmer?.full_name || "Agriculteur");
+    setShowRequest(true);
   };
 
   const filteredOpportunities = opportunities.filter((opp) =>
@@ -211,6 +223,33 @@ export default function MarketplaceInvestor() {
 
       {!isSimple && (
         <>
+      {/* Pending contracts to sign */}
+      {pendingContracts.length > 0 && (
+        <div className="px-4 mb-3 space-y-2">
+          {pendingContracts.map((c) => (
+            <Card
+              key={c.id}
+              className="p-3 bg-primary/5 border-primary/30 flex items-center gap-3"
+            >
+              <FileText className="w-5 h-5 text-primary shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate">
+                  Contrat prêt à signer — {c.farmer_name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {c.amount.toLocaleString()} FCFA
+                </p>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => navigate(`/contract/${c.transaction_id}`)}
+              >
+                Signer
+              </Button>
+            </Card>
+          ))}
+        </div>
+      )}
       {/* Portfolio Summary */}
       <div className="px-4 mb-4">
         <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20 overflow-hidden relative">
@@ -262,7 +301,11 @@ export default function MarketplaceInvestor() {
 
       <div className="px-4 pb-24">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 h-12">
+          <TabsList className="grid w-full grid-cols-3 h-12">
+            <TabsTrigger value="network" className="flex flex-col gap-0.5 text-[11px]">
+              <Users className="w-4 h-4" />
+              Réseau
+            </TabsTrigger>
             <TabsTrigger value="opportunites" className="flex flex-col gap-0.5 text-[11px]">
               <TrendingUp className="w-4 h-4" />
               Opportunités
@@ -272,6 +315,10 @@ export default function MarketplaceInvestor() {
               Portfolio
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="network" className="mt-4">
+            <FarmerNetworkFeed />
+          </TabsContent>
 
           {/* OPPORTUNITÉS */}
           <TabsContent value="opportunites" className="mt-4 space-y-3">
@@ -348,7 +395,7 @@ export default function MarketplaceInvestor() {
                           disabled={remaining <= 0}
                         >
                           <Wallet className="w-4 h-4 mr-1" />
-                          Investir maintenant
+                          Demander à investir
                         </Button>
                       </CardContent>
                     </Card>
@@ -416,16 +463,15 @@ export default function MarketplaceInvestor() {
         </Tabs>
       </div>
 
-      {/* Mobile Money Payment */}
+      {/* Admin-mediated investment request */}
       {selectedOpportunity && (
-        <MobileMoneyPayment
-          open={showPayment}
-          onOpenChange={setShowPayment}
-          amount={investAmount}
-          description={`Investissement: ${selectedOpportunity.title}`}
-          paymentType="marketplace"
-          referenceId={selectedOpportunity.id}
-          onSuccess={handlePaymentSuccess}
+        <RequestInvestmentDialog
+          open={showRequest}
+          onOpenChange={setShowRequest}
+          farmerId={selectedOpportunity.farmer_id}
+          farmerName={farmerName}
+          opportunityId={selectedOpportunity.id}
+          suggestedAmount={investAmount}
         />
       )}
         </>

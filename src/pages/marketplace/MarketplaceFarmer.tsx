@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
   Plus, Search, ShoppingBag, Store, HandCoins, 
-  Package, Loader2, Check, X, Eye
+  Package, Loader2, Check, X, Eye, MessageCircle, Receipt
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -18,6 +19,7 @@ import { SimpleHub, type HubAction } from "@/components/marketplace/SimpleHub";
 import { ViewModeToggle } from "@/components/marketplace/ViewModeToggle";
 import { useViewMode } from "@/hooks/useViewMode";
 import { PublishHarvestWizard } from "@/components/marketplace/PublishHarvestWizard";
+import { DirectMessageDialog } from "@/components/messaging/DirectMessageDialog";
 import type { Database } from "@/integrations/supabase/types";
 
 type Listing = Database["public"]["Tables"]["marketplace_listings"]["Row"];
@@ -29,6 +31,7 @@ type Offer = Database["public"]["Tables"]["marketplace_offers"]["Row"] & {
 
 export default function MarketplaceFarmer() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { isSimple, setMode } = useViewMode();
   const [activeTab, setActiveTab] = useState("acheter");
   const [searchQuery, setSearchQuery] = useState("");
@@ -38,6 +41,7 @@ export default function MarketplaceFarmer() {
   // Payment state
   const [showPayment, setShowPayment] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Listing | null>(null);
+  const [chatWith, setChatWith] = useState<{ userId: string; name: string; context?: string } | null>(null);
   
   const [listings, setListings] = useState<Listing[]>([]);
   const [sellerNames, setSellerNames] = useState<Record<string, string>>({});
@@ -456,6 +460,14 @@ export default function MarketplaceFarmer() {
                         >
                           <Check className="w-4 h-4" />
                         </Button>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-8 w-8"
+                          onClick={() => setChatWith({ userId: offer.buyer_id, name: offer.buyer_name || "Acheteur", context: offer.listing?.title })}
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   </Card>
@@ -499,6 +511,16 @@ export default function MarketplaceFarmer() {
                         </div>
                         {getStatusBadge(offer.status)}
                       </div>
+                      {offer.status === "acceptee" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full mt-2 gap-1.5"
+                          onClick={() => navigate("/transactions")}
+                        >
+                          <Receipt className="w-3.5 h-3.5" /> Voir suivi escrow & litiges
+                        </Button>
+                      )}
                     </Card>
                   ))}
                 </>
@@ -528,6 +550,16 @@ export default function MarketplaceFarmer() {
           paymentType="marketplace"
           referenceId={selectedItem.id}
           onSuccess={handlePaymentSuccess}
+        />
+      )}
+
+      {chatWith && (
+        <DirectMessageDialog
+          open={!!chatWith}
+          onOpenChange={(o) => !o && setChatWith(null)}
+          otherUserId={chatWith.userId}
+          otherUserName={chatWith.name}
+          context={chatWith.context}
         />
       )}
         </>

@@ -18,7 +18,7 @@ export function PageHeader({ title, subtitle, action, className, showLogo = fals
           {showLogo && (
             <img
               src={logoIcon}
-              alt="Plantera"
+              alt="PlantErea"
               className="w-8 h-8 rounded-xl shrink-0"
             />
           )}

@@ -3,7 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Home, MapPin, Wheat, PawPrint, ShoppingBag, Menu,
   User, LogOut, Settings, Activity, Stethoscope,
-  TrendingUp, Shield, Tractor, Brain, Users, GraduationCap, Truck,
+  TrendingUp, Shield, Tractor, Brain, Users, GraduationCap, Truck, BadgeCheck,
+  Receipt, Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -42,6 +43,8 @@ const menuSections: MenuSection[] = [
     titleKey: "menu.section.tools",
     items: [
       { icon: Brain, labelKey: "nav.ai", path: "/ia", roles: ['agriculteur', 'admin'], highlight: true },
+      { icon: Receipt, labelKey: "nav.transactions", path: "/transactions", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'], highlight: true },
+      { icon: Inbox, labelKey: "nav.requests", path: "/farmer-requests", roles: ['agriculteur', 'admin'], highlight: true },
       { icon: Wheat, labelKey: "nav.crops", path: "/cultures", roles: ['agriculteur', 'admin'] },
       { icon: PawPrint, labelKey: "nav.livestock", path: "/betail", roles: ['agriculteur', 'veterinaire', 'admin'] },
       { icon: MapPin, labelKey: "nav.parcels", path: "/parcelles", roles: ['agriculteur', 'admin'] },
@@ -60,6 +63,7 @@ const menuSections: MenuSection[] = [
     titleKey: "menu.section.account",
     items: [
       { icon: Shield, labelKey: "nav.admin", path: "/admin", roles: ['admin'] },
+      { icon: BadgeCheck, labelKey: "nav.kyc", path: "/kyc", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur'] },
       { icon: Settings, labelKey: "nav.settings", path: "/settings", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'] },
     ],
   },
@@ -203,8 +207,8 @@ export function BottomNav() {
             <div className="w-12 h-1 bg-border rounded-full mx-auto mt-3 mb-4" />
 
             <div className="flex items-center justify-center gap-2 mb-3">
-              <img src={logoIcon} alt="Plantera" className="w-7 h-7 rounded-lg" />
-              <span className="font-bold text-base text-foreground">Plantera</span>
+              <img src={logoIcon} alt="PlantErea" className="w-7 h-7 rounded-lg" />
+              <span className="font-bold text-base text-foreground">PlantErea</span>
             </div>
 
             {user && (

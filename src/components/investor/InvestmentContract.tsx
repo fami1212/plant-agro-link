@@ -1,14 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { FileText, Shield, AlertTriangle, CheckCircle2, Download, Loader2 } from "lucide-react";
+import { FileText, Shield, AlertTriangle, CheckCircle2, Loader2, PenLine, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { AnchorButton } from "@/components/blockchain/AnchorButton";
+import {
+  buildSignature,
+  saveSignature,
+  getSignatures,
+  type SignaturePayload,
+} from "@/lib/signature";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ContractData {
   projectTitle: string;
@@ -24,23 +33,96 @@ interface InvestmentContractProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   contractData: ContractData;
-  onSign: () => Promise<void>;
+  onSign: (signature?: SignaturePayload) => Promise<void>;
+  /** When provided, the signature is persisted and linked to this target. */
+  signatureTarget?: {
+    type: "transaction" | "investment" | "investment_request";
+    id: string | null;
+  };
+  /** Which side the current user is signing as. */
+  signerRole?: "investor" | "farmer" | "witness";
 }
 
-export function InvestmentContract({ open, onOpenChange, contractData, onSign }: InvestmentContractProps) {
+export function InvestmentContract({
+  open,
+  onOpenChange,
+  contractData,
+  onSign,
+  signatureTarget,
+  signerRole = "investor",
+}: InvestmentContractProps) {
+  const { user } = useAuth();
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedRisks, setAcceptedRisks] = useState(false);
   const [signing, setSigning] = useState(false);
   const [signed, setSigned] = useState(false);
+  const [signerName, setSignerName] = useState(
+    signerRole === "farmer" ? contractData.farmerName || "" : contractData.investorName || "",
+  );
+  const [signature, setSignature] = useState<SignaturePayload | null>(null);
+  const [allSignatures, setAllSignatures] = useState<Array<SignaturePayload & { user_id: string }>>([]);
+
+  // Load existing signatures for the target to avoid double-signing bug.
+  useEffect(() => {
+    if (!open || !signatureTarget?.id) return;
+    (async () => {
+      const list = await getSignatures(signatureTarget.type, signatureTarget.id!);
+      setAllSignatures(list as any);
+      const mine = user ? list.find((s: any) => s.user_id === user.id) : null;
+      if (mine) {
+        setSignature(mine);
+        setSigned(true);
+      }
+    })();
+  }, [open, signatureTarget?.id, signatureTarget?.type, user?.id]);
 
   const handleSign = async () => {
     if (!acceptedTerms || !acceptedRisks) {
       toast.error("Veuillez accepter toutes les conditions");
       return;
     }
+    if (!signerName.trim()) {
+      toast.error("Saisissez votre nom complet pour signer");
+      return;
+    }
     setSigning(true);
     try {
-      await onSign();
+      const sig = await buildSignature(signerName.trim(), {
+        signer_role: signerRole,
+        contract_snapshot: {
+          projectTitle: contractData.projectTitle,
+          farmerName: contractData.farmerName,
+          investorName: signerName.trim(),
+          amount: contractData.amount,
+          returnPercent: contractData.returnPercent,
+          harvestDate: contractData.harvestDate,
+          contractDate: contractData.contractDate,
+        },
+      });
+      setSignature(sig);
+      await onSign(sig);
+      if (user && signatureTarget) {
+        await saveSignature(user.id, signatureTarget.type, signatureTarget.id, sig);
+      } else if (user) {
+        // Fallback: still persist the audit trail with no target link.
+        await saveSignature(user.id, "investment", null, sig);
+      }
+      // Refresh the aggregated list for the counterparty banner.
+      if (signatureTarget?.id) {
+        const list = await getSignatures(signatureTarget.type, signatureTarget.id);
+        setAllSignatures(list as any);
+        // If both sides signed, flip transaction status to SIGNED.
+        if (
+          signatureTarget.type === "transaction" &&
+          list.some((s: any) => s.signer_role === "investor") &&
+          list.some((s: any) => s.signer_role === "farmer")
+        ) {
+          await (supabase as any)
+            .from("transactions")
+            .update({ status: "SIGNED", signed_at: new Date().toISOString() })
+            .eq("id", signatureTarget.id);
+        }
+      }
       setSigned(true);
       toast.success("Contrat signé avec succès !");
     } catch {
@@ -55,12 +137,19 @@ export function InvestmentContract({ open, onOpenChange, contractData, onSign }:
 
   const handleClose = () => {
     onOpenChange(false);
+    // Do NOT reset `signed`/`signature` — they may be already-persisted state
+    // (avoids the "please sign again" bug when reopening).
     setTimeout(() => {
       setAcceptedTerms(false);
       setAcceptedRisks(false);
-      setSigned(false);
     }, 300);
   };
+
+  const counterpartRole = signerRole === "investor" ? "farmer" : "investor";
+  const counterpartSignature = allSignatures.find((s: any) => s.signer_role === counterpartRole);
+  const bothSigned =
+    allSignatures.some((s: any) => s.signer_role === "investor") &&
+    allSignatures.some((s: any) => s.signer_role === "farmer");
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -73,6 +162,41 @@ export function InvestmentContract({ open, onOpenChange, contractData, onSign }:
         </DialogHeader>
 
         <div className="space-y-4 py-2">
+          {/* Bilateral signature status */}
+          {signatureTarget?.id && (
+            <div
+              className={`rounded-lg border p-3 text-xs space-y-1 ${
+                bothSigned
+                  ? "bg-green-500/10 border-green-500/30"
+                  : "bg-muted/40 border-border"
+              }`}
+            >
+              <p className="font-semibold">
+                {bothSigned
+                  ? "✅ Contrat signé par les deux parties"
+                  : "En attente des deux signatures"}
+              </p>
+              <p>
+                Investisseur :{" "}
+                {allSignatures.find((s: any) => s.signer_role === "investor")
+                  ? "✔ signé"
+                  : "— en attente"}
+              </p>
+              <p>
+                Agriculteur :{" "}
+                {allSignatures.find((s: any) => s.signer_role === "farmer")
+                  ? "✔ signé"
+                  : "— en attente"}
+              </p>
+              {counterpartSignature && (
+                <p className="pt-1 border-t border-border/40 text-muted-foreground">
+                  Contrepartie : <b>{counterpartSignature.signer_name}</b> le{" "}
+                  {new Date(counterpartSignature.signed_at).toLocaleString()}
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Contract Header */}
           <div className="text-center p-4 rounded-xl bg-muted/50 border">
             <p className="text-xs text-muted-foreground">Contrat N°</p>
@@ -136,7 +260,7 @@ export function InvestmentContract({ open, onOpenChange, contractData, onSign }:
               <h4 className="font-semibold text-sm">Clauses principales</h4>
               <ul className="text-xs text-muted-foreground space-y-1.5 list-disc pl-4">
                 <li>Le rendement est estimatif et dépend des conditions agricoles et climatiques.</li>
-                <li>Les fonds sont sécurisés via un contrat intelligent sur la blockchain Plantéra.</li>
+                <li>Les fonds sont sécurisés via un contrat intelligent sur la blockchain PlantErea.</li>
                 <li>Le remboursement est prévu après la récolte et la vente des produits.</li>
                 <li>En cas de sinistre majeur, une médiation sera organisée sur la plateforme.</li>
                 <li>La plateforme prélève des frais de 2% sur les gains réalisés.</li>
@@ -156,6 +280,20 @@ export function InvestmentContract({ open, onOpenChange, contractData, onSign }:
           {/* Acceptance */}
           {!signed && (
             <div className="space-y-3">
+              <div className="space-y-1.5">
+                <label htmlFor="signer-name" className="text-xs font-medium flex items-center gap-1">
+                  <PenLine className="w-3.5 h-3.5" /> Signature — Nom complet
+                </label>
+                <Input
+                  id="signer-name"
+                  value={signerName}
+                  onChange={(e) => setSignerName(e.target.value)}
+                  placeholder="Prénom Nom"
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  En signant, votre nom, l'horodatage, votre adresse IP et votre appareil seront enregistrés comme preuve d'accord.
+                </p>
+              </div>
               <div className="flex items-start gap-2">
                 <Checkbox id="terms" checked={acceptedTerms} onCheckedChange={(v) => setAcceptedTerms(!!v)} />
                 <label htmlFor="terms" className="text-xs leading-tight cursor-pointer">
@@ -177,8 +315,19 @@ export function InvestmentContract({ open, onOpenChange, contractData, onSign }:
               <CheckCircle2 className="w-10 h-10 text-success mx-auto" />
               <p className="font-semibold text-success">Contrat signé</p>
               <p className="text-xs text-muted-foreground">
-                Votre signature électronique a été enregistrée et le contrat est sécurisé sur la blockchain.
+                Votre signature électronique a été enregistrée.
               </p>
+              {signature && (
+                <div className="text-left text-[11px] bg-background/60 rounded-lg p-2 space-y-1 font-mono">
+                  <div><b>Signataire :</b> {signature.signer_name}</div>
+                  <div><b>Horodatage :</b> {new Date(signature.signed_at).toLocaleString()}</div>
+                  <div className="flex items-center gap-1">
+                    <Globe className="w-3 h-3" />
+                    <b>IP :</b> {signature.ip_address || "n/a"}
+                  </div>
+                  <div><b>Appareil :</b> {signature.device}</div>
+                </div>
+              )}
               <Badge variant="outline" className="font-mono text-xs">{contractId}</Badge>
               <div className="pt-2">
                 <AnchorButton

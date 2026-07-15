@@ -1,84 +1,73 @@
-# Simplification globale de Plantera
+## Objectif
 
-## Constat
+Corriger le flux investisseur (contrat + escrow), supprimer les pages marketplace investisseur↔agriculteur et vétérinaire↔agriculteur pour les reconstruire proprement autour du moteur `transactions` existant, puis enrichir le suivi acheteur/vendeur.
 
-L'app expose trop de modules en navigation principale et en menu (Cultures, Bétail, Parcelles, IoT, IA, Communauté, E-Learning, Logistique, Finances, Investissements, Admin, Settings…). Pour un agriculteur ou un vétérinaire au champ, c'est écrasant.
+## 1. Fix contrat investisseur (bug signature)
 
-Objectif : **3 onglets en bas, un seul "Plus" sobre, et une page "Ferme" unifiée** qui regroupe tous les modules métier en sous-sections accessibles à la demande — sans rien supprimer.
+- `InvestmentContract.tsx` : au montage, charger la dernière signature depuis `contract_signatures` pour `signatureTarget` et pré-passer en état "signé" si trouvée. Plus de re-demande.
+- Ajouter un champ `counterparty_signature` : si `signatureTarget.type = 'transaction'` et que la contrepartie (agriculteur) a signé, l'afficher côté investisseur (et inversement). Statut passe à `SIGNED` seulement quand les 2 signatures existent.
+- Exposer un helper `hasSignedBy(userId, targetId)` dans `src/lib/signature.ts`.
 
-## Nouvelle architecture de navigation
+## 2. Refonte investisseur → agriculteur (via admin)
 
-**Bottom nav réduite à 3 + 1 (au lieu de 5)** pour tous les rôles :
+Le flux "Investir maintenant" actuel appelle `MobileMoneyPayment` et crée directement une `investments` : c'est ce qui casse (pas de contrat, pas d'escrow admin-médiatisé).
 
-```text
-[ Accueil ]   [ Ma Ferme / Mon Espace ]   [ Marché ]   [ ☰ Plus ]
-```
+- **Supprimer UI** : `src/components/investor/RequestInvestmentDialog.tsx` (garder + réécrire), `src/components/investment/InvestmentOpportunityForm.tsx` (garder tel quel côté agriculteur).
+- `MarketplaceInvestor.tsx` : remplacer bouton "Investir maintenant" par "Demander à investir via PlantErea" → ouvre `RequestInvestmentDialog` (crée `investment_requests`, pas de paiement direct).
+- `AdminInvestmentRequests.tsx` : à l'approbation, créer la `transaction` (INVESTMENT) + seed milestones, PUIS créer un `investment_requests.contract_ready = true` pour déclencher signature.
+- Nouvelle page `ContractSignaturePage` accessible par un lien dans `FarmerRequests` et le portfolio investisseur : rendu commun de `InvestmentContract` en mode bilatéral.
 
-- **Accueil** : Dashboard épuré (salutation, 2-3 stats clés, 1 alerte, 1 conseil IA, 3 actions rapides)
-- **Ma Ferme** (agriculteur) / **Mon Cabinet** (véto) / **Mon Portefeuille** (investisseur) / **Mes Achats** (acheteur) : page hub unifiée
-- **Marché** : SimpleHub déjà en place
-- **Plus** : sheet repensée — sections claires, pas une grille de 11 icônes
+## 3. Refonte vétérinaire → agriculteur
 
-## Page "Ma Ferme" unifiée (agriculteur)
+- **Supprimer UI** : `src/pages/marketplace/MarketplaceVet.tsx`, `src/components/marketplace/VetServiceCard.tsx` côté marketplace agriculteur.
+- Consolider dans `/veterinaire` : nouvel onglet "Cabinet → Bétail à consulter" avec la même liste (livestock malade). Réservation crée un `service_bookings` → trigger existant crée la `transaction` VET_SERVICE avec milestones.
+- Retirer `/marketplace/vet` de `useRoleAccess`, `App.tsx`, `BottomNav`.
 
-Remplace le besoin d'aller chercher Cultures / Bétail / Parcelles / IoT / IA / Finances dans le menu. Une seule page avec **onglets scrollables horizontalement** (déjà partiellement en place) :
+## 4. Marketplace agriculteur/acheteur — escrow complet
 
-```text
-Vue d'ensemble · Cultures · Bétail · Parcelles · Capteurs · IA · Finances
-```
+Le trigger DB `tx_from_accepted_offer` + `seed_default_milestones` crée déjà les étapes {accord prix, acompte, livraison, validation, paiement libéré}. À câbler côté UI :
 
-Chaque onglet charge le contenu existant (pas de réécriture des modules). Les pages standalone `/cultures`, `/betail`, `/parcelles`, `/iot`, `/ia` restent accessibles via deep-link mais disparaissent du menu principal.
+- `MarketplaceFarmer.tsx` : chaque offre acceptée affiche un mini `TransactionTimeline` compact avec badge % débloqué. Filtres : "En négociation / En cours / Terminé / Litige".
+- `BuyerOrderTracking.tsx` : remplacer le suivi actuel par le vrai `TransactionTimeline` (rôle = buyer). Sections : progression %, montant en escrow, actions selon rôle, bouton litige.
+- Suppression du `MarketplacePaymentDialog` legacy quand une `transaction` existe déjà (l'acompte devient un milestone à valider).
 
-Mêmes patterns pour :
-- **Vétérinaire** → `Rendez-vous · Patients · Dossiers · Diagnostic IA · Facturation` (déjà en place, à épurer)
-- **Investisseur** → `Portefeuille · Opportunités · Contrats · Suivi IoT`
-- **Acheteur** → `Catalogue · Mes commandes · Suivi`
+## 5. Litiges depuis suivi commande
 
-## Menu "Plus" repensé
+- `BuyerOrderTracking` et `MarketplaceFarmer` : bouton "Ouvrir un litige" utilise `DisputeDialog` existant (upload preuves bucket `dispute-evidence`, statut `DISPUTED`).
+- `TransactionTimeline` : bannière rouge quand statut = `DISPUTED`, montre la décision admin quand `resolved_*`, avec impact (montant remboursé, libéré, split).
+- Realtime : abonner `transaction_disputes` sur ID de tx.
 
-Structure en 3 sections courtes au lieu d'une grille 4×3 :
+## 6. Sync temps réel offres ↔ transactions
 
-```text
-COMMUNAUTÉ
-  Communauté · E-Learning
+- Hook interne dans `MarketplaceFarmer` et `BuyerOrderTracking` : channels Supabase sur `marketplace_offers`, `transactions`, `transaction_milestones` filtrés par user.
+- Filtres partagés dans un petit composant `TxStatusFilter` (En attente / Acompte / Livraison / Validation / Payé / Litige / Terminé).
 
-OUTILS
-  Logistique · Assistant vocal · Investissements
+## Fichiers touchés
 
-COMPTE
-  Paramètres · Déconnexion
-```
+**Créés**
+- `src/components/transactions/OfferTimelineCard.tsx` (mini timeline pour listes)
+- `src/components/transactions/TxStatusFilter.tsx`
+- `src/pages/ContractSign.tsx` (route `/contract/:transactionId`)
 
-L'admin a une section supplémentaire "Administration" visible uniquement si rôle admin.
+**Édités**
+- `src/components/investor/InvestmentContract.tsx` (charge signature existante, mode bilatéral)
+- `src/lib/signature.ts` (helpers `getSignatures`, `hasSignedBy`)
+- `src/pages/marketplace/MarketplaceInvestor.tsx` (bouton request via admin)
+- `src/components/investor/RequestInvestmentDialog.tsx` (reste, léger polish)
+- `src/components/admin/AdminInvestmentRequests.tsx` (marquer `contract_ready`)
+- `src/pages/FarmerRequests.tsx` (bouton "Voir & signer le contrat" pour investissements approuvés)
+- `src/pages/marketplace/MarketplaceFarmer.tsx` (timeline compacte + filtres)
+- `src/components/buyer/BuyerOrderTracking.tsx` (timeline complète + litige)
+- `src/components/transactions/TransactionTimeline.tsx` (bannière dispute + décision admin)
+- `src/pages/Veterinaire.tsx` (onglet bétail à consulter intégré)
+- `src/hooks/useRoleAccess.tsx` + `src/App.tsx` + `src/components/layout/BottomNav.tsx` (retrait `/marketplace/vet`)
 
-## Design : sobre, moderne, allégé
+**Supprimés** (UI seulement, DB intacte)
+- `src/pages/marketplace/MarketplaceVet.tsx`
+- `src/components/marketplace/VetServiceCard.tsx` (si non utilisé ailleurs après retrait)
 
-- **Headers** : retirer le logo systématique sur sous-pages, le garder seulement sur Accueil et Plus. Réduit le bruit visuel.
-- **Cartes** : bordure 1px, fond `bg-card`, ombre minimale (`shadow-sm` au lieu de `shadow-md`). Espacements `space-y-3` au lieu de `space-y-5`.
-- **StatCards** : passer de 4 à 2-3 stats max sur l'accueil. Format compact, pas de gradients colorés sauf accent rare.
-- **Couleurs** : moins de variantes (primary/accent/success/warning), plus de `bg-muted/30` neutre.
-- **Typographie** : titres `text-lg font-semibold` (au lieu de xl), libellés stat `text-xs uppercase tracking-wide text-muted-foreground`.
-- **Onglets scrollables** : underline minimal au lieu de pills colorées.
-- **AIContextualTip** : version compacte (1 ligne, icône + texte), dépliable au tap.
+## Notes
 
-## Fichiers à modifier
-
-- `src/components/layout/BottomNav.tsx` — réduire à 3 items + Plus, refondre la sheet en sections
-- `src/pages/Dashboard.tsx` — épurer : 2-3 stats, 1 alerte, 1 tip, 3 actions
-- `src/pages/Agriculteur.tsx` — ajouter onglets `Cultures`, `Bétail`, `Parcelles`, `Capteurs`, `IA` qui réutilisent les composants des pages standalone
-- `src/pages/Veterinaire.tsx` — déjà multi-onglets, juste épurer header/cartes
-- `src/pages/Investisseur.tsx` & `src/pages/Acheteur.tsx` — adopter le même pattern hub unifié
-- `src/components/dashboard/StatCard.tsx` — variante compacte sobre
-- `src/components/common/PageHeader.tsx` — `showLogo` désactivé par défaut sur sous-pages
-- `src/index.css` — éventuels ajustements de tokens (ombres, rayons)
-- Conserver toutes les routes existantes pour compatibilité
-
-## Hors scope
-
-- Aucune suppression de fonctionnalité
-- Aucune modification backend / RLS
-- Pas de refonte du marketplace (déjà simplifié récemment)
-
-## Résultat attendu
-
-Un agriculteur voit 3 boutons en bas, ouvre "Ma Ferme" et navigue par onglets dans tout son métier. Le menu "Plus" devient une vraie liste lisible. Le design respire, moins d'icônes colorées, plus de blanc.
+- Aucune migration SQL : tables `transactions`, `transaction_milestones`, `transaction_disputes`, `contract_signatures`, triggers `tx_from_*` déjà en place.
+- Signature bilatérale = 2 lignes dans `contract_signatures` (rôles `investor` et `farmer`). La transaction passe à `SIGNED` via update explicite quand les 2 existent.
+- Tout est temps réel via canaux Supabase (déjà pattern utilisé partout).
