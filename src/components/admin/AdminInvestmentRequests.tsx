@@ -81,7 +81,7 @@ export function AdminInvestmentRequests() {
         .from("transactions")
         .insert({
           type: "INVESTMENT",
-          status: "AWAITING_SIGNATURES",
+          status: "CONTRACT_PENDING",
           initiator_id: r.investor_id,
           receiver_id: r.farmer_id,
           amount: r.amount,
