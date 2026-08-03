@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { FileText } from "lucide-react";
+import { MyContractsList } from "@/components/contracts/MyContractsList";
 
 interface InvReq {
   id: string;
@@ -219,7 +220,7 @@ export default function FarmerRequests() {
 
       <div className="px-4 pb-24">
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className="grid w-full grid-cols-2 h-12">
+          <TabsList className="grid w-full grid-cols-3 h-12">
             <TabsTrigger value="investments" className="flex items-center gap-1.5 text-xs">
               <TrendingUp className="w-4 h-4" />
               Investissements
@@ -237,6 +238,10 @@ export default function FarmerRequests() {
                   {pendingVet}
                 </Badge>
               )}
+            </TabsTrigger>
+            <TabsTrigger value="contracts" className="flex items-center gap-1.5 text-xs">
+              <FileText className="w-4 h-4" />
+              Contrats
             </TabsTrigger>
           </TabsList>
 
@@ -404,6 +409,10 @@ export default function FarmerRequests() {
                     </Card>
                   ))
                 )}
+              </TabsContent>
+
+              <TabsContent value="contracts" className="mt-4">
+                <MyContractsList />
               </TabsContent>
             </>
           )}
