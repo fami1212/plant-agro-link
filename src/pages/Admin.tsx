@@ -63,6 +63,7 @@ import { AdminServiceProviders } from "@/components/admin/AdminServiceProviders"
 import { AdminKycPanel } from "@/components/admin/AdminKycPanel";
 import { AdminTransactionDisputes } from "@/components/admin/AdminTransactionDisputes";
 import { AdminInvestmentRequests } from "@/components/admin/AdminInvestmentRequests";
+import { AdminContracts } from "@/components/admin/AdminContracts";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 type Profile = DatabaseTypes["public"]["Tables"]["profiles"]["Row"];
@@ -383,6 +384,10 @@ export default function Admin() {
               <DollarSign className="w-4 h-4" />
               <span className="text-sm">{t("admin.payments")}</span>
             </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="contracts" className="flex items-center gap-2 px-4">
+              <FileText className="w-4 h-4" />
+              <span className="text-sm">Contrats</span>
+            </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="system" className="flex items-center gap-2 px-4">
               <Settings className="w-4 h-4" />
               <span className="text-sm">{t("admin.system")}</span>
@@ -427,6 +432,11 @@ export default function Admin() {
           {/* Transactions Tab */}
           <ScrollableTabsContent value="transactions">
             <AdminTransactions />
+          </ScrollableTabsContent>
+
+          {/* Contracts Tab */}
+          <ScrollableTabsContent value="contracts">
+            <AdminContracts />
           </ScrollableTabsContent>
 
           {/* System Tab */}
