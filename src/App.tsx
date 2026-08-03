@@ -41,6 +41,7 @@ import Devices from "./pages/Devices";
 import KycVerification from "./pages/KycVerification";
 import Transactions from "./pages/Transactions";
 import ContractSign from "./pages/ContractSign";
+import DisputePage from "./pages/DisputePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -166,6 +167,14 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <ContractSign />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dispute/:transactionId"
+                  element={
+                    <ProtectedRoute>
+                      <DisputePage />
                     </ProtectedRoute>
                   }
                 />
