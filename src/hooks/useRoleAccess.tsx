@@ -11,31 +11,31 @@ interface RoleConfig {
 
 const roleConfigs: Record<AppRole, RoleConfig> = {
   agriculteur: {
-    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/iot', '/devices', '/ia', '/farmer-investments', '/farmer-requests', '/settings', '/voice', '/communaute', '/elearning', '/logistique', '/kyc', '/transactions'],
+    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/iot', '/devices', '/ia', '/farmer-investments', '/farmer-requests', '/settings', '/voice', '/communaute', '/elearning', '/logistique', '/kyc', '/transactions', '/dispute', '/contract'],
     navItems: ['/dashboard', '/agriculteur', '/cultures', '/betail', '/marketplace/farmer'],
     menuItems: ['/parcelles', '/farmer-requests', '/farmer-investments', '/transactions', '/iot', '/devices', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/kyc', '/settings'],
     dashboardType: 'agriculteur',
   },
   veterinaire: {
-    allowedRoutes: ['/dashboard', '/betail', '/veterinaire', '/settings', '/communaute', '/elearning', '/kyc', '/transactions'],
+    allowedRoutes: ['/dashboard', '/betail', '/veterinaire', '/settings', '/communaute', '/elearning', '/kyc', '/transactions', '/dispute', '/contract'],
     navItems: ['/dashboard', '/veterinaire', '/betail'],
     menuItems: ['/transactions', '/communaute', '/elearning', '/kyc', '/settings'],
     dashboardType: 'veterinaire',
   },
   acheteur: {
-    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/buyer', '/acheteur', '/settings', '/communaute', '/elearning', '/logistique', '/kyc', '/transactions'],
+    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/buyer', '/acheteur', '/settings', '/communaute', '/elearning', '/logistique', '/kyc', '/transactions', '/dispute', '/contract'],
     navItems: ['/dashboard', '/acheteur', '/marketplace/buyer'],
     menuItems: ['/transactions', '/communaute', '/elearning', '/logistique', '/kyc', '/settings'],
     dashboardType: 'acheteur',
   },
   investisseur: {
-    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/investor', '/investisseur', '/settings', '/communaute', '/elearning', '/kyc', '/transactions'],
+    allowedRoutes: ['/dashboard', '/marketplace', '/marketplace/investor', '/investisseur', '/settings', '/communaute', '/elearning', '/kyc', '/transactions', '/dispute', '/contract'],
     navItems: ['/dashboard', '/investisseur', '/marketplace/investor'],
     menuItems: ['/transactions', '/communaute', '/elearning', '/kyc', '/settings'],
     dashboardType: 'investisseur',
   },
   admin: {
-    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/marketplace/buyer', '/marketplace/investor', '/iot', '/devices', '/ia', '/admin', '/settings', '/farmer-investments', '/farmer-requests', '/voice', '/communaute', '/elearning', '/logistique', '/investisseur', '/veterinaire', '/acheteur', '/kyc', '/transactions'],
+    allowedRoutes: ['/dashboard', '/agriculteur', '/parcelles', '/cultures', '/betail', '/marketplace', '/marketplace/farmer', '/marketplace/buyer', '/marketplace/investor', '/iot', '/devices', '/ia', '/admin', '/settings', '/farmer-investments', '/farmer-requests', '/voice', '/communaute', '/elearning', '/logistique', '/investisseur', '/veterinaire', '/acheteur', '/kyc', '/transactions', '/dispute', '/contract'],
     navItems: ['/dashboard', '/agriculteur', '/cultures', '/betail', '/marketplace'],
     menuItems: ['/parcelles', '/farmer-investments', '/transactions', '/iot', '/devices', '/ia', '/voice', '/communaute', '/elearning', '/logistique', '/admin', '/kyc', '/settings'],
     dashboardType: 'admin',
@@ -50,14 +50,21 @@ export function useRoleAccess() {
   
   const config = roleConfigs[primaryRole] || roleConfigs.agriculteur;
   
+  // Routes with a dynamic segment (e.g. /dispute/:id, /contract/:id)
+  const DYNAMIC_PREFIXES = ['/dispute', '/contract'];
+
   const canAccessRoute = (route: string): boolean => {
     // Admin can access everything
     if (hasRole('admin')) return true;
-    
+
+    const base = DYNAMIC_PREFIXES.find((p) => route === p || route.startsWith(p + '/'));
+
     // Check if any of user's roles allow access
     return roles.some(role => {
       const roleConfig = roleConfigs[role as AppRole];
-      return roleConfig?.allowedRoutes.includes(route);
+      if (!roleConfig) return false;
+      if (base) return roleConfig.allowedRoutes.includes(base);
+      return roleConfig.allowedRoutes.includes(route);
     });
   };
   
