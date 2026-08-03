@@ -2548,6 +2548,7 @@ export type Database = {
           signed_at: string | null
           status: Database["public"]["Enums"]["transaction_status"]
           title: string | null
+          trace_ref: string | null
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at: string
         }
@@ -2573,6 +2574,7 @@ export type Database = {
           signed_at?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
           title?: string | null
+          trace_ref?: string | null
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
         }
@@ -2598,6 +2600,7 @@ export type Database = {
           signed_at?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
           title?: string | null
+          trace_ref?: string | null
           type?: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
         }
