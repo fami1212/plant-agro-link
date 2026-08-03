@@ -391,3 +391,137 @@ export function generateAgriculturalReportPDF(data: {
   addFooter(doc);
   doc.save(`rapport-agricole-${new Date().toISOString().split("T")[0]}.pdf`);
 }
+
+// ─────────────────────────────────────────────────────────────
+// Contrat signé (export PDF avec identifiant de traçabilité)
+// ─────────────────────────────────────────────────────────────
+export interface ContractPdfData {
+  traceRef: string;
+  transactionId: string;
+  type: string;
+  title: string;
+  amount: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+  parties: { role: string; name: string }[];
+  signatures: {
+    signer_name: string;
+    signer_role?: string | null;
+    signed_at: string;
+    ip_address?: string | null;
+    device?: string | null;
+  }[];
+  milestones: {
+    label: string;
+    amount: number;
+    amount_percent: number;
+    status: string;
+    completed_at?: string | null;
+  }[];
+  blockchainTx?: string | null;
+}
+
+export function generateContractPDF(data: ContractPdfData) {
+  const doc = new jsPDF();
+  addHeader(doc, "Contrat signé");
+
+  let y = 62;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.dark as [number, number, number]);
+
+  // Traceability box
+  doc.setFillColor(...COLORS.light as [number, number, number]);
+  doc.roundedRect(15, y, 180, 22, 3, 3, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text(`Identifiant de traçabilité : ${data.traceRef}`, 22, y + 9);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(...COLORS.muted as [number, number, number]);
+  doc.text(`Réf. interne : ${data.transactionId}`, 22, y + 16);
+  y += 32;
+
+  doc.setTextColor(...COLORS.dark as [number, number, number]);
+  doc.autoTable({
+    startY: y,
+    head: [["Objet du contrat", ""]],
+    body: [
+      ["Intitulé", data.title || "-"],
+      ["Type", data.type],
+      ["Montant", `${data.amount.toLocaleString()} ${data.currency}`],
+      ["Statut", data.status],
+      ["Date de création", new Date(data.createdAt).toLocaleString("fr-FR")],
+    ],
+    theme: "striped",
+    styles: { fontSize: 9, cellPadding: 3 },
+    headStyles: { fillColor: COLORS.primary as [number, number, number], textColor: [255, 255, 255] },
+    margin: { left: 15, right: 15 },
+  });
+  y = doc.lastAutoTable.finalY + 10;
+
+  if (data.parties.length) {
+    doc.autoTable({
+      startY: y,
+      head: [["Partie", "Nom"]],
+      body: data.parties.map((p) => [p.role, p.name]),
+      theme: "grid",
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: COLORS.primary as [number, number, number], textColor: [255, 255, 255] },
+      margin: { left: 15, right: 15 },
+    });
+    y = doc.lastAutoTable.finalY + 10;
+  }
+
+  if (data.milestones.length) {
+    if (y > 210) { doc.addPage(); y = 20; }
+    doc.autoTable({
+      startY: y,
+      head: [["Étape", "Part", "Montant", "Statut", "Validée le"]],
+      body: data.milestones.map((m) => [
+        m.label,
+        `${m.amount_percent}%`,
+        `${Number(m.amount).toLocaleString()} ${data.currency}`,
+        m.status,
+        m.completed_at ? new Date(m.completed_at).toLocaleDateString("fr-FR") : "-",
+      ]),
+      theme: "striped",
+      styles: { fontSize: 8, cellPadding: 2.5 },
+      headStyles: { fillColor: COLORS.primary as [number, number, number], textColor: [255, 255, 255] },
+      margin: { left: 15, right: 15 },
+    });
+    y = doc.lastAutoTable.finalY + 10;
+  }
+
+  if (y > 210) { doc.addPage(); y = 20; }
+  doc.autoTable({
+    startY: y,
+    head: [["Signataire", "Rôle", "Date", "IP", "Appareil"]],
+    body: data.signatures.length
+      ? data.signatures.map((s) => [
+          s.signer_name,
+          s.signer_role || "-",
+          new Date(s.signed_at).toLocaleString("fr-FR"),
+          s.ip_address || "-",
+          s.device || "-",
+        ])
+      : [["Aucune signature enregistrée", "-", "-", "-", "-"]],
+    theme: "grid",
+    styles: { fontSize: 8, cellPadding: 2.5 },
+    headStyles: { fillColor: COLORS.dark as [number, number, number], textColor: [255, 255, 255] },
+    margin: { left: 15, right: 15 },
+  });
+  y = doc.lastAutoTable.finalY + 8;
+
+  if (data.blockchainTx) {
+    doc.setFontSize(8);
+    doc.setTextColor(...COLORS.muted as [number, number, number]);
+    doc.text(`Ancrage blockchain : ${data.blockchainTx}`, 15, y);
+    y += 5;
+    doc.text(`Vérifiable sur https://amoy.polygonscan.com/tx/${data.blockchainTx}`, 15, y);
+  }
+
+  addFooter(doc);
+  doc.save(`contrat-${data.traceRef}.pdf`);
+}
