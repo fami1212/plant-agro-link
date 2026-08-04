@@ -25,6 +25,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -56,6 +57,7 @@ export function NotificationCenter() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { sendLocalNotification } = usePushNotifications();
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
@@ -77,6 +79,11 @@ export function NotificationCenter() {
           const newNotif = payload.new as Notification;
           setNotifications((prev) => [newNotif, ...prev]);
           toast.info(newNotif.title, { description: newNotif.message });
+          sendLocalNotification(newNotif.title, {
+            body: newNotif.message,
+            link: newNotif.link || undefined,
+            tag: newNotif.id,
+          });
         }
       )
       .subscribe();
@@ -84,7 +91,7 @@ export function NotificationCenter() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, sendLocalNotification]);
 
   const fetchNotifications = async () => {
     if (!user) return;
