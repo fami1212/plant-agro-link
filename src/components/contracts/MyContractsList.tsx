@@ -5,7 +5,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, FileText, FileSignature, CheckCircle2, Clock, Inbox } from "lucide-react";
+import { Loader2, FileText, FileSignature, CheckCircle2, Clock, Inbox, Download } from "lucide-react";
+import { downloadContractPDF, traceRefOf } from "@/services/contractExport";
+import { toast } from "sonner";
 
 interface Tx {
   id: string;
@@ -18,6 +20,7 @@ interface Tx {
   receiver_id: string;
   created_at: string;
   metadata: Record<string, any> | null;
+  trace_ref?: string | null;
 }
 
 const TYPE_LABEL: Record<string, string> = {
@@ -33,6 +36,19 @@ export function MyContractsList({ types }: { types?: string[] }) {
   const [rows, setRows] = useState<Tx[]>([]);
   const [mySigned, setMySigned] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState<string | null>(null);
+
+  const handleExport = async (id: string) => {
+    setExporting(id);
+    try {
+      await downloadContractPDF(id);
+      toast.success("Contrat exporté en PDF");
+    } catch (e: any) {
+      toast.error(e?.message || "Export impossible");
+    } finally {
+      setExporting(null);
+    }
+  };
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -121,6 +137,9 @@ export function MyContractsList({ types }: { types?: string[] }) {
           </Badge>
           <Badge variant="secondary">{TYPE_LABEL[t.type] || t.type}</Badge>
           <Badge variant="secondary">{sigCount(t)}/2 signature(s)</Badge>
+          <Badge variant="outline" className="font-mono text-[10px]">
+            {traceRefOf(t)}
+          </Badge>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <Button
@@ -133,6 +152,19 @@ export function MyContractsList({ types }: { types?: string[] }) {
             Suivi & escrow
           </Button>
         </div>
+        <Button
+          variant="secondary"
+          className="w-full"
+          disabled={exporting === t.id}
+          onClick={() => handleExport(t.id)}
+        >
+          {exporting === t.id ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Download className="w-4 h-4 mr-2" />
+          )}
+          Télécharger le contrat (PDF)
+        </Button>
       </Card>
     );
   };
