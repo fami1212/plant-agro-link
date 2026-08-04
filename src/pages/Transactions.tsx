@@ -16,6 +16,8 @@ import {
 import { Loader2, Package, Sprout, Stethoscope, ExternalLink, Download } from "lucide-react";
 import { TransactionTimeline } from "@/components/transactions/TransactionTimeline";
 import { downloadContractPDF, traceRefOf } from "@/services/contractExport";
+import { cacheEscrow, readEscrowCache, escrowScopes } from "@/services/escrowOfflineCache";
+import { WifiOff } from "lucide-react";
 import { toast } from "sonner";
 
 interface Tx {
@@ -59,6 +61,7 @@ export default function Transactions() {
   const [status, setStatus] = useState<keyof typeof STATUS_FILTERS>("all");
   const [sort, setSort] = useState<"deadline" | "released">("deadline");
   const [exporting, setExporting] = useState<string | null>(null);
+  const [offlineAt, setOfflineAt] = useState<string | null>(null);
 
   const handleExport = async (id: string) => {
     setExporting(id);
@@ -75,23 +78,41 @@ export default function Transactions() {
   const load = async () => {
     if (!user) return;
     setLoading(true);
+    const cached = readEscrowCache<Tx[]>(escrowScopes.list(user.id));
+    if (cached) {
+      setRows(cached.data || []);
+      setLoading(false);
+    }
+    if (!navigator.onLine) {
+      setOfflineAt(cached?.cachedAt || null);
+      setLoading(false);
+      return;
+    }
     const { data } = await (supabase as any)
       .from("transactions")
       .select("*")
       .or(`initiator_id.eq.${user.id},receiver_id.eq.${user.id}`)
       .order("created_at", { ascending: false });
-    setRows((data as Tx[]) || []);
+    const fresh = (data as Tx[]) || [];
+    setRows(fresh);
+    setOfflineAt(null);
+    cacheEscrow(escrowScopes.list(user.id), fresh);
     setLoading(false);
   };
 
   useEffect(() => {
     load();
     if (!user) return;
+    const onOnline = () => load();
+    window.addEventListener("online", onOnline);
     const ch = supabase
       .channel(`tx-list-${user.id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, load)
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      window.removeEventListener("online", onOnline);
+      supabase.removeChannel(ch);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
@@ -114,6 +135,14 @@ export default function Transactions() {
     <AppLayout>
       <div className="max-w-4xl mx-auto p-3 space-y-4">
         <PageHeader title="Mes transactions" subtitle="Suivi contractuel unifié" />
+
+        {offlineAt && (
+          <Card className="p-2 flex items-center gap-2 text-xs text-amber-600 bg-amber-500/5 border-amber-500/30">
+            <WifiOff className="w-3.5 h-3.5" />
+            Mode hors ligne — étapes et % débloqués issus de la dernière synchro (
+            {new Date(offlineAt).toLocaleString()})
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <Select value={side} onValueChange={(v) => setSide(v as any)}>

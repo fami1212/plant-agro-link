@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { smsFallbackNotification } from "@/services/notificationFallback";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -57,7 +58,7 @@ export function NotificationCenter() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { sendLocalNotification } = usePushNotifications();
+  const { sendLocalNotification, permission, supported } = usePushNotifications();
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
@@ -75,15 +76,30 @@ export function NotificationCenter() {
           table: "notifications",
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
+        async (payload) => {
           const newNotif = payload.new as Notification;
           setNotifications((prev) => [newNotif, ...prev]);
           toast.info(newNotif.title, { description: newNotif.message });
+          const pushDelivered = supported && permission === "granted";
           sendLocalNotification(newNotif.title, {
             body: newNotif.message,
             link: newNotif.link || undefined,
             tag: newNotif.id,
           });
+          // Repli SMS/USSD pour les alertes escrow & litiges si le push est indisponible
+          const smsSent = await smsFallbackNotification({
+            notificationId: newNotif.id,
+            userId: user.id,
+            type: newNotif.type,
+            title: newNotif.title,
+            message: newNotif.message,
+            pushDelivered,
+          });
+          if (smsSent) {
+            toast.message("Alerte envoyée par SMS", {
+              description: "Notifications push indisponibles sur cet appareil.",
+            });
+          }
         }
       )
       .subscribe();
@@ -91,7 +107,7 @@ export function NotificationCenter() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, sendLocalNotification]);
+  }, [user, sendLocalNotification, permission, supported]);
 
   const fetchNotifications = async () => {
     if (!user) return;

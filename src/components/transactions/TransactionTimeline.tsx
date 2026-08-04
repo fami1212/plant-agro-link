@@ -8,6 +8,8 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { DisputeDialog } from "./DisputeDialog";
+import { cacheEscrow, readEscrowCache, escrowScopes } from "@/services/escrowOfflineCache";
+import { WifiOff } from "lucide-react";
 
 interface Milestone {
   id: string;
@@ -43,6 +45,7 @@ export function TransactionTimeline({
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [disputeOpen, setDisputeOpen] = useState(false);
+  const [offlineAt, setOfflineAt] = useState<string | null>(null);
   const [dispute, setDispute] = useState<{
     id: string;
     status: string;
@@ -54,6 +57,22 @@ export function TransactionTimeline({
 
   const load = async () => {
     setLoading(true);
+    // 1) Affichage immédiat depuis le cache local (connectivité intermittente)
+    const cached = readEscrowCache<{ items: Milestone[]; dispute: any }>(
+      escrowScopes.timeline(transactionId),
+    );
+    if (cached) {
+      setItems(cached.data.items || []);
+      setDispute(cached.data.dispute || null);
+      setLoading(false);
+    }
+
+    if (!navigator.onLine) {
+      setOfflineAt(cached?.cachedAt || null);
+      setLoading(false);
+      return;
+    }
+
     const [{ data }, { data: d }] = await Promise.all([
       (supabase as any)
       .from("transaction_milestones")
@@ -68,13 +87,18 @@ export function TransactionTimeline({
         .limit(1)
         .maybeSingle(),
     ]);
-    setItems((data as Milestone[]) || []);
+    const fresh = (data as Milestone[]) || [];
+    setItems(fresh);
     setDispute((d as any) || null);
+    setOfflineAt(null);
+    cacheEscrow(escrowScopes.timeline(transactionId), { items: fresh, dispute: d || null });
     setLoading(false);
   };
 
   useEffect(() => {
     load();
+    const onOnline = () => load();
+    window.addEventListener("online", onOnline);
     const ch = supabase
       .channel(`tx-timeline-${transactionId}`)
       .on(
@@ -99,6 +123,7 @@ export function TransactionTimeline({
       )
       .subscribe();
     return () => {
+      window.removeEventListener("online", onOnline);
       supabase.removeChannel(ch);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -189,6 +214,12 @@ export function TransactionTimeline({
     <div className="space-y-3">
       {/* Overall progress */}
       <Card className="p-3">
+        {offlineAt && (
+          <div className="flex items-center gap-1.5 text-[11px] text-amber-600 mb-2">
+            <WifiOff className="w-3 h-3" />
+            Données hors ligne — dernière synchro {new Date(offlineAt).toLocaleString()}
+          </div>
+        )}
         <div className="flex items-center justify-between text-xs mb-1">
           <span className="font-medium">Progression contrat</span>
           <span className="text-muted-foreground">
