@@ -2744,6 +2744,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_farmer_directory: {
+        Args: never
+        Returns: {
+          address: string
+          avatar_url: string
+          crops_count: number
+          full_name: string
+          is_verified: boolean
+          user_id: string
+        }[]
+      }
       get_kyc_duplicate_groups: {
         Args: never
         Returns: {
