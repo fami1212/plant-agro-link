@@ -29,7 +29,7 @@ const allNavItems = [
   { id: "market-farmer", icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/farmer", roles: ['agriculteur'] },
   { id: "vet-market", icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/buyer", roles: ['veterinaire'] },
   { id: "buyer-market", icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/buyer", roles: ['acheteur'] },
-  { id: "investor-market", icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/investor", roles: ['investisseur'] },
+  { id: "investor-market", icon: ShoppingBag, labelKey: "nav.market", path: "/investisseur", roles: ['investisseur'] },
   { id: "admin-market", icon: ShoppingBag, labelKey: "nav.market", path: "/marketplace/farmer", roles: ['admin'] },
 ];
 
