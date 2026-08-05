@@ -35,43 +35,40 @@ export function FarmerNetworkFeed() {
 
   const load = async () => {
     setLoading(true);
-    // 1. All users with role agriculteur
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("user_id")
-      .eq("role", "agriculteur");
-    const ids = (roles || []).map((r) => r.user_id);
+    // Annuaire public sécurisé des agriculteurs (contourne le RLS sur user_roles)
+    const { data: directory } = await (supabase as any).rpc("get_farmer_directory");
+    const rowsDir = (directory || []) as Array<{
+      user_id: string;
+      full_name: string;
+      address: string | null;
+      avatar_url: string | null;
+      is_verified: boolean;
+      crops_count: number;
+    }>;
+    const ids = rowsDir.map((r) => r.user_id);
     if (ids.length === 0) {
       setFarmers([]);
       setLoading(false);
       return;
     }
-    const [{ data: profiles }, { data: kyc }, { data: crops }, { data: opps }] = await Promise.all([
-      supabase.from("profiles").select("user_id,full_name,address,avatar_url").in("user_id", ids),
-      supabase.from("kyc_verifications").select("user_id,status").in("user_id", ids),
-      supabase.from("crops").select("user_id").in("user_id", ids),
-      supabase
-        .from("investment_opportunities")
-        .select("id,farmer_id,title,description,target_amount,current_amount,expected_return_percent,status")
-        .in("farmer_id", ids)
-        .eq("status", "ouverte"),
-    ]);
-    const kycMap = new Map((kyc || []).map((k: any) => [k.user_id, k.status]));
-    const cropMap = new Map<string, number>();
-    (crops || []).forEach((c: any) => cropMap.set(c.user_id, (cropMap.get(c.user_id) || 0) + 1));
+    const { data: opps } = await supabase
+      .from("investment_opportunities")
+      .select("id,farmer_id,title,description,target_amount,current_amount,expected_return_percent,status")
+      .in("farmer_id", ids)
+      .eq("status", "ouverte");
     const oppMap = new Map<string, any[]>();
     (opps || []).forEach((o: any) => {
       const arr = oppMap.get(o.farmer_id) || [];
       arr.push(o);
       oppMap.set(o.farmer_id, arr);
     });
-    const rows: FarmerCard[] = (profiles || []).map((p: any) => ({
+    const rows: FarmerCard[] = rowsDir.map((p) => ({
       user_id: p.user_id,
-      full_name: p.full_name || "Agriculteur",
+      full_name: p.full_name || "Utilisateur",
       address: p.address,
       avatar_url: p.avatar_url,
-      is_verified: kycMap.get(p.user_id) === "approved",
-      crops_count: cropMap.get(p.user_id) || 0,
+      is_verified: !!p.is_verified,
+      crops_count: p.crops_count || 0,
       opportunities: oppMap.get(p.user_id) || [],
     }));
     // sort: verified first, then those with opportunities
