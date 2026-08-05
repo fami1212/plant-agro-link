@@ -103,14 +103,14 @@ export function AdminInvestmentRequests() {
             type: "contract_ready",
             title: "📝 Contrat prêt à signer",
             message: "Votre contrat d'investissement est prêt. Signez-le pour démarrer l'escrow.",
-            data: { transaction_id: tx.id },
+            metadata: { transaction_id: tx.id },
           },
           {
             user_id: r.farmer_id,
             type: "contract_ready",
             title: "📝 Contrat prêt à signer",
             message: "Un contrat d'investissement vous attend pour signature.",
-            data: { transaction_id: tx.id },
+            metadata: { transaction_id: tx.id },
           },
         ]);
       }
