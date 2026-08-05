@@ -226,7 +226,11 @@ export function InvestmentDetailSheet({ investment, open, onOpenChange }: Props)
           {tx && (
             <Card className="p-4">
               <p className="font-semibold text-sm mb-2">Suivi du financement</p>
-              <TransactionTimeline transactionId={tx.id} />
+              <TransactionTimeline
+                transactionId={tx.id}
+                currentUserIsInitiator={tx.initiator_id === user?.id}
+                currency={tx.currency || "XOF"}
+              />
             </Card>
           )}
 
