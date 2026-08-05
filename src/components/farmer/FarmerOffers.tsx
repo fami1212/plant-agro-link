@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
+import { computeOfferPricing, fcfa } from "@/lib/offerPricing";
 
 interface Offer {
   id: string;
@@ -45,6 +46,8 @@ interface Offer {
   counter_offer_message: string | null;
   listing_title?: string;
   listing_category?: string;
+  listing_unit?: string | null;
+  listing_price?: number | null;
   buyer_name?: string;
   buyer_email?: string;
   buyer_phone?: string;
@@ -76,7 +79,7 @@ export function FarmerOffers() {
         .from("marketplace_offers")
         .select(`
           *,
-          listing:marketplace_listings(id, title, category)
+          listing:marketplace_listings(id, title, category, unit, price)
         `)
         .eq("seller_id", user.id)
         .order("created_at", { ascending: false });
@@ -98,6 +101,8 @@ export function FarmerOffers() {
           ...offer,
           listing_title: offer.listing?.title || "Produit",
           listing_category: offer.listing?.category,
+          listing_unit: offer.listing?.unit,
+          listing_price: offer.listing?.price,
           buyer_name: profile?.full_name || "Acheteur",
           buyer_email: profile?.email,
           buyer_phone: profile?.phone,
@@ -137,10 +142,11 @@ export function FarmerOffers() {
         .update({ status: "reserve" })
         .eq("id", offer.listing_id);
 
-      toast.success("Offre acceptée !");
+      toast.success("Offre acceptée ! Le contrat escrow a été créé.");
       fetchOffers();
-    } catch (error) {
-      toast.error("Erreur lors de l'acceptation");
+    } catch (error: any) {
+      console.error("accept offer error", error);
+      toast.error(error?.message || "Erreur lors de l'acceptation");
     } finally {
       setProcessing(false);
     }
@@ -272,18 +278,32 @@ export function FarmerOffers() {
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 mb-3">
-                  <div className="p-2 rounded bg-background">
-                    <p className="text-xs text-muted-foreground">Prix proposé</p>
-                    <p className="font-bold text-primary">{offer.proposed_price.toLocaleString()} FCFA</p>
-                  </div>
-                  {offer.proposed_quantity && (
-                    <div className="p-2 rounded bg-background">
-                      <p className="text-xs text-muted-foreground">Quantité</p>
-                      <p className="font-medium">{offer.proposed_quantity}</p>
+                {(() => {
+                  const p = computeOfferPricing({
+                    proposedPrice: offer.proposed_price,
+                    quantity: offer.proposed_quantity,
+                    listingUnit: offer.listing_unit,
+                    listingPrice: offer.listing_price,
+                  });
+                  return (
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      <div className="p-2 rounded bg-background">
+                        <p className="text-xs text-muted-foreground">Quantité</p>
+                        <p className="font-medium">
+                          {p.quantity ? `${p.quantity.toLocaleString("fr-FR")} ${p.unit}` : offer.proposed_quantity || "—"}
+                        </p>
+                      </div>
+                      <div className="p-2 rounded bg-background">
+                        <p className="text-xs text-muted-foreground">Prix / {p.unit}</p>
+                        <p className="font-medium">{p.unitPrice ? fcfa(p.unitPrice) : "—"}</p>
+                      </div>
+                      <div className="p-2 rounded bg-primary/10">
+                        <p className="text-xs text-muted-foreground">Total</p>
+                        <p className="font-bold text-primary">{fcfa(p.total)}</p>
+                      </div>
                     </div>
-                  )}
-                </div>
+                  );
+                })()}
 
                 {offer.message && (
                   <p className="text-sm text-muted-foreground mb-3 p-2 bg-background rounded">
