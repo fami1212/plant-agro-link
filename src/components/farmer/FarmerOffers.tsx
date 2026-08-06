@@ -278,32 +278,16 @@ export function FarmerOffers() {
                   </Badge>
                 </div>
 
-                {(() => {
-                  const p = computeOfferPricing({
-                    proposedPrice: offer.proposed_price,
-                    quantity: offer.proposed_quantity,
-                    listingUnit: offer.listing_unit,
-                    listingPrice: offer.listing_price,
-                  });
-                  return (
-                    <div className="grid grid-cols-3 gap-2 mb-3">
-                      <div className="p-2 rounded bg-background">
-                        <p className="text-xs text-muted-foreground">Quantité</p>
-                        <p className="font-medium">
-                          {p.quantity ? `${p.quantity.toLocaleString("fr-FR")} ${p.unit}` : offer.proposed_quantity || "—"}
-                        </p>
-                      </div>
-                      <div className="p-2 rounded bg-background">
-                        <p className="text-xs text-muted-foreground">Prix / {p.unit}</p>
-                        <p className="font-medium">{p.unitPrice ? fcfa(p.unitPrice) : "—"}</p>
-                      </div>
-                      <div className="p-2 rounded bg-primary/10">
-                        <p className="text-xs text-muted-foreground">Total</p>
-                        <p className="font-bold text-primary">{fcfa(p.total)}</p>
-                      </div>
-                    </div>
-                  );
-                })()}
+                <OfferPricingBreakdown
+                  variant="compact"
+                  className="mb-3"
+                  offerId={offer.id}
+                  proposedPrice={offer.proposed_price}
+                  counterOfferPrice={(offer as any).counter_offer_price}
+                  quantity={offer.proposed_quantity}
+                  listingUnit={offer.listing_unit}
+                  listingPrice={offer.listing_price}
+                />
 
                 {offer.message && (
                   <p className="text-sm text-muted-foreground mb-3 p-2 bg-background rounded">
