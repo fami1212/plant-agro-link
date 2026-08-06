@@ -2744,6 +2744,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      diagnose_farmer_visibility: {
+        Args: never
+        Returns: {
+          check_name: string
+          detail: string
+          value: number
+        }[]
+      }
       get_farmer_directory: {
         Args: never
         Returns: {
@@ -2761,6 +2769,29 @@ export type Database = {
           count: number
           id_number: string
           user_ids: string[]
+        }[]
+      }
+      get_offer_pricing: {
+        Args: { _offer_id: string }
+        Returns: {
+          offer_id: string
+          quantity: number
+          total: number
+          unit: string
+          unit_price: number
+        }[]
+      }
+      get_rls_diagnostic: {
+        Args: { _table: string }
+        Returns: {
+          check_expression: string
+          command: string
+          grants: string
+          policy_name: string
+          rls_enabled: boolean
+          roles: string
+          table_name: string
+          using_expression: string
         }[]
       }
       has_role: {
