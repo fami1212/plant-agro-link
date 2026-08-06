@@ -18,6 +18,8 @@ import { toast } from "sonner";
 import { downloadContractPDF, traceRefOf } from "@/services/contractExport";
 import { TransactionTimeline } from "@/components/transactions/TransactionTimeline";
 import { DirectMessageDialog } from "@/components/messaging/DirectMessageDialog";
+import { InvestmentRoiSummary } from "@/components/investor/InvestmentRoiSummary";
+import { InvestmentEventLog } from "@/components/investor/InvestmentEventLog";
 
 export interface InvestmentDetail {
   id: string;
@@ -222,6 +224,16 @@ export function InvestmentDetailSheet({ investment, open, onOpenChange }: Props)
             )}
           </Card>
 
+          {/* Récapitulatif ROI */}
+          <InvestmentRoiSummary
+            amountInvested={investment.amount_invested}
+            returnPercent={investment.expected_return_percent}
+            investmentDate={investment.investment_date}
+            harvestDate={investment.expected_harvest_date}
+            releasedAmount={Number(tx?.amount_released || 0)}
+            actualReturn={investment.actual_return_amount ?? null}
+          />
+
           {/* Suivi escrow / étapes */}
           {tx && (
             <Card className="p-4">
@@ -233,6 +245,9 @@ export function InvestmentDetailSheet({ investment, open, onOpenChange }: Props)
               />
             </Card>
           )}
+
+          {/* Centre de suivi (historique complet) */}
+          {tx && <InvestmentEventLog transactionId={tx.id} />}
 
           <div className="grid grid-cols-2 gap-2">
             {investment.farmer_id && (
