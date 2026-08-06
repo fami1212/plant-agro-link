@@ -8,6 +8,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InvestmentContract } from "@/components/investor/InvestmentContract";
 import { Loader2 } from "lucide-react";
+import { TransactionTimeline } from "@/components/transactions/TransactionTimeline";
+import { InvestmentRoiSummary } from "@/components/investor/InvestmentRoiSummary";
+import { InvestmentEventLog } from "@/components/investor/InvestmentEventLog";
 
 interface Tx {
   id: string;
@@ -19,6 +22,8 @@ interface Tx {
   status: string;
   metadata: Record<string, any> | null;
   created_at: string;
+  amount_released?: number | null;
+  trace_ref?: string | null;
 }
 
 export default function ContractSign() {
@@ -83,6 +88,7 @@ export default function ContractSign() {
           <p><b>Projet :</b> {tx.title}</p>
           <p><b>Montant :</b> {tx.amount.toLocaleString()} {tx.currency}</p>
           <p><b>Statut :</b> {tx.status}</p>
+          {tx.trace_ref && <p><b>Référence traçabilité :</b> <span className="font-mono">{tx.trace_ref}</span></p>}
           <p className="text-muted-foreground">
             Chaque partie doit signer pour activer l'escrow et le suivi contractuel.
           </p>
@@ -90,6 +96,29 @@ export default function ContractSign() {
         <Button onClick={() => setOpen(true)} className="w-full">
           Ouvrir le contrat
         </Button>
+
+        {/* Récapitulatif ROI */}
+        <InvestmentRoiSummary
+          amountInvested={tx.amount}
+          returnPercent={Number(tx.metadata?.expected_return) || 0}
+          investmentDate={tx.created_at}
+          harvestDate={(tx.metadata?.harvest_date as string) || null}
+          releasedAmount={Number(tx.amount_released || 0)}
+        />
+
+        {/* Timeline interactive des étapes escrow */}
+        <Card className="p-4">
+          <p className="font-semibold text-sm mb-2">Étapes du contrat (escrow)</p>
+          <TransactionTimeline
+            transactionId={tx.id}
+            currentUserIsInitiator={iAmInvestor}
+            currency={tx.currency || "XOF"}
+          />
+        </Card>
+
+        {/* Centre de suivi */}
+        <InvestmentEventLog transactionId={tx.id} />
+
         <Button variant="outline" className="w-full" onClick={() => navigate(-1)}>
           Retour
         </Button>

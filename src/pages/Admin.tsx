@@ -62,6 +62,7 @@ import { AdminListingModeration } from "@/components/admin/AdminListingModeratio
 import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
 import { AdminServiceProviders } from "@/components/admin/AdminServiceProviders";
 import { AdminKycPanel } from "@/components/admin/AdminKycPanel";
+import { AdminRlsDiagnostic } from "@/components/admin/AdminRlsDiagnostic";
 import { AdminTransactionDisputes } from "@/components/admin/AdminTransactionDisputes";
 import { AdminInvestmentRequests } from "@/components/admin/AdminInvestmentRequests";
 import { AdminContracts } from "@/components/admin/AdminContracts";
@@ -401,6 +402,10 @@ export default function Admin() {
               <UserCheck className="w-4 h-4" />
               <span className="text-sm">KYC</span>
             </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="rls" className="flex items-center gap-2 px-4">
+              <Shield className="w-4 h-4" />
+              <span className="text-sm">Diagnostic RLS</span>
+            </ScrollableTabsTrigger>
           </ScrollableTabsList>
 
           {/* Overview Tab */}
@@ -477,6 +482,10 @@ export default function Admin() {
           {/* KYC Verification Tab */}
           <ScrollableTabsContent value="kyc">
             <AdminKycPanel />
+          </ScrollableTabsContent>
+
+          <ScrollableTabsContent value="rls">
+            <AdminRlsDiagnostic />
           </ScrollableTabsContent>
         </ScrollableTabs>
       </div>

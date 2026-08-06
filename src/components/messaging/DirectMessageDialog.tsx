@@ -2,7 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Loader2, MessageSquare, WifiOff, ArrowDown, Check, CheckCheck } from "lucide-react";
+import {
+  Send, Loader2, MessageSquare, WifiOff, ArrowDown, Check, CheckCheck,
+  Paperclip, X, FileText, Zap,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -25,6 +28,7 @@ interface Message {
   created_at: string;
   is_read?: boolean;
   pending?: boolean;
+  attachments?: string[] | null;
 }
 
 interface DirectMessageDialogProps {
@@ -37,6 +41,15 @@ interface DirectMessageDialogProps {
   /** Optional contextual subtitle (e.g. investment title) */
   context?: string;
 }
+
+const QUICK_REPLIES = [
+  "Bonjour 👋",
+  "C'est noté, merci !",
+  "Quel est le délai prévu ?",
+  "Pouvez-vous envoyer une photo ?",
+  "Je confirme l'étape validée ✅",
+  "Je vous rappelle rapidement.",
+];
 
 /**
  * Reusable 1:1 chat dialog backed by marketplace_conversations / marketplace_messages
@@ -60,8 +73,11 @@ export function DirectMessageDialog({
   const [queuedCount, setQueuedCount] = useState(0);
   const [otherPhone, setOtherPhone] = useState<string | null>(null);
   const [newMsgPill, setNewMsgPill] = useState(false);
+  const [attachments, setAttachments] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const atBottomRef = useRef(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   // Online/offline tracking
   useEffect(() => {
@@ -230,11 +246,32 @@ export function DirectMessageDialog({
     setNewMsgPill(false);
   };
 
-  const handleSend = async () => {
-    if (!user || !conversationId || !input.trim() || sending) return;
-    const content = input.trim();
+  const handleUpload = async (file: File) => {
+    if (!user) return;
+    setUploading(true);
+    try {
+      const path = `${user.id}/${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+      const { error } = await supabase.storage.from("chat-attachments").upload(path, file);
+      if (error) throw error;
+      const { data } = supabase.storage.from("chat-attachments").getPublicUrl(path);
+      setAttachments((a) => [...a, data.publicUrl]);
+    } catch (e: any) {
+      toast.error(e?.message || "Envoi de la pièce jointe impossible");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const handleSend = async (preset?: string) => {
+    const raw = preset ?? input;
+    if (!user || !conversationId || sending) return;
+    if (!raw.trim() && attachments.length === 0) return;
+    const content = raw.trim() || "📎 Pièce jointe";
+    const files = attachments;
     setSending(true);
-    setInput("");
+    if (!preset) setInput("");
+    setAttachments([]);
 
     const optimistic: Message = {
       id: `tmp_${Date.now()}`,
@@ -243,6 +280,7 @@ export function DirectMessageDialog({
       content,
       created_at: new Date().toISOString(),
       pending: true,
+      attachments: files,
     };
 
     // Offline → queue immediately
@@ -268,6 +306,7 @@ export function DirectMessageDialog({
         sender_id: user.id,
         recipient_id: otherUserId,
         content,
+        attachments: files.length ? files : null,
       });
       if (error) throw error;
       await supabase
@@ -341,6 +380,32 @@ export function DirectMessageDialog({
                     )}
                   >
                     <p className="whitespace-pre-wrap">{msg.content}</p>
+                    {msg.attachments && msg.attachments.length > 0 && (
+                      <div className="mt-1.5 space-y-1">
+                        {msg.attachments.map((url) =>
+                          /\.(png|jpe?g|webp|gif)$/i.test(url) ? (
+                            <a key={url} href={url} target="_blank" rel="noreferrer">
+                              <img
+                                src={url}
+                                alt="Pièce jointe de la conversation"
+                                loading="lazy"
+                                className="rounded-lg max-h-40 object-cover"
+                              />
+                            </a>
+                          ) : (
+                            <a
+                              key={url}
+                              href={url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="flex items-center gap-1.5 text-xs underline"
+                            >
+                              <FileText className="w-3 h-3" /> Document
+                            </a>
+                          ),
+                        )}
+                      </div>
+                    )}
                     <p
                       className={cn(
                         "text-[10px] mt-1 opacity-70 flex items-center gap-1 justify-end",
@@ -374,12 +439,61 @@ export function DirectMessageDialog({
           </button>
         )}
 
+        {/* Réponses rapides */}
+        <div className="flex gap-1.5 overflow-x-auto px-3 pt-2 border-t border-border/40 bg-background no-scrollbar">
+          <Zap className="w-3.5 h-3.5 text-primary shrink-0 mt-1.5" />
+          {QUICK_REPLIES.map((q) => (
+            <button
+              key={q}
+              type="button"
+              disabled={!conversationId || sending}
+              onClick={() => handleSend(q)}
+              className="shrink-0 rounded-full border border-border/60 px-2.5 py-1 text-xs hover:bg-muted disabled:opacity-50"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+
+        {attachments.length > 0 && (
+          <div className="flex gap-2 px-3 pt-2 bg-background overflow-x-auto">
+            {attachments.map((url) => (
+              <div key={url} className="relative shrink-0">
+                <img src={url} alt="Pièce jointe à envoyer" className="w-14 h-14 rounded-lg object-cover border border-border/60" />
+                <button
+                  type="button"
+                  onClick={() => setAttachments((a) => a.filter((x) => x !== url))}
+                  className="absolute -top-1 -right-1 rounded-full bg-destructive text-destructive-foreground p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="flex gap-2 p-3 border-t border-border/40 bg-background">
           {queuedCount > 0 && (
             <div className="absolute -translate-y-7 left-3 text-[10px] text-warning flex items-center gap-1">
               <WifiOff className="w-3 h-3" /> {queuedCount} en file
             </div>
           )}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*,application/pdf"
+            className="hidden"
+            onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
+          />
+          <Button
+            size="icon"
+            variant="outline"
+            className="rounded-xl shrink-0"
+            disabled={uploading || !conversationId}
+            onClick={() => fileRef.current?.click()}
+          >
+            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
+          </Button>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -396,8 +510,8 @@ export function DirectMessageDialog({
           <Button
             size="icon"
             className="rounded-xl shrink-0"
-            onClick={handleSend}
-            disabled={!input.trim() || sending || !conversationId}
+            onClick={() => handleSend()}
+            disabled={(!input.trim() && attachments.length === 0) || sending || !conversationId}
           >
             {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </Button>

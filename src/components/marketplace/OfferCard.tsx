@@ -18,7 +18,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { PaymentOfferDialog } from "./PaymentOfferDialog";
 import { CounterOfferDialog } from "./CounterOfferDialog";
-import { computeOfferPricing, fcfa } from "@/lib/offerPricing";
+import { OfferPricingBreakdown } from "./OfferPricingBreakdown";
 
 interface OfferCardProps {
   offer: {
@@ -89,14 +89,6 @@ export function OfferCard({
   const showPayButton = !offer.is_incoming && offer.status === "acceptee";
   const showRespondToCounter = !offer.is_incoming && offer.status === "contre_offre";
 
-  const pricing = computeOfferPricing({
-    proposedPrice: offer.proposed_price,
-    counterOfferPrice: offer.counter_offer_price,
-    quantity: offer.proposed_quantity,
-    listingUnit: offer.listing?.unit,
-    listingPrice: offer.listing?.price,
-  });
-
   return (
     <>
       <Card
@@ -156,27 +148,15 @@ export function OfferCard({
               )}
             </div>
 
-            {/* Détail du calcul */}
-            <div className="rounded-xl border border-border/50 divide-y divide-border/50 text-sm">
-              <div className="flex items-center justify-between px-3 py-2">
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <Package className="w-4 h-4" /> Quantité
-                </span>
-                <span className="font-medium">
-                  {pricing.quantity
-                    ? `${pricing.quantity.toLocaleString("fr-FR")} ${pricing.unit}`
-                    : offer.proposed_quantity || "—"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between px-3 py-2">
-                <span className="text-muted-foreground">Prix / {pricing.unit}</span>
-                <span className="font-medium">{pricing.unitPrice ? fcfa(pricing.unitPrice) : "—"}</span>
-              </div>
-              <div className="flex items-center justify-between px-3 py-2 bg-primary/5">
-                <span className="font-medium">Total à payer</span>
-                <span className="font-bold text-primary">{fcfa(pricing.total)}</span>
-              </div>
-            </div>
+            {/* Détail du calcul (source unique backend) */}
+            <OfferPricingBreakdown
+              offerId={offer.id}
+              proposedPrice={offer.proposed_price}
+              counterOfferPrice={offer.counter_offer_price}
+              quantity={offer.proposed_quantity}
+              listingUnit={offer.listing?.unit}
+              listingPrice={offer.listing?.price}
+            />
 
             <div className="flex flex-wrap gap-2">
               {offer.delivery_date && (
