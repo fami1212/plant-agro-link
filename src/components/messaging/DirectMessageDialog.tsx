@@ -2,7 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Loader2, MessageSquare, WifiOff, ArrowDown, Check, CheckCheck } from "lucide-react";
+import {
+  Send, Loader2, MessageSquare, WifiOff, ArrowDown, Check, CheckCheck,
+  Paperclip, X, FileText, Zap,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -25,6 +28,7 @@ interface Message {
   created_at: string;
   is_read?: boolean;
   pending?: boolean;
+  attachments?: string[] | null;
 }
 
 interface DirectMessageDialogProps {
@@ -37,6 +41,15 @@ interface DirectMessageDialogProps {
   /** Optional contextual subtitle (e.g. investment title) */
   context?: string;
 }
+
+const QUICK_REPLIES = [
+  "Bonjour 👋",
+  "C'est noté, merci !",
+  "Quel est le délai prévu ?",
+  "Pouvez-vous envoyer une photo ?",
+  "Je confirme l'étape validée ✅",
+  "Je vous rappelle rapidement.",
+];
 
 /**
  * Reusable 1:1 chat dialog backed by marketplace_conversations / marketplace_messages
@@ -60,8 +73,11 @@ export function DirectMessageDialog({
   const [queuedCount, setQueuedCount] = useState(0);
   const [otherPhone, setOtherPhone] = useState<string | null>(null);
   const [newMsgPill, setNewMsgPill] = useState(false);
+  const [attachments, setAttachments] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const atBottomRef = useRef(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   // Online/offline tracking
   useEffect(() => {
@@ -230,11 +246,32 @@ export function DirectMessageDialog({
     setNewMsgPill(false);
   };
 
-  const handleSend = async () => {
-    if (!user || !conversationId || !input.trim() || sending) return;
-    const content = input.trim();
+  const handleUpload = async (file: File) => {
+    if (!user) return;
+    setUploading(true);
+    try {
+      const path = `${user.id}/${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+      const { error } = await supabase.storage.from("chat-attachments").upload(path, file);
+      if (error) throw error;
+      const { data } = supabase.storage.from("chat-attachments").getPublicUrl(path);
+      setAttachments((a) => [...a, data.publicUrl]);
+    } catch (e: any) {
+      toast.error(e?.message || "Envoi de la pièce jointe impossible");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const handleSend = async (preset?: string) => {
+    const raw = preset ?? input;
+    if (!user || !conversationId || sending) return;
+    if (!raw.trim() && attachments.length === 0) return;
+    const content = raw.trim() || "📎 Pièce jointe";
+    const files = attachments;
     setSending(true);
-    setInput("");
+    if (!preset) setInput("");
+    setAttachments([]);
 
     const optimistic: Message = {
       id: `tmp_${Date.now()}`,
@@ -243,6 +280,7 @@ export function DirectMessageDialog({
       content,
       created_at: new Date().toISOString(),
       pending: true,
+      attachments: files,
     };
 
     // Offline → queue immediately
@@ -268,6 +306,7 @@ export function DirectMessageDialog({
         sender_id: user.id,
         recipient_id: otherUserId,
         content,
+        attachments: files.length ? files : null,
       });
       if (error) throw error;
       await supabase
