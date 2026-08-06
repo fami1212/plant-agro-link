@@ -31,7 +31,8 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
-import { computeOfferPricing, fcfa } from "@/lib/offerPricing";
+import { fcfa } from "@/lib/offerPricing";
+import { OfferPricingBreakdown } from "@/components/marketplace/OfferPricingBreakdown";
 
 interface Offer {
   id: string;
