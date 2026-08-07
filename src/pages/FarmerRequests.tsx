@@ -37,6 +37,9 @@ interface InvReq {
   investor_id: string;
   investor_name?: string;
   transaction_id?: string | null;
+  tx_status?: string | null;
+  tx_signed?: boolean;
+  trace_ref?: string | null;
 }
 
 interface VetReq {
@@ -315,13 +318,58 @@ export default function FarmerRequests() {
                         </div>
                       )}
 
-                      {r.status === "contract_created" && r.transaction_id && (
+                      {/* Détail complet de la demande */}
+                      <div className="grid grid-cols-2 gap-2 text-xs bg-muted/30 rounded-lg p-2">
+                        <div>
+                          <p className="text-muted-foreground">Montant proposé</p>
+                          <p className="font-semibold">
+                            {r.amount.toLocaleString()} {r.currency}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Rendement attendu</p>
+                          <p className="font-semibold">
+                            {r.expected_return ? `${r.expected_return}%` : "À négocier"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Durée</p>
+                          <p className="font-semibold">
+                            {r.duration_months ? `${r.duration_months} mois` : "À négocier"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">À rembourser (est.)</p>
+                          <p className="font-semibold">
+                            {Math.round(
+                              r.amount * (1 + (r.expected_return || 0) / 100),
+                            ).toLocaleString()}{" "}
+                            {r.currency}
+                          </p>
+                        </div>
+                        {r.trace_ref && (
+                          <div className="col-span-2">
+                            <p className="text-muted-foreground">Référence traçabilité</p>
+                            <p className="font-mono font-semibold">{r.trace_ref}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {r.transaction_id ? (
                         <Button
                           className="w-full"
+                          variant={r.tx_signed ? "outline" : "default"}
                           onClick={() => navigate(`/contract/${r.transaction_id}`)}
                         >
-                          <FileText className="w-4 h-4 mr-1" /> Voir & signer le contrat
+                          <FileText className="w-4 h-4 mr-1" />
+                          {r.tx_signed ? "Voir le contrat signé" : "Voir & signer le contrat"}
                         </Button>
+                      ) : (
+                        r.farmer_agreed && (
+                          <p className="text-[11px] text-muted-foreground text-center">
+                            Contrat en préparation par PlantErea — vous pourrez le signer ici.
+                          </p>
+                        )
                       )}
 
                       {r.status === "pending" && (
