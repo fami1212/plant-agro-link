@@ -42,14 +42,15 @@ const menuSections: MenuSection[] = [
   {
     titleKey: "menu.section.tools",
     items: [
-      { icon: Brain, labelKey: "nav.ai", path: "/ia", roles: ['agriculteur', 'admin'], highlight: true },
-      { icon: Receipt, labelKey: "nav.transactions", path: "/transactions", roles: ['agriculteur', 'veterinaire', 'acheteur', 'investisseur', 'admin'], highlight: true },
-      { icon: Inbox, labelKey: "nav.requests", path: "/farmer-requests", roles: ['agriculteur', 'admin'], highlight: true },
-      { icon: Wheat, labelKey: "nav.crops", path: "/cultures", roles: ['agriculteur', 'admin'] },
-      { icon: PawPrint, labelKey: "nav.livestock", path: "/betail", roles: ['agriculteur', 'veterinaire', 'admin'] },
-      { icon: MapPin, labelKey: "nav.parcels", path: "/parcelles", roles: ['agriculteur', 'admin'] },
-      { icon: Activity, labelKey: "nav.iot", path: "/iot", roles: ['agriculteur', 'admin'] },
-      { icon: Truck, labelKey: "nav.logistics", path: "/logistique", roles: ['agriculteur', 'acheteur', 'admin'] },
+      // Agriculteur : tout est regroupé dans le hub /agriculteur (onglets),
+      // le menu ne garde que ce qui n'y est pas.
+      { icon: Brain, labelKey: "nav.ai", path: "/ia", roles: ['admin'], highlight: true },
+      { icon: Receipt, labelKey: "nav.transactions", path: "/transactions", roles: ['veterinaire', 'acheteur', 'investisseur', 'admin'], highlight: true },
+      { icon: Wheat, labelKey: "nav.crops", path: "/cultures", roles: ['admin'] },
+      { icon: PawPrint, labelKey: "nav.livestock", path: "/betail", roles: ['veterinaire', 'admin'] },
+      { icon: MapPin, labelKey: "nav.parcels", path: "/parcelles", roles: ['admin'] },
+      { icon: Activity, labelKey: "nav.iot", path: "/iot", roles: ['admin'] },
+      { icon: Truck, labelKey: "nav.logistics", path: "/logistique", roles: ['acheteur', 'admin'] },
     ],
   },
   {

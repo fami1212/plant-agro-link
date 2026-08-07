@@ -17,6 +17,10 @@ import {
   Activity,
   Brain,
   Cpu,
+  Inbox,
+  Receipt,
+  ShoppingBag,
+  Truck,
 } from "lucide-react";
 import { FarmOverview } from "@/components/farmer/FarmOverview";
 import { FarmCalendar } from "@/components/farmer/FarmCalendar";
@@ -98,6 +102,30 @@ export default function Agriculteur() {
               <span>{t("farmer.calendar")}</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger
+              value="requests"
+              onClick={() => navigate("/farmer-requests")}
+              className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
+            >
+              <Inbox className="w-4 h-4" />
+              <span>Demandes</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger
+              value="market"
+              onClick={() => navigate("/marketplace/farmer")}
+              className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span>Marché</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger
+              value="transactions"
+              onClick={() => navigate("/transactions")}
+              className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
+            >
+              <Receipt className="w-4 h-4" />
+              <span>Transactions</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger
               value="cultures"
               onClick={() => navigate("/cultures")}
               className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
@@ -135,7 +163,7 @@ export default function Agriculteur() {
               className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
             >
               <Cpu className="w-4 h-4" />
-              <span>Devices</span>
+              <span>Capteurs</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger
               value="ia"
@@ -144,6 +172,14 @@ export default function Agriculteur() {
             >
               <Brain className="w-4 h-4" />
               <span>{t("nav.ai")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger
+              value="logistique"
+              onClick={() => navigate("/logistique")}
+              className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
+            >
+              <Truck className="w-4 h-4" />
+              <span>Logistique</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger 
               value="finances" 

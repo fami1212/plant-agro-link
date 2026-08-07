@@ -66,6 +66,7 @@ import { AdminRlsDiagnostic } from "@/components/admin/AdminRlsDiagnostic";
 import { AdminTransactionDisputes } from "@/components/admin/AdminTransactionDisputes";
 import { AdminInvestmentRequests } from "@/components/admin/AdminInvestmentRequests";
 import { AdminContracts } from "@/components/admin/AdminContracts";
+import { AdminPayouts } from "@/components/admin/AdminPayouts";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 type Profile = DatabaseTypes["public"]["Tables"]["profiles"]["Row"];
@@ -386,6 +387,10 @@ export default function Admin() {
               <DollarSign className="w-4 h-4" />
               <span className="text-sm">{t("admin.payments")}</span>
             </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="payouts" className="flex items-center gap-2 px-4">
+              <DollarSign className="w-4 h-4" />
+              <span className="text-sm">Paiement libéré</span>
+            </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="contracts" className="flex items-center gap-2 px-4">
               <FileText className="w-4 h-4" />
               <span className="text-sm">Contrats</span>
@@ -438,6 +443,11 @@ export default function Admin() {
           {/* Transactions Tab */}
           <ScrollableTabsContent value="transactions">
             <AdminTransactions />
+          </ScrollableTabsContent>
+
+          {/* Escrow payouts */}
+          <ScrollableTabsContent value="payouts">
+            <AdminPayouts />
           </ScrollableTabsContent>
 
           {/* Contracts Tab */}

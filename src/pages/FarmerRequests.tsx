@@ -37,6 +37,9 @@ interface InvReq {
   investor_id: string;
   investor_name?: string;
   transaction_id?: string | null;
+  tx_status?: string | null;
+  tx_signed?: boolean;
+  trace_ref?: string | null;
 }
 
 interface VetReq {
@@ -79,11 +82,30 @@ export default function FarmerRequests() {
       ? await supabase.from("profiles").select("user_id,full_name").in("user_id", invIds)
       : { data: [] as any[] };
     const invMap = new Map((invProfiles || []).map((p: any) => [p.user_id, p.full_name]));
+
+    // Transactions d'investissement me concernant (pour la signature du contrat)
+    const { data: invTxs } = await (supabase as any)
+      .from("transactions")
+      .select("id,initiator_id,amount,status,signed_at,trace_ref")
+      .eq("type", "INVESTMENT")
+      .eq("receiver_id", user.id);
+    const findTx = (r: any) =>
+      ((invTxs || []) as any[]).find(
+        (t) => t.initiator_id === r.investor_id && Number(t.amount) === Number(r.amount),
+      );
+
     setInvRequests(
-      (invs || []).map((r: any) => ({
-        ...r,
-        investor_name: invMap.get(r.investor_id) || "Investisseur",
-      })),
+      (invs || []).map((r: any) => {
+        const tx = findTx(r);
+        return {
+          ...r,
+          investor_name: invMap.get(r.investor_id) || "Investisseur",
+          transaction_id: r.transaction_id || tx?.id || null,
+          tx_status: tx?.status || null,
+          tx_signed: !!tx?.signed_at,
+          trace_ref: tx?.trace_ref || null,
+        };
+      }),
     );
 
     // 2. Vet consultation proposals sent to me
@@ -296,13 +318,58 @@ export default function FarmerRequests() {
                         </div>
                       )}
 
-                      {r.status === "contract_created" && r.transaction_id && (
+                      {/* Détail complet de la demande */}
+                      <div className="grid grid-cols-2 gap-2 text-xs bg-muted/30 rounded-lg p-2">
+                        <div>
+                          <p className="text-muted-foreground">Montant proposé</p>
+                          <p className="font-semibold">
+                            {r.amount.toLocaleString()} {r.currency}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Rendement attendu</p>
+                          <p className="font-semibold">
+                            {r.expected_return ? `${r.expected_return}%` : "À négocier"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Durée</p>
+                          <p className="font-semibold">
+                            {r.duration_months ? `${r.duration_months} mois` : "À négocier"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">À rembourser (est.)</p>
+                          <p className="font-semibold">
+                            {Math.round(
+                              r.amount * (1 + (r.expected_return || 0) / 100),
+                            ).toLocaleString()}{" "}
+                            {r.currency}
+                          </p>
+                        </div>
+                        {r.trace_ref && (
+                          <div className="col-span-2">
+                            <p className="text-muted-foreground">Référence traçabilité</p>
+                            <p className="font-mono font-semibold">{r.trace_ref}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {r.transaction_id ? (
                         <Button
                           className="w-full"
+                          variant={r.tx_signed ? "outline" : "default"}
                           onClick={() => navigate(`/contract/${r.transaction_id}`)}
                         >
-                          <FileText className="w-4 h-4 mr-1" /> Voir & signer le contrat
+                          <FileText className="w-4 h-4 mr-1" />
+                          {r.tx_signed ? "Voir le contrat signé" : "Voir & signer le contrat"}
                         </Button>
+                      ) : (
+                        r.farmer_agreed && (
+                          <p className="text-[11px] text-muted-foreground text-center">
+                            Contrat en préparation par PlantErea — vous pourrez le signer ici.
+                          </p>
+                        )
                       )}
 
                       {r.status === "pending" && (
