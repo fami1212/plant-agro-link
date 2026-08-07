@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 // Extend jsPDF type for autotable
 declare module "jspdf" {
@@ -120,7 +120,7 @@ export function generateTraceabilityCertificatePDF(data: {
     doc.setFont("helvetica", "bold");
     doc.text("📍 Origine", 15, y);
     y += 3;
-    doc.autoTable({
+    autoTable(doc, {
       startY: y,
       body: originRows,
       theme: "plain",
@@ -128,7 +128,7 @@ export function generateTraceabilityCertificatePDF(data: {
       columnStyles: { 0: { fontStyle: "bold", cellWidth: 50, textColor: COLORS.muted }, 1: { textColor: COLORS.dark } },
       margin: { left: 15, right: 15 },
     });
-    y = doc.lastAutoTable.finalY + 8;
+    y = (doc as any).lastAutoTable.finalY + 8;
   }
 
   // Production table
@@ -143,7 +143,7 @@ export function generateTraceabilityCertificatePDF(data: {
     doc.setFont("helvetica", "bold");
     doc.text("📅 Production", 15, y);
     y += 3;
-    doc.autoTable({
+    autoTable(doc, {
       startY: y,
       body: prodRows,
       theme: "plain",
@@ -151,7 +151,7 @@ export function generateTraceabilityCertificatePDF(data: {
       columnStyles: { 0: { fontStyle: "bold", cellWidth: 50, textColor: COLORS.muted }, 1: { textColor: COLORS.dark } },
       margin: { left: 15, right: 15 },
     });
-    y = doc.lastAutoTable.finalY + 8;
+    y = (doc as any).lastAutoTable.finalY + 8;
   }
 
   // IoT Data
@@ -165,7 +165,7 @@ export function generateTraceabilityCertificatePDF(data: {
     if (data.iotData.avgHumidity !== undefined) iotRows.push(["Humidité moyenne", `${data.iotData.avgHumidity}%`]);
     if (data.iotData.avgTemperature !== undefined) iotRows.push(["Température moyenne", `${data.iotData.avgTemperature}°C`]);
     if (data.iotData.irrigationCount !== undefined) iotRows.push(["Nombre d'irrigations", `${data.iotData.irrigationCount}`]);
-    doc.autoTable({
+    autoTable(doc, {
       startY: y,
       body: iotRows,
       theme: "plain",
@@ -173,7 +173,7 @@ export function generateTraceabilityCertificatePDF(data: {
       columnStyles: { 0: { fontStyle: "bold", cellWidth: 60, textColor: COLORS.muted }, 1: { textColor: COLORS.dark } },
       margin: { left: 15, right: 15 },
     });
-    y = doc.lastAutoTable.finalY + 8;
+    y = (doc as any).lastAutoTable.finalY + 8;
   }
 
   // Blockchain hash
@@ -225,7 +225,7 @@ export function generateFinancialReportPDF(data: {
   doc.text("Résumé", 15, y);
   y += 5;
 
-  doc.autoTable({
+  autoTable(doc, {
     startY: y,
     body: summaryItems.map(item => [item.label, item.value]),
     theme: "striped",
@@ -237,7 +237,7 @@ export function generateFinancialReportPDF(data: {
     margin: { left: 15, right: 15 },
     headStyles: { fillColor: COLORS.primary as [number, number, number] },
   });
-  y = doc.lastAutoTable.finalY + 12;
+  y = (doc as any).lastAutoTable.finalY + 12;
 
   // Monthly breakdown
   if (data.monthlyData.length > 0) {
@@ -247,7 +247,7 @@ export function generateFinancialReportPDF(data: {
     doc.text("Évolution Mensuelle", 15, y);
     y += 3;
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: y,
       head: [["Mois", "Revenus (FCFA)", "Dépenses (FCFA)", "Balance (FCFA)"]],
       body: data.monthlyData.map(m => [
@@ -262,7 +262,7 @@ export function generateFinancialReportPDF(data: {
       columnStyles: { 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "right" } },
       margin: { left: 15, right: 15 },
     });
-    y = doc.lastAutoTable.finalY + 12;
+    y = (doc as any).lastAutoTable.finalY + 12;
   }
 
   // Recent transactions
@@ -274,7 +274,7 @@ export function generateFinancialReportPDF(data: {
     doc.text("Transactions Récentes", 15, y);
     y += 3;
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: y,
       head: [["Date", "Description", "Catégorie", "Montant (FCFA)"]],
       body: data.recentTransactions.map(t => [
@@ -320,7 +320,7 @@ export function generateAgriculturalReportPDF(data: {
     doc.setTextColor(...COLORS.primary as [number, number, number]);
     doc.text(`🗺️ Parcelles (${data.fields.length})`, 15, y);
     y += 3;
-    doc.autoTable({
+    autoTable(doc, {
       startY: y,
       head: [["Nom", "Surface (ha)", "Type de sol", "Statut"]],
       body: data.fields.map(f => [f.name, f.area.toString(), f.soilType, f.status]),
@@ -329,7 +329,7 @@ export function generateAgriculturalReportPDF(data: {
       headStyles: { fillColor: COLORS.primary as [number, number, number], textColor: [255, 255, 255] },
       margin: { left: 15, right: 15 },
     });
-    y = doc.lastAutoTable.finalY + 10;
+    y = (doc as any).lastAutoTable.finalY + 10;
   }
 
   // Crops
@@ -340,7 +340,7 @@ export function generateAgriculturalReportPDF(data: {
     doc.setTextColor(...COLORS.primary as [number, number, number]);
     doc.text(`🌾 Cultures (${data.crops.length})`, 15, y);
     y += 3;
-    doc.autoTable({
+    autoTable(doc, {
       startY: y,
       head: [["Nom", "Type", "Parcelle", "Statut", "Semis", "Rendement attendu"]],
       body: data.crops.map(c => [
@@ -353,7 +353,7 @@ export function generateAgriculturalReportPDF(data: {
       headStyles: { fillColor: COLORS.primary as [number, number, number], textColor: [255, 255, 255] },
       margin: { left: 15, right: 15 },
     });
-    y = doc.lastAutoTable.finalY + 10;
+    y = (doc as any).lastAutoTable.finalY + 10;
   }
 
   // Livestock
@@ -364,7 +364,7 @@ export function generateAgriculturalReportPDF(data: {
     doc.setTextColor(...COLORS.primary as [number, number, number]);
     doc.text(`🐄 Bétail (${data.livestock.length})`, 15, y);
     y += 3;
-    doc.autoTable({
+    autoTable(doc, {
       startY: y,
       head: [["Identifiant", "Espèce", "Race", "Santé", "Poids (kg)"]],
       body: data.livestock.map(l => [l.identifier, l.species, l.breed || "-", l.health, l.weight ? l.weight.toString() : "-"]),
@@ -373,7 +373,7 @@ export function generateAgriculturalReportPDF(data: {
       headStyles: { fillColor: COLORS.primary as [number, number, number], textColor: [255, 255, 255] },
       margin: { left: 15, right: 15 },
     });
-    y = doc.lastAutoTable.finalY + 10;
+    y = (doc as any).lastAutoTable.finalY + 10;
   }
 
   // Harvest summary
@@ -444,7 +444,7 @@ export function generateContractPDF(data: ContractPdfData) {
   y += 32;
 
   doc.setTextColor(...COLORS.dark as [number, number, number]);
-  doc.autoTable({
+  autoTable(doc, {
     startY: y,
     head: [["Objet du contrat", ""]],
     body: [
@@ -459,10 +459,10 @@ export function generateContractPDF(data: ContractPdfData) {
     headStyles: { fillColor: COLORS.primary as [number, number, number], textColor: [255, 255, 255] },
     margin: { left: 15, right: 15 },
   });
-  y = doc.lastAutoTable.finalY + 10;
+  y = (doc as any).lastAutoTable.finalY + 10;
 
   if (data.parties.length) {
-    doc.autoTable({
+    autoTable(doc, {
       startY: y,
       head: [["Partie", "Nom"]],
       body: data.parties.map((p) => [p.role, p.name]),
@@ -471,12 +471,12 @@ export function generateContractPDF(data: ContractPdfData) {
       headStyles: { fillColor: COLORS.primary as [number, number, number], textColor: [255, 255, 255] },
       margin: { left: 15, right: 15 },
     });
-    y = doc.lastAutoTable.finalY + 10;
+    y = (doc as any).lastAutoTable.finalY + 10;
   }
 
   if (data.milestones.length) {
     if (y > 210) { doc.addPage(); y = 20; }
-    doc.autoTable({
+    autoTable(doc, {
       startY: y,
       head: [["Étape", "Part", "Montant", "Statut", "Validée le"]],
       body: data.milestones.map((m) => [
@@ -491,11 +491,11 @@ export function generateContractPDF(data: ContractPdfData) {
       headStyles: { fillColor: COLORS.primary as [number, number, number], textColor: [255, 255, 255] },
       margin: { left: 15, right: 15 },
     });
-    y = doc.lastAutoTable.finalY + 10;
+    y = (doc as any).lastAutoTable.finalY + 10;
   }
 
   if (y > 210) { doc.addPage(); y = 20; }
-  doc.autoTable({
+  autoTable(doc, {
     startY: y,
     head: [["Signataire", "Rôle", "Date", "IP", "Appareil"]],
     body: data.signatures.length
@@ -512,7 +512,7 @@ export function generateContractPDF(data: ContractPdfData) {
     headStyles: { fillColor: COLORS.dark as [number, number, number], textColor: [255, 255, 255] },
     margin: { left: 15, right: 15 },
   });
-  y = doc.lastAutoTable.finalY + 8;
+  y = (doc as any).lastAutoTable.finalY + 8;
 
   if (data.blockchainTx) {
     doc.setFontSize(8);
