@@ -141,7 +141,7 @@ export function SickAnimalsMarket() {
       description: message || `Proposition de consultation pour ${selected.identifier}`,
       scheduled_date: new Date().toISOString().split("T")[0],
       status: "en_attente",
-      estimated_price: price,
+      price,
     });
     // notify farmer
     await (supabase as any).from("notifications").insert({

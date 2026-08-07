@@ -134,18 +134,36 @@ export function TransactionTimeline({
     if (hasRole("admin")) return true;
     if (m.validator_role === "buyer") return currentUserIsInitiator;
     if (m.validator_role === "seller") return !currentUserIsInitiator;
+    // Étapes de déblocage : le payeur (initiateur) peut libérer les fonds
+    if (m.validator_role === "admin") return currentUserIsInitiator;
     return false;
   };
 
+  const previousPending = (m: Milestone) =>
+    items.some((x) => x.order_index < m.order_index && x.status !== "COMPLETED" && x.status !== "SKIPPED");
+
   const markDone = async (m: Milestone) => {
+    if (!navigator.onLine) {
+      toast.error("Connexion requise pour valider une étape.");
+      return;
+    }
+    if (previousPending(m)) {
+      toast.error("Validez d'abord les étapes précédentes.");
+      return;
+    }
     setUpdatingId(m.id);
-    const { error } = await (supabase as any)
+    const { data, error } = await (supabase as any)
       .from("transaction_milestones")
       .update({ status: "COMPLETED", completed_at: new Date().toISOString() })
-      .eq("id", m.id);
+      .eq("id", m.id)
+      .select("id");
     setUpdatingId(null);
     if (error) return toast.error(error.message);
+    if (!data || data.length === 0) {
+      return toast.error("Vous n'êtes pas autorisé à valider cette étape.");
+    }
     toast.success(`Étape "${m.label}" validée`);
+    load();
   };
 
   if (loading)
@@ -277,14 +295,15 @@ export function TransactionTimeline({
                   <Button
                     size="sm"
                     className="mt-2"
-                    disabled={updatingId === m.id}
+                    disabled={updatingId === m.id || previousPending(m)}
                     onClick={() => markDone(m)}
                   >
                     {updatingId === m.id ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <>
-                        <Shield className="w-4 h-4 mr-1" /> Valider cette étape
+                        <Shield className="w-4 h-4 mr-1" />{" "}
+                        {m.amount_percent > 0 ? "Libérer cette étape" : "Valider cette étape"}
                       </>
                     )}
                   </Button>

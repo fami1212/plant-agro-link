@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { TabsContent } from "@/components/ui/tabs";
 import { HubTabs } from "@/components/common/HubTabs";
+import { MyContractsList } from "@/components/contracts/MyContractsList";
 import {
   ShoppingBag,
   Search,
@@ -20,6 +21,7 @@ import {
   Clock,
   CheckCircle2,
   Truck,
+  FileSignature,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -329,6 +331,7 @@ export default function Acheteur() {
             { value: "panier", label: t("buyer.cart"), icon: ShoppingCart },
             { value: "commandes", label: t("buyer.orders"), icon: Package },
             { value: "favoris", label: t("buyer.favorites"), icon: Heart },
+            { value: "contrats", label: "Contrats", icon: FileSignature },
           ]}
         >
 
@@ -487,6 +490,10 @@ export default function Acheteur() {
                 </Card>
               ))
             )}
+          </TabsContent>
+
+          <TabsContent value="contrats">
+            <MyContractsList types={["PRODUCT_SALE"]} />
           </TabsContent>
 
         </HubTabs>
