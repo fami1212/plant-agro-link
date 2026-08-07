@@ -79,11 +79,30 @@ export default function FarmerRequests() {
       ? await supabase.from("profiles").select("user_id,full_name").in("user_id", invIds)
       : { data: [] as any[] };
     const invMap = new Map((invProfiles || []).map((p: any) => [p.user_id, p.full_name]));
+
+    // Transactions d'investissement me concernant (pour la signature du contrat)
+    const { data: invTxs } = await (supabase as any)
+      .from("transactions")
+      .select("id,initiator_id,amount,status,signed_at,trace_ref")
+      .eq("type", "INVESTMENT")
+      .eq("receiver_id", user.id);
+    const findTx = (r: any) =>
+      ((invTxs || []) as any[]).find(
+        (t) => t.initiator_id === r.investor_id && Number(t.amount) === Number(r.amount),
+      );
+
     setInvRequests(
-      (invs || []).map((r: any) => ({
-        ...r,
-        investor_name: invMap.get(r.investor_id) || "Investisseur",
-      })),
+      (invs || []).map((r: any) => {
+        const tx = findTx(r);
+        return {
+          ...r,
+          investor_name: invMap.get(r.investor_id) || "Investisseur",
+          transaction_id: r.transaction_id || tx?.id || null,
+          tx_status: tx?.status || null,
+          tx_signed: !!tx?.signed_at,
+          trace_ref: tx?.trace_ref || null,
+        };
+      }),
     );
 
     // 2. Vet consultation proposals sent to me
