@@ -1,6 +1,8 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+const autoTableAny = autoTable as unknown as (d: jsPDF, options: any) => void;
+
 // Extend jsPDF type for autotable
 declare module "jspdf" {
   interface jsPDF {
@@ -120,7 +122,7 @@ export function generateTraceabilityCertificatePDF(data: {
     doc.setFont("helvetica", "bold");
     doc.text("📍 Origine", 15, y);
     y += 3;
-    autoTable(doc, {
+    autoTableAny(doc, {
       startY: y,
       body: originRows,
       theme: "plain",
@@ -143,7 +145,7 @@ export function generateTraceabilityCertificatePDF(data: {
     doc.setFont("helvetica", "bold");
     doc.text("📅 Production", 15, y);
     y += 3;
-    autoTable(doc, {
+    autoTableAny(doc, {
       startY: y,
       body: prodRows,
       theme: "plain",
@@ -165,7 +167,7 @@ export function generateTraceabilityCertificatePDF(data: {
     if (data.iotData.avgHumidity !== undefined) iotRows.push(["Humidité moyenne", `${data.iotData.avgHumidity}%`]);
     if (data.iotData.avgTemperature !== undefined) iotRows.push(["Température moyenne", `${data.iotData.avgTemperature}°C`]);
     if (data.iotData.irrigationCount !== undefined) iotRows.push(["Nombre d'irrigations", `${data.iotData.irrigationCount}`]);
-    autoTable(doc, {
+    autoTableAny(doc, {
       startY: y,
       body: iotRows,
       theme: "plain",
@@ -225,7 +227,7 @@ export function generateFinancialReportPDF(data: {
   doc.text("Résumé", 15, y);
   y += 5;
 
-  autoTable(doc, {
+  autoTableAny(doc, {
     startY: y,
     body: summaryItems.map(item => [item.label, item.value]),
     theme: "striped",
@@ -247,7 +249,7 @@ export function generateFinancialReportPDF(data: {
     doc.text("Évolution Mensuelle", 15, y);
     y += 3;
 
-    autoTable(doc, {
+    autoTableAny(doc, {
       startY: y,
       head: [["Mois", "Revenus (FCFA)", "Dépenses (FCFA)", "Balance (FCFA)"]],
       body: data.monthlyData.map(m => [
@@ -274,7 +276,7 @@ export function generateFinancialReportPDF(data: {
     doc.text("Transactions Récentes", 15, y);
     y += 3;
 
-    autoTable(doc, {
+    autoTableAny(doc, {
       startY: y,
       head: [["Date", "Description", "Catégorie", "Montant (FCFA)"]],
       body: data.recentTransactions.map(t => [
@@ -320,7 +322,7 @@ export function generateAgriculturalReportPDF(data: {
     doc.setTextColor(...COLORS.primary as [number, number, number]);
     doc.text(`🗺️ Parcelles (${data.fields.length})`, 15, y);
     y += 3;
-    autoTable(doc, {
+    autoTableAny(doc, {
       startY: y,
       head: [["Nom", "Surface (ha)", "Type de sol", "Statut"]],
       body: data.fields.map(f => [f.name, f.area.toString(), f.soilType, f.status]),
@@ -340,7 +342,7 @@ export function generateAgriculturalReportPDF(data: {
     doc.setTextColor(...COLORS.primary as [number, number, number]);
     doc.text(`🌾 Cultures (${data.crops.length})`, 15, y);
     y += 3;
-    autoTable(doc, {
+    autoTableAny(doc, {
       startY: y,
       head: [["Nom", "Type", "Parcelle", "Statut", "Semis", "Rendement attendu"]],
       body: data.crops.map(c => [
@@ -364,7 +366,7 @@ export function generateAgriculturalReportPDF(data: {
     doc.setTextColor(...COLORS.primary as [number, number, number]);
     doc.text(`🐄 Bétail (${data.livestock.length})`, 15, y);
     y += 3;
-    autoTable(doc, {
+    autoTableAny(doc, {
       startY: y,
       head: [["Identifiant", "Espèce", "Race", "Santé", "Poids (kg)"]],
       body: data.livestock.map(l => [l.identifier, l.species, l.breed || "-", l.health, l.weight ? l.weight.toString() : "-"]),
@@ -444,7 +446,7 @@ export function generateContractPDF(data: ContractPdfData) {
   y += 32;
 
   doc.setTextColor(...COLORS.dark as [number, number, number]);
-  autoTable(doc, {
+  autoTableAny(doc, {
     startY: y,
     head: [["Objet du contrat", ""]],
     body: [
@@ -462,7 +464,7 @@ export function generateContractPDF(data: ContractPdfData) {
   y = (doc as any).lastAutoTable.finalY + 10;
 
   if (data.parties.length) {
-    autoTable(doc, {
+    autoTableAny(doc, {
       startY: y,
       head: [["Partie", "Nom"]],
       body: data.parties.map((p) => [p.role, p.name]),
@@ -476,7 +478,7 @@ export function generateContractPDF(data: ContractPdfData) {
 
   if (data.milestones.length) {
     if (y > 210) { doc.addPage(); y = 20; }
-    autoTable(doc, {
+    autoTableAny(doc, {
       startY: y,
       head: [["Étape", "Part", "Montant", "Statut", "Validée le"]],
       body: data.milestones.map((m) => [
@@ -495,7 +497,7 @@ export function generateContractPDF(data: ContractPdfData) {
   }
 
   if (y > 210) { doc.addPage(); y = 20; }
-  autoTable(doc, {
+  autoTableAny(doc, {
     startY: y,
     head: [["Signataire", "Rôle", "Date", "IP", "Appareil"]],
     body: data.signatures.length
