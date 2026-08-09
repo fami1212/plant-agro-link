@@ -84,7 +84,7 @@ interface UserWithRoles {
 
 export default function Admin() {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("people");
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [listings, setListings] = useState<Listing[]>([]);
   const [providers, setProviders] = useState<ServiceProvider[]>([]);
