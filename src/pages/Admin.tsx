@@ -55,8 +55,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { Database as DatabaseTypes } from "@/integrations/supabase/types";
-import { AdminTransactions } from "@/components/admin/AdminTransactions";
-import { AdminDisputePanel } from "@/components/admin/AdminDisputePanel";
 import { AdminUserModeration } from "@/components/admin/AdminUserModeration";
 import { AdminListingModeration } from "@/components/admin/AdminListingModeration";
 import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
@@ -86,7 +84,7 @@ interface UserWithRoles {
 
 export default function Admin() {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("people");
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [listings, setListings] = useState<Listing[]>([]);
   const [providers, setProviders] = useState<ServiceProvider[]>([]);
@@ -360,103 +358,111 @@ export default function Admin() {
           </Card>
         </div>
 
-        {/* Main Tabs */}
+        {/* 4 pôles : Utilisateurs/KYC · Finance · Modération · Système */}
         <ScrollableTabs value={activeTab} onValueChange={setActiveTab}>
           <ScrollableTabsList>
-            <ScrollableTabsTrigger value="overview" className="flex items-center gap-2 px-4">
-              <BarChart3 className="w-4 h-4" />
-              <span className="text-sm">{t("admin.overview")}</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="users" className="flex items-center gap-2 px-4">
+            <ScrollableTabsTrigger value="people" className="flex items-center gap-2 px-4">
               <Users className="w-4 h-4" />
-              <span className="text-sm">{t("admin.users")}</span>
+              <span className="text-sm">Utilisateurs & KYC</span>
             </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="marketplace" className="flex items-center gap-2 px-4">
-              <ShoppingBag className="w-4 h-4" />
-              <span className="text-sm">{t("admin.marketplace")}</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="disputes" className="flex items-center gap-2 px-4">
-              <Scale className="w-4 h-4" />
-              <span className="text-sm">{t("admin.disputes")}</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="invrequests" className="flex items-center gap-2 px-4">
-              <TrendingUp className="w-4 h-4" />
-              <span className="text-sm">Demandes invest.</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="transactions" className="flex items-center gap-2 px-4">
+            <ScrollableTabsTrigger value="finance" className="flex items-center gap-2 px-4">
               <DollarSign className="w-4 h-4" />
-              <span className="text-sm">{t("admin.payments")}</span>
+              <span className="text-sm">Finance</span>
             </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="payouts" className="flex items-center gap-2 px-4">
-              <DollarSign className="w-4 h-4" />
-              <span className="text-sm">Paiement libéré</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="contracts" className="flex items-center gap-2 px-4">
-              <FileText className="w-4 h-4" />
-              <span className="text-sm">Contrats</span>
+            <ScrollableTabsTrigger value="moderation" className="flex items-center gap-2 px-4">
+              <Shield className="w-4 h-4" />
+              <span className="text-sm">Modération</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger value="system" className="flex items-center gap-2 px-4">
               <Settings className="w-4 h-4" />
-              <span className="text-sm">{t("admin.system")}</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="providers" className="flex items-center gap-2 px-4">
-              <Activity className="w-4 h-4" />
-              <span className="text-sm">{t("admin.providers")}</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="kyc" className="flex items-center gap-2 px-4">
-              <UserCheck className="w-4 h-4" />
-              <span className="text-sm">KYC</span>
-            </ScrollableTabsTrigger>
-            <ScrollableTabsTrigger value="rls" className="flex items-center gap-2 px-4">
-              <Shield className="w-4 h-4" />
-              <span className="text-sm">Diagnostic RLS</span>
+              <span className="text-sm">Système</span>
             </ScrollableTabsTrigger>
           </ScrollableTabsList>
 
-          {/* Overview Tab */}
-          <ScrollableTabsContent value="overview" className="space-y-4">
-            <AdminAnalytics />
+          {/* Pôle 1 — Utilisateurs & KYC */}
+          <ScrollableTabsContent value="people">
+            <ScrollableTabs defaultValue="kyc">
+              <ScrollableTabsList>
+                <ScrollableTabsTrigger value="kyc" className="flex items-center gap-2 px-4">
+                  <UserCheck className="w-4 h-4" />
+                  <span className="text-sm">Vérifications KYC</span>
+                </ScrollableTabsTrigger>
+                <ScrollableTabsTrigger value="accounts" className="flex items-center gap-2 px-4">
+                  <Users className="w-4 h-4" />
+                  <span className="text-sm">Comptes & rôles</span>
+                </ScrollableTabsTrigger>
+              </ScrollableTabsList>
+              <ScrollableTabsContent value="kyc"><AdminKycPanel /></ScrollableTabsContent>
+              <ScrollableTabsContent value="accounts"><AdminUserModeration /></ScrollableTabsContent>
+            </ScrollableTabs>
           </ScrollableTabsContent>
 
-          {/* Users Tab */}
-          <ScrollableTabsContent value="users">
-            <AdminUserModeration />
+          {/* Pôle 2 — Finance */}
+          <ScrollableTabsContent value="finance">
+            <ScrollableTabs defaultValue="payouts">
+              <ScrollableTabsList>
+                <ScrollableTabsTrigger value="payouts" className="flex items-center gap-2 px-4">
+                  <DollarSign className="w-4 h-4" />
+                  <span className="text-sm">Escrow & paiements</span>
+                </ScrollableTabsTrigger>
+                <ScrollableTabsTrigger value="contracts" className="flex items-center gap-2 px-4">
+                  <FileText className="w-4 h-4" />
+                  <span className="text-sm">Contrats</span>
+                </ScrollableTabsTrigger>
+                <ScrollableTabsTrigger value="invrequests" className="flex items-center gap-2 px-4">
+                  <TrendingUp className="w-4 h-4" />
+                  <span className="text-sm">Demandes invest.</span>
+                </ScrollableTabsTrigger>
+              </ScrollableTabsList>
+              <ScrollableTabsContent value="payouts"><AdminPayouts /></ScrollableTabsContent>
+              <ScrollableTabsContent value="contracts"><AdminContracts /></ScrollableTabsContent>
+              <ScrollableTabsContent value="invrequests"><AdminInvestmentRequests /></ScrollableTabsContent>
+            </ScrollableTabs>
           </ScrollableTabsContent>
 
-          {/* Marketplace Tab */}
-          <ScrollableTabsContent value="marketplace">
-            <AdminListingModeration />
+          {/* Pôle 3 — Modération */}
+          <ScrollableTabsContent value="moderation">
+            <ScrollableTabs defaultValue="disputes">
+              <ScrollableTabsList>
+                <ScrollableTabsTrigger value="disputes" className="flex items-center gap-2 px-4">
+                  <Scale className="w-4 h-4" />
+                  <span className="text-sm">Litiges</span>
+                </ScrollableTabsTrigger>
+                <ScrollableTabsTrigger value="listings" className="flex items-center gap-2 px-4">
+                  <ShoppingBag className="w-4 h-4" />
+                  <span className="text-sm">Annonces</span>
+                </ScrollableTabsTrigger>
+                <ScrollableTabsTrigger value="providers" className="flex items-center gap-2 px-4">
+                  <Activity className="w-4 h-4" />
+                  <span className="text-sm">Prestataires</span>
+                </ScrollableTabsTrigger>
+              </ScrollableTabsList>
+              <ScrollableTabsContent value="disputes"><AdminTransactionDisputes /></ScrollableTabsContent>
+              <ScrollableTabsContent value="listings"><AdminListingModeration /></ScrollableTabsContent>
+              <ScrollableTabsContent value="providers"><AdminServiceProviders /></ScrollableTabsContent>
+            </ScrollableTabs>
           </ScrollableTabsContent>
 
-          {/* Disputes Tab */}
-          <ScrollableTabsContent value="disputes">
-            <div className="space-y-6">
-              <AdminTransactionDisputes />
-              <AdminDisputePanel />
-            </div>
-          </ScrollableTabsContent>
-
-          <ScrollableTabsContent value="invrequests">
-            <AdminInvestmentRequests />
-          </ScrollableTabsContent>
-
-          {/* Transactions Tab */}
-          <ScrollableTabsContent value="transactions">
-            <AdminTransactions />
-          </ScrollableTabsContent>
-
-          {/* Escrow payouts */}
-          <ScrollableTabsContent value="payouts">
-            <AdminPayouts />
-          </ScrollableTabsContent>
-
-          {/* Contracts Tab */}
-          <ScrollableTabsContent value="contracts">
-            <AdminContracts />
-          </ScrollableTabsContent>
-
-          {/* System Tab */}
-          <ScrollableTabsContent value="system" className="space-y-4">
+          {/* Pôle 4 — Système */}
+          <ScrollableTabsContent value="system">
+            <ScrollableTabs defaultValue="analytics">
+              <ScrollableTabsList>
+                <ScrollableTabsTrigger value="analytics" className="flex items-center gap-2 px-4">
+                  <BarChart3 className="w-4 h-4" />
+                  <span className="text-sm">Analytique</span>
+                </ScrollableTabsTrigger>
+                <ScrollableTabsTrigger value="rls" className="flex items-center gap-2 px-4">
+                  <Shield className="w-4 h-4" />
+                  <span className="text-sm">Diagnostic RLS</span>
+                </ScrollableTabsTrigger>
+                <ScrollableTabsTrigger value="health" className="flex items-center gap-2 px-4">
+                  <Database className="w-4 h-4" />
+                  <span className="text-sm">Santé plateforme</span>
+                </ScrollableTabsTrigger>
+              </ScrollableTabsList>
+              <ScrollableTabsContent value="analytics"><AdminAnalytics /></ScrollableTabsContent>
+              <ScrollableTabsContent value="rls"><AdminRlsDiagnostic /></ScrollableTabsContent>
+              <ScrollableTabsContent value="health" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -482,20 +488,8 @@ export default function Admin() {
                 </div>
               </CardContent>
             </Card>
-          </ScrollableTabsContent>
-
-          {/* Service Providers Tab */}
-          <ScrollableTabsContent value="providers">
-            <AdminServiceProviders />
-          </ScrollableTabsContent>
-
-          {/* KYC Verification Tab */}
-          <ScrollableTabsContent value="kyc">
-            <AdminKycPanel />
-          </ScrollableTabsContent>
-
-          <ScrollableTabsContent value="rls">
-            <AdminRlsDiagnostic />
+              </ScrollableTabsContent>
+            </ScrollableTabs>
           </ScrollableTabsContent>
         </ScrollableTabs>
       </div>
