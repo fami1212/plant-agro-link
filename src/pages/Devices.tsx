@@ -36,6 +36,8 @@ const SENSOR_METRICS = [
   { value: "wind_speed", unit: "km/h" },
 ];
 
+const WEBHOOK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/iot-webhook`;
+
 export default function Devices() {
   const { user } = useAuth();
   const [devices, setDevices] = useState<Device[]>([]);
@@ -185,6 +187,39 @@ export default function Devices() {
       />
 
       <div className="px-4 pb-24 space-y-3">
+        <Card className="border-primary/30 bg-primary/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Cpu className="w-4 h-4 text-primary" /> Connexion directe des capteurs (HTTPS)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-xs">
+            <p className="text-muted-foreground">
+              Vos capteurs envoient leurs lectures directement en HTTPS, signées HMAC-SHA256. Aucun
+              intermédiaire n'est nécessaire.
+            </p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 bg-muted px-2 py-1 rounded font-mono truncate">{WEBHOOK_URL}</code>
+              <Button size="icon" variant="ghost" onClick={() => { navigator.clipboard.writeText(WEBHOOK_URL); toast.success("URL copiée"); }}>
+                <Copy className="w-4 h-4" />
+              </Button>
+            </div>
+            <pre className="bg-muted rounded p-2 overflow-x-auto font-mono leading-relaxed">{`ts=$(date +%s)
+body='{"device_token":"dev_xxx","metric":"temperature","value":25.4,"unit":"°C"}'
+sig=$(printf "%s.%s" "$ts" "$body" | openssl dgst -sha256 -hmac "$IOT_SECRET" -r | cut -d' ' -f1)
+
+curl -X POST ${WEBHOOK_URL} \\
+  -H "Content-Type: application/json" \\
+  -H "x-plantera-timestamp: $ts" \\
+  -H "x-plantera-signature: sha256=$sig" \\
+  -d "$body"`}</pre>
+            <p className="text-muted-foreground">
+              La signature porte sur <code>timestamp.corps</code>. Les requêtes de plus de 5 minutes sont
+              rejetées. Envoi groupé possible avec <code>{`{"readings":[…]}`}</code>.
+            </p>
+          </CardContent>
+        </Card>
+
         {loading ? (
           <Card><CardContent className="p-6 text-center text-muted-foreground">Chargement…</CardContent></Card>
         ) : devices.length === 0 ? (
