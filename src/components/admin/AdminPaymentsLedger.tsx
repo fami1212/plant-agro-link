@@ -12,7 +12,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Loader2, RefreshCw, Wallet, CheckCircle2, Clock } from "lucide-react";
+import { Loader2, RefreshCw, Wallet, CheckCircle2, Clock, Send, History } from "lucide-react";
 import { toast } from "sonner";
 
 interface Milestone {
