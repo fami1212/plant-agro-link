@@ -195,6 +195,81 @@ export function AdminPaymentsLedger() {
     load();
   };
 
+  const openRelease = (row: Row) => {
+    const next = row.milestones
+      .filter((m) => m.status !== "COMPLETED")
+      .sort((a, b) => a.order_index - b.order_index)[0];
+    setReleaseTarget(row);
+    setReleaseMs(next?.id ?? "");
+    setReleaseAmount(String(next?.amount ?? 0));
+    setReleaseRef("REL-" + Math.random().toString(36).slice(2, 8).toUpperCase());
+  };
+
+  const releasePayment = async () => {
+    if (!releaseTarget) return;
+    const amt = Number(releaseAmount);
+    if (!amt || amt <= 0) return toast.error("Montant invalide");
+    const available = Number(releaseTarget.amount_locked || 0) - Number(releaseTarget.amount_released || 0);
+    if (amt > available) return toast.error("Montant supérieur aux fonds encaissés");
+    setSaving(true);
+
+    const ms = releaseTarget.milestones.find((m) => m.id === releaseMs);
+    const event: PaymentEvent = {
+      at: new Date().toISOString(),
+      amount: amt,
+      method: "Versement bénéficiaire",
+      reference: releaseRef,
+      kind: "release",
+    };
+    const history: PaymentEvent[] = [
+      ...((releaseTarget.metadata?.payments as PaymentEvent[]) || []),
+      event,
+    ];
+    const released = Number(releaseTarget.amount_released || 0) + amt;
+    const fullyReleased = released >= Number(releaseTarget.amount);
+
+    const { error } = await (supabase as any)
+      .from("transactions")
+      .update({
+        amount_released: released,
+        status: fullyReleased ? "COMPLETED" : "IN_PROGRESS",
+        metadata: { ...(releaseTarget.metadata || {}), payments: history },
+      })
+      .eq("id", releaseTarget.id);
+
+    if (error) {
+      setSaving(false);
+      return toast.error(error.message);
+    }
+
+    if (ms) {
+      await (supabase as any)
+        .from("transaction_milestones")
+        .update({
+          status: "COMPLETED",
+          completed_at: new Date().toISOString(),
+          notes: `Versé · réf. ${releaseRef}`,
+        })
+        .eq("id", ms.id);
+    }
+
+    await (supabase as any).from("notifications").insert(
+      [releaseTarget.initiator_id, releaseTarget.receiver_id].map((u) => ({
+        user_id: u,
+        type: "escrow_released",
+        title: "✅ Paiement libéré",
+        message: `${fmt(amt, releaseTarget.currency)} versés${ms ? ` pour l'étape « ${ms.label} »` : ""} (réf. ${releaseRef}).`,
+        link: "/transactions",
+        metadata: { transaction_id: releaseTarget.id, reference: releaseRef, amount: amt },
+      })),
+    );
+
+    setSaving(false);
+    setReleaseTarget(null);
+    toast.success(`Paiement libéré : ${fmt(amt, releaseTarget.currency)}`);
+    load();
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-10">
