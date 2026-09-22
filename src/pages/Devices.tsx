@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Wifi, WifiOff, Copy, Send, Trash2, Cpu } from "lucide-react";
 import { toast } from "sonner";
+import { LiveSensorFeed } from "@/components/iot/LiveSensorFeed";
 
 interface Device {
   id: string;
