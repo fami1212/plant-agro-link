@@ -407,6 +407,10 @@ export default function Admin() {
                   <DollarSign className="w-4 h-4" />
                   <span className="text-sm">Escrow & paiements</span>
                 </ScrollableTabsTrigger>
+                <ScrollableTabsTrigger value="payments" className="flex items-center gap-2 px-4">
+                  <Activity className="w-4 h-4" />
+                  <span className="text-sm">Paiements</span>
+                </ScrollableTabsTrigger>
                 <ScrollableTabsTrigger value="contracts" className="flex items-center gap-2 px-4">
                   <FileText className="w-4 h-4" />
                   <span className="text-sm">Contrats</span>
@@ -417,6 +421,7 @@ export default function Admin() {
                 </ScrollableTabsTrigger>
               </ScrollableTabsList>
               <ScrollableTabsContent value="payouts"><AdminPayouts /></ScrollableTabsContent>
+              <ScrollableTabsContent value="payments"><AdminPaymentsLedger /></ScrollableTabsContent>
               <ScrollableTabsContent value="contracts"><AdminContracts /></ScrollableTabsContent>
               <ScrollableTabsContent value="invrequests"><AdminInvestmentRequests /></ScrollableTabsContent>
             </ScrollableTabs>
@@ -456,6 +461,10 @@ export default function Admin() {
                 <ScrollableTabsTrigger value="rls" className="flex items-center gap-2 px-4">
                   <Shield className="w-4 h-4" />
                   <span className="text-sm">Diagnostic RLS</span>
+                </ScrollableTabsTrigger>
+                <ScrollableTabsTrigger value="devices" className="flex items-center gap-2 px-4">
+                  <Cpu className="w-4 h-4" />
+                  <span className="text-sm">Appareils</span>
                 </ScrollableTabsTrigger>
                 <ScrollableTabsTrigger value="health" className="flex items-center gap-2 px-4">
                   <Database className="w-4 h-4" />
