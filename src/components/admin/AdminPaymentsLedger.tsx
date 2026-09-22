@@ -64,6 +64,10 @@ export function AdminPaymentsLedger() {
   const [method, setMethod] = useState(METHODS[0]);
   const [reference, setReference] = useState("");
   const [saving, setSaving] = useState(false);
+  const [releaseTarget, setReleaseTarget] = useState<Row | null>(null);
+  const [releaseMs, setReleaseMs] = useState<string>("");
+  const [releaseAmount, setReleaseAmount] = useState("");
+  const [releaseRef, setReleaseRef] = useState("");
 
   const load = async () => {
     setLoading(true);
