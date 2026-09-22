@@ -473,6 +473,7 @@ export default function Admin() {
               </ScrollableTabsList>
               <ScrollableTabsContent value="analytics"><AdminAnalytics /></ScrollableTabsContent>
               <ScrollableTabsContent value="rls"><AdminRlsDiagnostic /></ScrollableTabsContent>
+              <ScrollableTabsContent value="devices"><AdminDevices /></ScrollableTabsContent>
               <ScrollableTabsContent value="health" className="space-y-4">
             <Card>
               <CardHeader>
