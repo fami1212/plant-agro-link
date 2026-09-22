@@ -221,6 +221,8 @@ curl -X POST ${WEBHOOK_URL} \\
           </CardContent>
         </Card>
 
+        <LiveSensorFeed devices={devices} />
+
         {loading ? (
           <Card><CardContent className="p-6 text-center text-muted-foreground">Chargement…</CardContent></Card>
         ) : devices.length === 0 ? (

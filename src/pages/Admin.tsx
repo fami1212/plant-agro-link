@@ -65,6 +65,8 @@ import { AdminTransactionDisputes } from "@/components/admin/AdminTransactionDis
 import { AdminInvestmentRequests } from "@/components/admin/AdminInvestmentRequests";
 import { AdminContracts } from "@/components/admin/AdminContracts";
 import { AdminPayouts } from "@/components/admin/AdminPayouts";
+import { AdminPaymentsLedger } from "@/components/admin/AdminPaymentsLedger";
+import { AdminDevices } from "@/components/admin/AdminDevices";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 type Profile = DatabaseTypes["public"]["Tables"]["profiles"]["Row"];
