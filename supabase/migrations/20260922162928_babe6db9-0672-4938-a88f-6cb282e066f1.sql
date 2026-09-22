@@ -1,0 +1,2 @@
+CREATE POLICY "Admins can view all devices" ON public.iot_devices FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin'::app_role));
+CREATE POLICY "Admins can view all device data" ON public.device_data FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin'::app_role));
