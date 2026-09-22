@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Wifi, WifiOff, Copy, Send, Trash2, Cpu } from "lucide-react";
 import { toast } from "sonner";
+import { LiveSensorFeed } from "@/components/iot/LiveSensorFeed";
 
 interface Device {
   id: string;
@@ -219,6 +220,8 @@ curl -X POST ${WEBHOOK_URL} \\
             </p>
           </CardContent>
         </Card>
+
+        <LiveSensorFeed devices={devices} />
 
         {loading ? (
           <Card><CardContent className="p-6 text-center text-muted-foreground">Chargement…</CardContent></Card>

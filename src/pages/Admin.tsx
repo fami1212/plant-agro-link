@@ -65,6 +65,8 @@ import { AdminTransactionDisputes } from "@/components/admin/AdminTransactionDis
 import { AdminInvestmentRequests } from "@/components/admin/AdminInvestmentRequests";
 import { AdminContracts } from "@/components/admin/AdminContracts";
 import { AdminPayouts } from "@/components/admin/AdminPayouts";
+import { AdminPaymentsLedger } from "@/components/admin/AdminPaymentsLedger";
+import { AdminDevices } from "@/components/admin/AdminDevices";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 type Profile = DatabaseTypes["public"]["Tables"]["profiles"]["Row"];
@@ -405,6 +407,10 @@ export default function Admin() {
                   <DollarSign className="w-4 h-4" />
                   <span className="text-sm">Escrow & paiements</span>
                 </ScrollableTabsTrigger>
+                <ScrollableTabsTrigger value="payments" className="flex items-center gap-2 px-4">
+                  <Activity className="w-4 h-4" />
+                  <span className="text-sm">Paiements</span>
+                </ScrollableTabsTrigger>
                 <ScrollableTabsTrigger value="contracts" className="flex items-center gap-2 px-4">
                   <FileText className="w-4 h-4" />
                   <span className="text-sm">Contrats</span>
@@ -415,6 +421,7 @@ export default function Admin() {
                 </ScrollableTabsTrigger>
               </ScrollableTabsList>
               <ScrollableTabsContent value="payouts"><AdminPayouts /></ScrollableTabsContent>
+              <ScrollableTabsContent value="payments"><AdminPaymentsLedger /></ScrollableTabsContent>
               <ScrollableTabsContent value="contracts"><AdminContracts /></ScrollableTabsContent>
               <ScrollableTabsContent value="invrequests"><AdminInvestmentRequests /></ScrollableTabsContent>
             </ScrollableTabs>
@@ -455,6 +462,10 @@ export default function Admin() {
                   <Shield className="w-4 h-4" />
                   <span className="text-sm">Diagnostic RLS</span>
                 </ScrollableTabsTrigger>
+                <ScrollableTabsTrigger value="devices" className="flex items-center gap-2 px-4">
+                  <Cpu className="w-4 h-4" />
+                  <span className="text-sm">Appareils</span>
+                </ScrollableTabsTrigger>
                 <ScrollableTabsTrigger value="health" className="flex items-center gap-2 px-4">
                   <Database className="w-4 h-4" />
                   <span className="text-sm">Santé plateforme</span>
@@ -462,6 +473,7 @@ export default function Admin() {
               </ScrollableTabsList>
               <ScrollableTabsContent value="analytics"><AdminAnalytics /></ScrollableTabsContent>
               <ScrollableTabsContent value="rls"><AdminRlsDiagnostic /></ScrollableTabsContent>
+              <ScrollableTabsContent value="devices"><AdminDevices /></ScrollableTabsContent>
               <ScrollableTabsContent value="health" className="space-y-4">
             <Card>
               <CardHeader>
