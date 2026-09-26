@@ -390,9 +390,21 @@ export function AdminPaymentsLedger() {
                 </div>
               )}
 
-              <Button size="sm" variant="outline" onClick={() => openSim(row)}>
-                <Wallet className="w-4 h-4 mr-1" /> Enregistrer un paiement
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={() => openSim(row)}>
+                  <Wallet className="w-4 h-4 mr-1" /> Enregistrer un paiement
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => openRelease(row)}
+                  disabled={
+                    row.status === "COMPLETED" ||
+                    Number(row.amount_locked || 0) - Number(row.amount_released || 0) <= 0
+                  }
+                >
+                  <Send className="w-4 h-4 mr-1" /> Verser au bénéficiaire
+                </Button>
+              </div>
             </Card>
           );
         })
@@ -429,6 +441,61 @@ export function AdminPaymentsLedger() {
             <Button variant="outline" onClick={() => setTarget(null)}>Annuler</Button>
             <Button onClick={simulatePayment} disabled={saving}>
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirmer"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!releaseTarget} onOpenChange={(o) => !o && setReleaseTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Verser au bénéficiaire</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">{releaseTarget?.title}</p>
+            <p className="text-xs text-muted-foreground">
+              Disponible :{" "}
+              {fmt(
+                Number(releaseTarget?.amount_locked || 0) - Number(releaseTarget?.amount_released || 0),
+                releaseTarget?.currency || "XOF",
+              )}
+            </p>
+            <div>
+              <Label>Étape</Label>
+              <Select
+                value={releaseMs}
+                onValueChange={(v) => {
+                  setReleaseMs(v);
+                  const m = releaseTarget?.milestones.find((x) => x.id === v);
+                  if (m) setReleaseAmount(String(m.amount ?? 0));
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="Choisir une étape" /></SelectTrigger>
+                <SelectContent>
+                  {(releaseTarget?.milestones || [])
+                    .filter((m) => m.status !== "COMPLETED")
+                    .sort((a, b) => a.order_index - b.order_index)
+                    .map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.order_index}. {m.label}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Montant ({releaseTarget?.currency})</Label>
+              <Input type="number" value={releaseAmount} onChange={(e) => setReleaseAmount(e.target.value)} />
+            </div>
+            <div>
+              <Label>Référence</Label>
+              <Input value={releaseRef} onChange={(e) => setReleaseRef(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReleaseTarget(null)}>Annuler</Button>
+            <Button onClick={releasePayment} disabled={saving}>
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verser"}
             </Button>
           </DialogFooter>
         </DialogContent>

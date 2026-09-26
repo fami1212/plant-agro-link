@@ -64,7 +64,6 @@ import { AdminRlsDiagnostic } from "@/components/admin/AdminRlsDiagnostic";
 import { AdminTransactionDisputes } from "@/components/admin/AdminTransactionDisputes";
 import { AdminInvestmentRequests } from "@/components/admin/AdminInvestmentRequests";
 import { AdminContracts } from "@/components/admin/AdminContracts";
-import { AdminPayouts } from "@/components/admin/AdminPayouts";
 import { AdminPaymentsLedger } from "@/components/admin/AdminPaymentsLedger";
 import { AdminDevices } from "@/components/admin/AdminDevices";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -401,12 +400,8 @@ export default function Admin() {
 
           {/* Pôle 2 — Finance */}
           <ScrollableTabsContent value="finance">
-            <ScrollableTabs defaultValue="payouts">
+            <ScrollableTabs defaultValue="payments">
               <ScrollableTabsList>
-                <ScrollableTabsTrigger value="payouts" className="flex items-center gap-2 px-4">
-                  <DollarSign className="w-4 h-4" />
-                  <span className="text-sm">Escrow & paiements</span>
-                </ScrollableTabsTrigger>
                 <ScrollableTabsTrigger value="payments" className="flex items-center gap-2 px-4">
                   <Activity className="w-4 h-4" />
                   <span className="text-sm">Paiements</span>
@@ -420,7 +415,6 @@ export default function Admin() {
                   <span className="text-sm">Demandes invest.</span>
                 </ScrollableTabsTrigger>
               </ScrollableTabsList>
-              <ScrollableTabsContent value="payouts"><AdminPayouts /></ScrollableTabsContent>
               <ScrollableTabsContent value="payments"><AdminPaymentsLedger /></ScrollableTabsContent>
               <ScrollableTabsContent value="contracts"><AdminContracts /></ScrollableTabsContent>
               <ScrollableTabsContent value="invrequests"><AdminInvestmentRequests /></ScrollableTabsContent>
