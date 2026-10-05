@@ -1332,6 +1332,50 @@ export type Database = {
           },
         ]
       }
+      iot_ingest_log: {
+        Row: {
+          accepted_count: number
+          created_at: string
+          device_id: string | null
+          device_token: string | null
+          id: string
+          reason: string | null
+          rejected: Json
+          rejected_count: number
+          status: string
+        }
+        Insert: {
+          accepted_count?: number
+          created_at?: string
+          device_id?: string | null
+          device_token?: string | null
+          id?: string
+          reason?: string | null
+          rejected?: Json
+          rejected_count?: number
+          status?: string
+        }
+        Update: {
+          accepted_count?: number
+          created_at?: string
+          device_id?: string | null
+          device_token?: string | null
+          id?: string
+          reason?: string | null
+          rejected?: Json
+          rejected_count?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "iot_ingest_log_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "iot_devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kyc_verifications: {
         Row: {
           address: string | null

@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791222888214,
+      "tag": "0000_iot_ingest_log",
+      "breakpoints": true
+    }
+  ]
+}
