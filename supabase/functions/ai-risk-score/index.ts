@@ -97,6 +97,7 @@ ${JSON.stringify(features).slice(0, 8000)}`;
       },
       body: JSON.stringify({
         model: "gemini-3.8-flash",
+        reasoning_effort: "low",
         messages: [
           { role: "system", content: "Tu réponds STRICTEMENT en JSON valide, aucun texte hors JSON." },
           { role: "user", content: prompt },

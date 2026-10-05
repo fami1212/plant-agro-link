@@ -80,6 +80,7 @@ Important: Tu es intégré dans la plateforme Plantéra, une application de gest
       },
       body: JSON.stringify({
         model: "gemini-3.8-flash",
+        reasoning_effort: "low",
         messages: [
           { role: "system", content: systemPrompt },
           ...messages,

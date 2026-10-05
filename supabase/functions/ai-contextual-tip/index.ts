@@ -59,6 +59,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "gemini-3.8-flash",
+        reasoning_effort: "low",
         messages: [
           {
             role: "system",
@@ -69,7 +70,7 @@ serve(async (req) => {
             content: prompt + dataContext,
           },
         ],
-        max_tokens: 150,
+        max_tokens: 1024,
       }),
     });
 

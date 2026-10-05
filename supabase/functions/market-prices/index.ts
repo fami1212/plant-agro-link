@@ -95,6 +95,7 @@ Génère des prédictions de prix pour les 30 prochains jours avec des recommand
         },
         body: JSON.stringify({
           model: "gemini-3.8-flash",
+          reasoning_effort: "low",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },

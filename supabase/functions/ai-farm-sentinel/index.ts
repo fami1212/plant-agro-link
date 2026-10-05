@@ -93,6 +93,7 @@ Génère des alertes intelligentes et un score de santé global.`;
       },
       body: JSON.stringify({
         model: "gemini-3.8-flash",
+        reasoning_effort: "low",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
