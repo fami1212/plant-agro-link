@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
     if (provider === "gemini") {
       const key = Deno.env.get("GOOGLE_AI_API_KEY");
       if (!key) throw new Error("GOOGLE_AI_API_KEY not configured");
-      const m = model || "gemini-2.0-flash";
+      const m = model || "gemini-3.8-flash";
       const contents = messages
         ? messages.map((msg: any) => ({
             role: msg.role === "assistant" ? "model" : "user",
