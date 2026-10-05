@@ -31,9 +31,9 @@ serve(async (req) => {
     
     console.log("Market Prices - Request received, action:", action);
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const LOVABLE_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
     if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+      throw new Error("GOOGLE_AI_API_KEY is not configured");
     }
 
     // Add some random variation to simulate real market
@@ -87,14 +87,15 @@ Cultures de l'utilisateur: ${JSON.stringify(userCrops || [])}
 
 Génère des prédictions de prix pour les 30 prochains jours avec des recommandations d'achat/vente.`;
 
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${LOVABLE_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: "gemini-3.8-flash",
+          reasoning_effort: "low",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },

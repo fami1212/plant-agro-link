@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       features.seller_reviews = reviews ?? [];
     }
 
-    const apiKey = Deno.env.get("LOVABLE_API_KEY");
+    const apiKey = Deno.env.get("GOOGLE_AI_API_KEY");
     if (!apiKey) {
       return new Response(JSON.stringify({ error: "AI not configured" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -89,14 +89,15 @@ Deno.serve(async (req) => {
 Données:
 ${JSON.stringify(features).slice(0, 8000)}`;
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiRes = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Lovable-API-Key": apiKey,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "gemini-3.8-flash",
+        reasoning_effort: "low",
         messages: [
           { role: "system", content: "Tu réponds STRICTEMENT en JSON valide, aucun texte hors JSON." },
           { role: "user", content: prompt },

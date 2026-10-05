@@ -60,19 +60,20 @@ serve(async (req) => {
     const weather = weatherCodes[code] || { label: "Inconnu", icon: "🌡️" };
 
     // Agricultural recommendations based on weather
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const LOVABLE_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
     let recommendations = "";
 
     if (LOVABLE_API_KEY) {
       try {
-        const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const aiResp = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${LOVABLE_API_KEY}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "google/gemini-2.5-flash-lite",
+            model: "gemini-3.8-flash",
+            reasoning_effort: "low",
             messages: [
               {
                 role: "system",

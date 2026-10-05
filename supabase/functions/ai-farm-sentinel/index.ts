@@ -19,9 +19,9 @@ serve(async (req) => {
     console.log("IoT Data points:", iotData?.length || 0);
     console.log("Livestock:", livestock?.length || 0);
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const LOVABLE_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
     if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+      throw new Error("GOOGLE_AI_API_KEY is not configured");
     }
 
     const systemPrompt = `Tu es un expert agricole IA spécialisé dans l'analyse prédictive des exploitations en Afrique de l'Ouest.
@@ -85,14 +85,15 @@ Date actuelle: ${new Date().toISOString().split('T')[0]}
 
 Génère des alertes intelligentes et un score de santé global.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "gemini-3.8-flash",
+        reasoning_effort: "low",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
