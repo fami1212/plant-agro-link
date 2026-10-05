@@ -85,32 +85,67 @@ Deno.serve(async (req) => {
       .eq("device_token", device_token)
       .maybeSingle();
     if (devErr) throw devErr;
-    if (!device) return fail(404, "Device not found");
-    if (device.is_active === false) return fail(403, "Device disabled");
+    const log = (entry: Record<string, unknown>) =>
+      admin.from("iot_ingest_log").insert({ device_token: device_token.slice(0, 128), ...entry });
 
-    const items = Array.isArray(body.readings)
+    if (!device) {
+      await log({ status: "rejected", reason: "Capteur inconnu" });
+      return fail(404, "Device not found");
+    }
+    if (device.is_active === false) {
+      await log({ device_id: device.id, status: "rejected", reason: "Capteur désactivé" });
+      return fail(403, "Device disabled");
+    }
+
+    const items: any[] = (Array.isArray(body.readings)
       ? body.readings
-      : [{ metric: body.metric, value: body.value, unit: body.unit, recorded_at: body.recorded_at }];
+      : [{ metric: body.metric, value: body.value, unit: body.unit, recorded_at: body.recorded_at }]).slice(0, 500);
 
-    const rows = items
-      .filter((r: any) => r?.metric != null && r?.value != null && !Number.isNaN(Number(r.value)))
-      .slice(0, 500)
-      .map((r: any) => ({
-        device_id: device.id,
-        metric: String(r.metric).slice(0, 64),
-        value: Number(r.value),
+    // Plages plausibles par mesure — au-delà, le relevé est rejeté.
+    const RANGES: Record<string, [number, number]> = {
+      temperature: [-40, 70], humidity: [0, 100], soil_moisture: [0, 100],
+      ph: [0, 14], light: [0, 200000], wind_speed: [0, 300], rainfall: [0, 1000],
+    };
+    const now = Date.now();
+    const rejected: { reading: unknown; reason: string }[] = [];
+    const rows: any[] = [];
+    for (const r of items) {
+      let reason = "";
+      const v = Number(r?.value);
+      const metric = r?.metric != null ? String(r.metric).slice(0, 64) : "";
+      if (!metric) reason = "Mesure manquante";
+      else if (r?.value == null || r.value === "" || !Number.isFinite(v)) reason = "Valeur non numérique";
+      else if (RANGES[metric] && (v < RANGES[metric][0] || v > RANGES[metric][1]))
+        reason = `Hors plage (${RANGES[metric][0]} à ${RANGES[metric][1]})`;
+      else if (r?.recorded_at) {
+        const t = Date.parse(r.recorded_at);
+        if (Number.isNaN(t)) reason = "Date invalide";
+        else if (t > now + 5 * 60_000) reason = "Date dans le futur";
+      }
+      if (reason) { rejected.push({ reading: r, reason }); continue; }
+      rows.push({
+        device_id: device.id, metric, value: v,
         unit: r.unit ? String(r.unit).slice(0, 16) : null,
         recorded_at: r.recorded_at ?? new Date().toISOString(),
-      }));
+      });
+    }
 
-    if (rows.length === 0) return fail(400, "No valid readings");
+    if (rows.length === 0) {
+      await log({ device_id: device.id, status: "rejected", rejected_count: rejected.length, reason: rejected[0]?.reason ?? "Aucun relevé", rejected: rejected.slice(0, 50) });
+      return new Response(JSON.stringify({ error: "No valid readings", rejected }), { status: 400, headers: jsonHeaders });
+    }
 
     const { error: insErr } = await admin.from("device_data").insert(rows);
     if (insErr) throw insErr;
+    await log({
+      device_id: device.id, status: rejected.length ? "partial" : "accepted",
+      accepted_count: rows.length, rejected_count: rejected.length,
+      reason: rejected[0]?.reason ?? null, rejected: rejected.slice(0, 50),
+    });
 
     await admin.from("iot_devices").update({ last_seen_at: new Date().toISOString() }).eq("id", device.id);
 
-    return new Response(JSON.stringify({ success: true, inserted: rows.length }), { headers: jsonHeaders });
+    return new Response(JSON.stringify({ success: true, inserted: rows.length, rejected }), { headers: jsonHeaders });
   } catch (e) {
     console.error("iot-webhook error", e);
     return fail(500, String((e as Error)?.message ?? e));
