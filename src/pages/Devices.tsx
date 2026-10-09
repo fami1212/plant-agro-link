@@ -15,9 +15,10 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
-import { Plus, Wifi, WifiOff, Copy, Send, Trash2, Cpu } from "lucide-react";
+import { Plus, Wifi, WifiOff, Copy, Send, Trash2, Cpu, History } from "lucide-react";
 import { toast } from "sonner";
 import { LiveSensorFeed } from "@/components/iot/LiveSensorFeed";
+import { DeviceHistoryDialog } from "@/components/iot/DeviceHistoryDialog";
 
 interface Device {
   id: string;
@@ -47,6 +48,7 @@ export default function Devices() {
   const [newDev, setNewDev] = useState({ name: "", device_type: "soil_sensor", device_token: "" });
 
   const [testDevice, setTestDevice] = useState<Device | null>(null);
+  const [historyDevice, setHistoryDevice] = useState<Device | null>(null);
   const [testMetric, setTestMetric] = useState("temperature");
   const [testValue, setTestValue] = useState("25");
   const [sending, setSending] = useState(false);
@@ -261,6 +263,9 @@ curl -X POST ${WEBHOOK_URL} \\
                     <span className="text-xs">{d.is_active ? "Activé" : "Désactivé"}</span>
                   </div>
                   <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => setHistoryDevice(d)}>
+                      <History className="w-4 h-4 mr-1" /> Historique
+                    </Button>
                     <Button size="sm" variant="outline" onClick={() => setTestDevice(d)}>
                       <Send className="w-4 h-4 mr-1" /> Tester
                     </Button>
@@ -274,6 +279,8 @@ curl -X POST ${WEBHOOK_URL} \\
           ))
         )}
       </div>
+
+      <DeviceHistoryDialog device={historyDevice} onClose={() => setHistoryDevice(null)} />
 
       <Dialog open={!!testDevice} onOpenChange={(o) => !o && setTestDevice(null)}>
         <DialogContent>

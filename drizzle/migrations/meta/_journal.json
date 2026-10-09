@@ -8,6 +8,13 @@
       "when": 1791222888214,
       "tag": "0000_iot_ingest_log",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791545826426,
+      "tag": "0001_owner_read_ingest_log",
+      "breakpoints": true
     }
   ]
 }
