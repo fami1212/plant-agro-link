@@ -42,26 +42,27 @@ Deno.serve(async (req) => {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (device.owner_id !== user.id) {
+    const { data: isAdmin } = await admin.rpc("has_role", { _user_id: user.id, _role: "admin" });
+    if (device.owner_id !== user.id && !isAdmin) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const { error: insErr } = await admin.from("device_data").insert({
-      device_id: device.id,
-      metric: String(metric),
-      value: Number(value),
-      unit: unit ?? null,
-      recorded_at: new Date().toISOString(),
+    // Passe par iot-webhook (signé HMAC) pour appliquer la même validation et le journal.
+    const secret = (Deno.env.get("IOT_WEBHOOK_SECRET") ?? "").trim();
+    const body = JSON.stringify({ device_token, metric: String(metric), value, unit: unit ?? undefined });
+    const ts = String(Math.floor(Date.now() / 1000));
+    const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const sig = Array.from(new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${ts}.${body}`))))
+      .map((b) => b.toString(16).padStart(2, "0")).join("");
+    const r = await fetch(`${url}/functions/v1/iot-webhook`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-plantera-timestamp": ts, "x-plantera-signature": `sha256=${sig}` },
+      body,
     });
-    if (insErr) throw insErr;
-
-    await admin.from("iot_devices").update({ last_seen_at: new Date().toISOString() }).eq("id", device.id);
-
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const out = await r.text();
+    return new Response(out, { status: r.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error("iot-test-emit error", e);
     return new Response(JSON.stringify({ error: String((e as Error)?.message ?? e) }), {
