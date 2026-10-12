@@ -15,6 +15,13 @@
       "when": 1791545826426,
       "tag": "0001_owner_read_ingest_log",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791820449357,
+      "tag": "0002_harden_accounts_kyc",
+      "breakpoints": true
     }
   ]
 }
