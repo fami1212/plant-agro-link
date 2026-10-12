@@ -66,8 +66,17 @@ export default function KycVerification() {
 
   const handleUpload = async (field: Field, file: File) => {
     if (!user) return;
+    const allowed = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+    if (!allowed.includes(file.type)) {
+      toast.error("Format accepté : JPG, PNG, WEBP ou PDF");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Fichier trop lourd (5 Mo maximum)");
+      return;
+    }
     setUploading(field);
-    const ext = file.name.split(".").pop();
+    const ext = file.type === "application/pdf" ? "pdf" : file.type.split("/")[1];
     const path = `${user.id}/${field}-${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("kyc-documents").upload(path, file, {
       upsert: true,
@@ -84,10 +93,13 @@ export default function KycVerification() {
 
   const submit = async (asDraft = false) => {
     if (!user) return;
+    if (!asDraft && (!form.id_front_url || !form.selfie_url || !String(form.id_number || "").trim())) {
+      toast.error("Ajoutez le numéro de pièce, la photo de la pièce et un selfie");
+      return;
+    }
     setSaving(true);
     const payload: any = {
       user_id: user.id,
-      role_requested: role,
       ...form,
       farm_size_ha: form.farm_size_ha ? Number(form.farm_size_ha) : null,
       status: asDraft ? "pending" : "submitted",
