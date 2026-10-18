@@ -8,12 +8,13 @@ interface RoleSelectorProps {
   onChange: (role: AppRole) => void;
 }
 
+// V1 : seuls Agriculteur et Investisseur sont proposés à l'inscription.
+// Les comptes Acheteur/Vétérinaire existants continuent de fonctionner.
 const roles: { value: AppRole; label: string; icon: React.ElementType; description: string }[] = [
   { value: 'agriculteur', label: 'Agriculteur', icon: Tractor, description: 'Gérer parcelles et cultures' },
-  { value: 'veterinaire', label: 'Vétérinaire', icon: Stethoscope, description: 'Soins animaux' },
-  { value: 'acheteur', label: 'Acheteur', icon: ShoppingCart, description: 'Acheter des produits' },
   { value: 'investisseur', label: 'Investisseur', icon: TrendingUp, description: 'Financer des cultures' },
 ];
+void Stethoscope; void ShoppingCart;
 
 export function RoleSelector({ value, onChange }: RoleSelectorProps) {
   return (
