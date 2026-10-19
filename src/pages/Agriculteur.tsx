@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { FarmOverview } from "@/components/farmer/FarmOverview";
 import { FarmCalendar } from "@/components/farmer/FarmCalendar";
+import { ProductionMonitoring } from "@/components/farmer/ProductionMonitoring";
 import { FarmerFinanceSimple } from "@/components/farmer/FarmerFinanceSimple";
 import { WeatherWidget } from "@/components/farmer/WeatherWidget";
 import { useNavigate } from "react-router-dom";
@@ -100,6 +101,18 @@ export default function Agriculteur() {
             >
               <Calendar className="w-4 h-4" />
               <span>{t("farmer.calendar")}</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger
+              value="yield"
+              className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg"
+            >
+              <Wheat className="w-4 h-4" /><span>Rendement</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="budget" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
+              <Wallet className="w-4 h-4" /><span>Budget</span>
+            </ScrollableTabsTrigger>
+            <ScrollableTabsTrigger value="thresholds" className="flex items-center gap-2 data-[state=active]:bg-background rounded-lg">
+              <Activity className="w-4 h-4" /><span>Seuils</span>
             </ScrollableTabsTrigger>
             <ScrollableTabsTrigger
               value="requests"
@@ -208,6 +221,10 @@ export default function Agriculteur() {
           <TabsContent value="finances" className="mt-0 animate-fade-in">
             <FarmerFinanceSimple />
           </TabsContent>
+
+          <TabsContent value="yield"><ProductionMonitoring view="yield" /></TabsContent>
+          <TabsContent value="budget"><ProductionMonitoring view="budget" /></TabsContent>
+          <TabsContent value="thresholds"><ProductionMonitoring view="alerts" /></TabsContent>
 
           <TabsContent value="meteo" className="mt-0 animate-fade-in">
             <WeatherWidget />

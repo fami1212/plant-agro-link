@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   device: { id: string; name: string | null; device_type: string } | null;
@@ -13,21 +14,35 @@ export function DeviceHistoryDialog({ device, onClose }: Props) {
   const [readings, setReadings] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [refresh, setRefresh] = useState(0);
 
   useEffect(() => {
     if (!device) return;
-    setLoading(true);
-    Promise.all([
+    let active = true;
+    const load = () => {
+      setLoading(true);
+      setFailed(false);
+      Promise.all([
       supabase.from("device_data").select("id, metric, value, unit, recorded_at")
         .eq("device_id", device.id).order("recorded_at", { ascending: false }).limit(100),
       supabase.from("iot_ingest_log").select("id, status, accepted_count, rejected_count, reason, rejected, created_at")
         .eq("device_id", device.id).order("created_at", { ascending: false }).limit(100),
     ]).then(([r, l]) => {
+      if (!active) return;
+      setFailed(!!r.error || !!l.error);
       setReadings(r.data || []);
       setLogs(l.data || []);
       setLoading(false);
-    });
-  }, [device]);
+      }).catch(() => { if (active) { setFailed(true); setLoading(false); } });
+    };
+    load();
+    const channel = supabase.channel(`device-history-${device.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'device_data', filter: `device_id=eq.${device.id}` }, load)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'iot_ingest_log', filter: `device_id=eq.${device.id}` }, load)
+      .subscribe();
+    return () => { active = false; supabase.removeChannel(channel); };
+  }, [device, refresh]);
 
   const rejects = logs.flatMap((l) =>
     (Array.isArray(l.rejected) && l.rejected.length ? l.rejected : l.status === "rejected" ? [{ reason: l.reason }] : [])
@@ -74,7 +89,7 @@ export function DeviceHistoryDialog({ device, onClose }: Props) {
               {rejects.map((x) => (
                 <div key={x.key} className="text-sm p-2 rounded border border-destructive/30 bg-destructive/5">
                   <div className="flex justify-between">
-                    <span>{x.metric ?? "—"} {x.value !== undefined ? `= ${x.value}` : ""}</span>
+                    <span>{x.reading?.metric ?? x.metric ?? "—"} {(x.reading?.value ?? x.value) !== undefined ? `= ${x.reading?.value ?? x.value}` : ""}</span>
                     <span className="text-xs text-muted-foreground">{fmt(x.at)}</span>
                   </div>
                   <p className="text-xs text-destructive">{x.reason || "Refusé"}</p>
@@ -83,6 +98,7 @@ export function DeviceHistoryDialog({ device, onClose }: Props) {
             </TabsContent>
           </>}
         </Tabs>
+        {failed && <div role="alert"><p className="text-sm text-destructive">Historique indisponible</p><Button variant="outline" onClick={() => setRefresh(v => v + 1)}>Réessayer</Button></div>}
       </DialogContent>
     </Dialog>
   );

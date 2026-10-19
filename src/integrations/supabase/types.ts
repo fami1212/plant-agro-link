@@ -2155,6 +2155,56 @@ export type Database = {
         }
         Relationships: []
       }
+      production_budgets: {
+        Row: {
+          actual_amount: number
+          budget_date: string
+          category: string
+          created_at: string
+          currency: string
+          field_id: string
+          id: string
+          label: string
+          planned_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_amount?: number
+          budget_date?: string
+          category?: string
+          created_at?: string
+          currency?: string
+          field_id: string
+          id?: string
+          label: string
+          planned_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          actual_amount?: number
+          budget_date?: string
+          category?: string
+          created_at?: string
+          currency?: string
+          field_id?: string
+          id?: string
+          label?: string
+          planned_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_budgets_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "fields"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           address: string | null

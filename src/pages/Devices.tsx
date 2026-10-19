@@ -27,6 +27,7 @@ interface Device {
   device_token: string;
   is_active: boolean | null;
   last_seen_at: string | null;
+  field_id: string | null;
 }
 
 const SENSOR_METRICS = [
@@ -43,6 +44,7 @@ const WEBHOOK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/iot-webho
 export default function Devices() {
   const { user } = useAuth();
   const [devices, setDevices] = useState<Device[]>([]);
+  const [fields, setFields] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [newDev, setNewDev] = useState({ name: "", device_type: "soil_sensor", device_token: "" });
@@ -58,7 +60,7 @@ export default function Devices() {
     setLoading(true);
     const { data, error } = await supabase
       .from("iot_devices")
-      .select("id, name, device_type, device_token, is_active, last_seen_at")
+      .select("id, name, device_type, device_token, is_active, last_seen_at, field_id")
       .eq("owner_id", user.id)
       .order("created_at", { ascending: false });
     if (error) toast.error("Erreur de chargement");
@@ -66,7 +68,15 @@ export default function Devices() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, [user]);
+  useEffect(() => {
+    if (!user) return;
+    load();
+    supabase.from('fields').select('id,name').eq('user_id', user.id).then(({ data }) => setFields(data ?? []));
+    const channel = supabase.channel(`owner-devices-${user.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'iot_devices', filter: `owner_id=eq.${user.id}` }, load)
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
 
   const genToken = () => {
     const t = "dev_" + crypto.randomUUID().replace(/-/g, "").slice(0, 20);
@@ -247,6 +257,16 @@ curl -X POST ${WEBHOOK_URL} \\
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
+                <div>
+                  <Label>Parcelle associée</Label>
+                  <Select value={d.field_id ?? 'none'} onValueChange={async value => {
+                    const { error } = await supabase.from('iot_devices').update({ field_id: value === 'none' ? null : value }).eq('id', d.id).eq('owner_id', user?.id ?? '');
+                    if (error) toast.error('Association impossible'); else { toast.success('Parcelle associée'); load(); }
+                  }}>
+                    <SelectTrigger aria-label={`Parcelle de ${d.name ?? 'capteur'}`}><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="none">Non associé</SelectItem>{fields.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 text-xs bg-muted px-2 py-1 rounded font-mono truncate">{d.device_token}</code>
                   <Button size="icon" variant="ghost" onClick={() => copyToken(d.device_token)}>
