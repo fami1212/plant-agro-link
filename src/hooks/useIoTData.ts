@@ -193,12 +193,7 @@ export function useIoTData(): UseIoTDataReturn {
           });
           setSensorData(Array.from(uniqueReadings.values()));
         } else {
-          // Générer des données de démo pour les appareils existants
-          const demoReadings = generateDemoData().sensorData.map((r, i) => ({
-            ...r,
-            device_id: realDevices[i % realDevices.length].id,
-          }));
-          setSensorData(demoReadings);
+          setSensorData([]);
         }
 
         // 3. Récupérer les alertes non résolues
@@ -223,19 +218,17 @@ export function useIoTData(): UseIoTDataReturn {
           setAlertConfigs(configs as AlertConfig[]);
         }
       } else {
-        // Utiliser les données de démo
-        const demo = generateDemoData();
-        setDevices(demo.devices);
-        setSensorData(demo.sensorData);
-        setAlerts(demo.alerts);
+        setDevices([]);
+        setSensorData([]);
+        setAlerts([]);
+        setAlertConfigs([]);
       }
     } catch (error) {
       console.error("Erreur chargement IoT:", error);
-      // Fallback aux données de démo
-      const demo = generateDemoData();
-      setDevices(demo.devices);
-      setSensorData(demo.sensorData);
-      setAlerts(demo.alerts);
+      // Never pass fabricated readings off as measurements from a real device.
+      setDevices([]);
+      setSensorData([]);
+      setAlerts([]);
     }
 
     setLastUpdate(new Date());
@@ -269,7 +262,7 @@ export function useIoTData(): UseIoTDataReturn {
     if (!user) return false;
 
     try {
-      const existingConfig = alertConfigs.find((c) => c.metric === config.metric);
+      const existingConfig = alertConfigs.find((c) => c.metric === config.metric && c.device_id === (config.device_id ?? null));
       
       if (existingConfig) {
         const { error } = await supabase
@@ -288,6 +281,7 @@ export function useIoTData(): UseIoTDataReturn {
         const { error } = await supabase.from("iot_alert_configs").insert({
           user_id: user.id,
           metric: config.metric,
+          device_id: config.device_id ?? null,
           min_value: config.min_value,
           max_value: config.max_value,
           is_enabled: config.is_enabled ?? true,
