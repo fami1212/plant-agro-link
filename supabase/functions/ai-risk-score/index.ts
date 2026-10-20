@@ -1,3 +1,6 @@
+// __fetchTimeout: stop outbound calls after 45s so the function answers before the 150s gateway limit.
+const __origFetch = globalThis.fetch;
+globalThis.fetch = (input: any, init: any = {}) => __origFetch(input, { ...init, signal: init.signal ?? AbortSignal.timeout(45_000) });
 // AI risk-score for investment opportunities (and sellers).
 // Uses Lovable AI Gateway (Gemini) to return a risk score 0-100,
 // a risk band, key factors and recommendations.

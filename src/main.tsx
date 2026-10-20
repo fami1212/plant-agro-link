@@ -27,4 +27,13 @@ if (isPreviewHost || isInIframe) {
   });
 }
 
+// A slow or failed server function must never blank the whole app.
+window.addEventListener("unhandledrejection", (e) => {
+  const msg = String((e.reason as Error)?.message ?? e.reason ?? "");
+  if (/Edge function|FunctionsHttpError|FunctionsFetchError|IDLE_TIMEOUT/i.test(msg) || (e.reason as any)?.name?.startsWith?.("Functions")) {
+    console.warn("Server function failed:", msg);
+    e.preventDefault();
+  }
+});
+
 createRoot(document.getElementById("root")!).render(<App />);
