@@ -1,3 +1,6 @@
+// __fetchTimeout: stop outbound calls after 45s so the function answers before the 150s gateway limit.
+const __origFetch = globalThis.fetch;
+globalThis.fetch = (input: any, init: any = {}) => __origFetch(input, { ...init, signal: init.signal ?? AbortSignal.timeout(45_000) });
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
