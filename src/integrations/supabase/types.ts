@@ -2857,6 +2857,30 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_investor_sensor_feed: {
+        Args: never
+        Returns: {
+          amount_invested: number
+          crop_name: string
+          device_id: string
+          device_name: string
+          device_type: string
+          expected_harvest_date: string
+          farmer_id: string
+          farmer_name: string
+          field_id: string
+          field_name: string
+          investment_id: string
+          is_active: boolean
+          last_seen_at: string
+          metric: string
+          recorded_at: string
+          status: string
+          title: string
+          unit: string
+          value: number
+        }[]
+      }
       get_kyc_duplicate_groups: {
         Args: never
         Returns: {

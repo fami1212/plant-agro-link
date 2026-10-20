@@ -29,6 +29,13 @@
       "when": 1792389840275,
       "tag": "0003_private_profiles_production_budgets_sensor_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792504971988,
+      "tag": "0004_investor_sensor_feed",
+      "breakpoints": true
     }
   ]
 }
