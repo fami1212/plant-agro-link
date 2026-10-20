@@ -4,4 +4,5 @@
 - [x] Ajouter rendement par parcelle et budget de production persisté.
 - [x] Relier les alertes de seuil aux mesures reçues, même quand l'application est fermée.
 - [x] Déployer la réception des capteurs.
-- [ ] Prochaine étape : emails depuis plant-erea.com (domaine à configurer).
+- [x] Vérifier en direct : connexion du compte test OK, aucun profil étranger lisible, annuaire sans adresse.
+- [ ] Emails depuis plant-erea.com : en attente que l'utilisateur configure le domaine (fenêtre de configuration ouverte), puis créer les modèles d'emails (auth + litiges).
