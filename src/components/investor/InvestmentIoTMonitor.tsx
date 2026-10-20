@@ -87,108 +87,35 @@ export function InvestmentIoTMonitor() {
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
-
     try {
-      // Fetch my investments with field info
-      const { data: investmentsData } = await supabase
-        .from("investments")
-        .select("id, title, farmer_id, field_id, crop_id, status, amount_invested, expected_harvest_date")
-        .eq("investor_id", user.id)
-        .eq("status", "en_cours");
-
-      const investmentsWithIoT: InvestmentWithIoT[] = await Promise.all(
-        (investmentsData || []).map(async (inv) => {
-          // Get farmer name
-          const { data: farmerProfile } = await supabase
-            .from("profiles")
-            .select("full_name")
-            .eq("user_id", inv.farmer_id)
-            .maybeSingle();
-
-          // Get crop name if exists
-          let cropName = null;
-          let fieldId = inv.field_id;
-          if (inv.crop_id) {
-            const { data: crop } = await supabase
-              .from("crops")
-              .select("name, field_id")
-              .eq("id", inv.crop_id)
-              .maybeSingle();
-            cropName = crop?.name || null;
-            if (crop?.field_id) fieldId = crop.field_id;
-          }
-
-          // Get field name if exists
-          let fieldName = null;
-          if (fieldId) {
-            const { data: field } = await supabase
-              .from("fields")
-              .select("name")
-              .eq("id", fieldId)
-              .maybeSingle();
-            fieldName = field?.name || null;
-          }
-
-          // Get IoT devices for this field
-          let devices: DeviceData[] = [];
-          if (fieldId) {
-            const { data: devicesData } = await supabase
-              .from("iot_devices")
-              .select("id, name, device_type, is_active, last_seen_at")
-              .eq("field_id", fieldId);
-
-            devices = await Promise.all(
-              (devicesData || []).map(async (device) => {
-                // Get latest metrics
-                const { data: metricsData } = await supabase
-                  .from("device_data")
-                  .select("metric, value, unit, recorded_at")
-                  .eq("device_id", device.id)
-                  .order("recorded_at", { ascending: false })
-                  .limit(5);
-
-                // Get unique latest metrics
-                const latestMetrics: MetricData[] = [];
-                const seenMetrics = new Set<string>();
-                (metricsData || []).forEach((m) => {
-                  if (!seenMetrics.has(m.metric)) {
-                    seenMetrics.add(m.metric);
-                    latestMetrics.push(m);
-                  }
-                });
-
-                return {
-                  id: device.id,
-                  name: device.name || `Capteur ${device.device_type}`,
-                  device_type: device.device_type,
-                  is_active: device.is_active ?? false,
-                  last_seen_at: device.last_seen_at,
-                  metrics: latestMetrics,
-                };
-              })
-            );
-          }
-
-          return {
-            id: inv.id,
-            title: inv.title,
-            farmer_id: inv.farmer_id,
-            farmer_name: farmerProfile?.full_name || "Agriculteur",
-            field_id: fieldId,
-            crop_id: inv.crop_id,
-            crop_name: cropName,
-            field_name: fieldName,
-            status: inv.status,
-            amount_invested: inv.amount_invested,
-            expected_harvest_date: inv.expected_harvest_date,
-            devices,
+      const { data, error } = await supabase.rpc("get_investor_sensor_feed");
+      if (error) throw error;
+      const map = new Map<string, InvestmentWithIoT>();
+      (data || []).forEach((r: any) => {
+        let inv = map.get(r.investment_id);
+        if (!inv) {
+          inv = {
+            id: r.investment_id, title: r.title, farmer_id: r.farmer_id,
+            farmer_name: r.farmer_name || "Utilisateur", field_id: r.field_id, crop_id: null,
+            crop_name: r.crop_name, field_name: r.field_name, status: r.status,
+            amount_invested: Number(r.amount_invested), expected_harvest_date: r.expected_harvest_date,
+            devices: [],
           };
-        })
-      );
-
-      setInvestments(investmentsWithIoT);
+          map.set(r.investment_id, inv);
+        }
+        if (!r.device_id) return;
+        let dev = inv.devices.find((d) => d.id === r.device_id);
+        if (!dev) {
+          dev = { id: r.device_id, name: r.device_name, device_type: r.device_type,
+            is_active: !!r.is_active, last_seen_at: r.last_seen_at, metrics: [] };
+          inv.devices.push(dev);
+        }
+        if (r.metric) dev.metrics.push({ metric: r.metric, value: Number(r.value), unit: r.unit, recorded_at: r.recorded_at });
+      });
+      setInvestments(Array.from(map.values()));
     } catch (error) {
       console.error("Error fetching IoT data:", error);
+      setInvestments([]);
     } finally {
       setLoading(false);
     }
@@ -196,6 +123,8 @@ export function InvestmentIoTMonitor() {
 
   useEffect(() => {
     fetchData();
+    const t = setInterval(fetchData, 60000);
+    return () => clearInterval(t);
   }, [user]);
 
   if (loading) {
@@ -221,7 +150,7 @@ export function InvestmentIoTMonitor() {
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-foreground flex items-center gap-2">
           <Activity className="w-5 h-5 text-primary" />
-          Suivi IoT de vos cultures
+          Relevés des capteurs par agriculteur
         </h3>
         <Button variant="ghost" size="icon" onClick={fetchData}>
           <RefreshCw className="w-4 h-4" />
