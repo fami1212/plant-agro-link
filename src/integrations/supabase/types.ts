@@ -2881,6 +2881,16 @@ export type Database = {
           value: number
         }[]
       }
+      get_investor_sensor_history: {
+        Args: { _days?: number; _device_id: string; _limit?: number }
+        Returns: {
+          device_id: string
+          metric: string
+          recorded_at: string
+          unit: string
+          value: number
+        }[]
+      }
       get_kyc_duplicate_groups: {
         Args: never
         Returns: {
