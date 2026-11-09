@@ -21,6 +21,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { EmptyState } from "@/components/common/EmptyState";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Line, LineChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 interface InvestmentWithIoT {
   id: string;
@@ -53,6 +55,13 @@ interface MetricData {
   recorded_at: string;
 }
 
+interface HistoricalReading {
+  metric: string;
+  value: number;
+  unit: string | null;
+  recorded_at: string;
+}
+
 const metricIcons: Record<string, React.ReactNode> = {
   temperature: <Thermometer className="w-4 h-4" />,
   humidity: <Droplets className="w-4 h-4" />,
@@ -68,6 +77,9 @@ const metricLabels: Record<string, string> = {
   luminosity: "Luminosité",
   wind_speed: "Vent",
   ph: "pH",
+  soil_moisture: "Humidité du sol",
+  light: "Luminosité",
+  rainfall: "Pluviométrie",
 };
 
 const metricColors: Record<string, string> = {
@@ -79,10 +91,116 @@ const metricColors: Record<string, string> = {
   ph: "text-purple-500",
 };
 
+function DeviceHistoryChart({ deviceId, metrics }: { deviceId: string; metrics: MetricData[] }) {
+  const [selectedMetric, setSelectedMetric] = useState(metrics[0]?.metric || "");
+  const [days, setDays] = useState("30");
+  const [readings, setReadings] = useState<HistoricalReading[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setFailed(false);
+    supabase.rpc("get_investor_sensor_history", {
+      _device_id: deviceId,
+      _days: Number(days),
+      _limit: 500,
+    }).then(({ data, error }) => {
+      if (!active) return;
+      if (error) {
+        setFailed(true);
+        setReadings([]);
+      } else {
+        setReadings((data || []).map((reading) => ({
+          metric: reading.metric,
+          value: Number(reading.value),
+          unit: reading.unit,
+          recorded_at: reading.recorded_at,
+        })).reverse());
+      }
+      setLoading(false);
+    });
+    return () => { active = false; };
+  }, [deviceId, days]);
+
+  const availableMetrics = Array.from(new Set([
+    ...metrics.map((metric) => metric.metric),
+    ...readings.map((reading) => reading.metric),
+  ]));
+  const chartData = readings
+    .filter((reading) => reading.metric === selectedMetric)
+    .map((reading) => ({
+      ...reading,
+      label: format(new Date(reading.recorded_at), "dd/MM HH:mm", { locale: fr }),
+    }));
+
+  useEffect(() => {
+    if (availableMetrics.length && !availableMetrics.includes(selectedMetric)) {
+      setSelectedMetric(availableMetrics[0]);
+    }
+  }, [availableMetrics.join(","), selectedMetric]);
+
+  return (
+    <div className="mt-3 space-y-3 border-t border-border pt-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm font-medium">Historique des relevés</span>
+        <Select value={selectedMetric} onValueChange={setSelectedMetric}>
+          <SelectTrigger className="h-9 w-[170px]" aria-label="Mesure à afficher">
+            <SelectValue placeholder="Mesure" />
+          </SelectTrigger>
+          <SelectContent>
+            {availableMetrics.map((metric) => (
+              <SelectItem key={metric} value={metric}>{metricLabels[metric] || metric}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={days} onValueChange={setDays}>
+          <SelectTrigger className="h-9 w-[140px]" aria-label="Période de l’historique">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7">7 derniers jours</SelectItem>
+            <SelectItem value="30">30 derniers jours</SelectItem>
+            <SelectItem value="90">90 derniers jours</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      {loading ? (
+        <div className="flex h-40 items-center justify-center"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
+      ) : failed ? (
+        <p className="py-6 text-center text-sm text-destructive">Impossible de charger l’historique pour le moment.</p>
+      ) : chartData.length === 0 ? (
+        <p className="py-6 text-center text-sm text-muted-foreground">Aucun relevé pour cette mesure sur la période choisie.</p>
+      ) : (
+        <div className="h-52 w-full" role="img" aria-label={`Historique ${metricLabels[selectedMetric] || selectedMetric}`}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 8, right: 12, left: 0, bottom: 4 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="label" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} minTickGap={24} />
+              <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} width={42} />
+              <Tooltip
+                labelFormatter={(label) => `Le ${label}`}
+                formatter={(value: number, _name, item) => [`${value.toFixed(2)} ${item.payload.unit || ""}`, metricLabels[selectedMetric] || selectedMetric]}
+                contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "6px" }}
+              />
+              <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+      {!loading && !failed && readings.length >= 500 && (
+        <p className="text-xs text-muted-foreground">Affichage limité aux 500 relevés les plus récents.</p>
+      )}
+    </div>
+  );
+}
+
 export function InvestmentIoTMonitor() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [investments, setInvestments] = useState<InvestmentWithIoT[]>([]);
+  const [historyDeviceId, setHistoryDeviceId] = useState<string | null>(null);
 
   const fetchData = async () => {
     if (!user) return;
@@ -206,6 +324,15 @@ export function InvestmentIoTMonitor() {
                       )}
                     </div>
 
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mb-3 h-8"
+                      onClick={() => setHistoryDeviceId(historyDeviceId === device.id ? null : device.id)}
+                    >
+                      {historyDeviceId === device.id ? "Fermer l’historique" : "Voir l’historique"}
+                    </Button>
+
                     {device.metrics.length === 0 ? (
                       <p className="text-xs text-muted-foreground text-center py-2">
                         Aucune donnée disponible
@@ -234,6 +361,9 @@ export function InvestmentIoTMonitor() {
                           </div>
                         ))}
                       </div>
+                    )}
+                    {historyDeviceId === device.id && (
+                      <DeviceHistoryChart deviceId={device.id} metrics={device.metrics} />
                     )}
                   </div>
                 ))}

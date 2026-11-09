@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { AIContextualTip } from "@/components/ai/AIContextualTip";
@@ -44,6 +46,16 @@ interface Opportunity {
   farmer_name?: string;
 }
 
+interface SensorPortfolioSummary {
+  deviceCount: number;
+  activeDevices: number;
+  readingCount: number;
+  latestAt: string | null;
+  latestMetric: string | null;
+  latestValue: number | null;
+  latestUnit: string | null;
+}
+
 const riskStyles: Record<string, string> = {
   faible: "bg-success/10 text-success border-success/30",
   moyen: "bg-warning/10 text-warning border-warning/30",
@@ -60,6 +72,7 @@ export default function Investisseur() {
   const [loading, setLoading] = useState(true);
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [investments, setInvestments] = useState<InvestmentDetail[]>([]);
+  const [sensorSummary, setSensorSummary] = useState<Record<string, SensorPortfolioSummary>>({});
   const [pendingContracts, setPendingContracts] = useState<
     Array<{ id: string; transaction_id: string; farmer_name: string; amount: number }>
   >([]);
@@ -73,7 +86,7 @@ export default function Investisseur() {
     if (!user) return;
     setLoading(true);
     try {
-      const [{ data: opps }, { data: invs }, { data: reqs }] = await Promise.all([
+      const [{ data: opps }, { data: invs }, { data: reqs }, { data: sensorFeed, error: sensorError }] = await Promise.all([
         supabase
           .from("investment_opportunities")
           .select("*")
@@ -90,7 +103,39 @@ export default function Investisseur() {
           .eq("investor_id", user.id)
           .eq("status", "contract_created")
           .not("transaction_id", "is", null),
+        supabase.rpc("get_investor_sensor_feed"),
       ]);
+
+      const summary: Record<string, SensorPortfolioSummary> = {};
+      const deviceIds: Record<string, Set<string>> = {};
+      (sensorError ? [] : sensorFeed || []).forEach((reading) => {
+        if (!reading.device_id) return;
+        const entry = summary[reading.investment_id] || {
+          deviceCount: 0,
+          activeDevices: 0,
+          readingCount: 0,
+          latestAt: null,
+          latestMetric: null,
+          latestValue: null,
+          latestUnit: null,
+        };
+        const devices = deviceIds[reading.investment_id] || new Set<string>();
+        if (!devices.has(reading.device_id)) {
+          devices.add(reading.device_id);
+          entry.deviceCount += 1;
+          if (reading.is_active) entry.activeDevices += 1;
+        }
+        deviceIds[reading.investment_id] = devices;
+        if (reading.metric) entry.readingCount += 1;
+        if (reading.recorded_at && (!entry.latestAt || reading.recorded_at > entry.latestAt)) {
+          entry.latestAt = reading.recorded_at;
+          entry.latestMetric = reading.metric;
+          entry.latestValue = reading.value === null ? null : Number(reading.value);
+          entry.latestUnit = reading.unit;
+        }
+        summary[reading.investment_id] = entry;
+      });
+      setSensorSummary(summary);
 
       const ids = Array.from(
         new Set([
@@ -137,6 +182,8 @@ export default function Investisseur() {
 
   useEffect(() => {
     fetchData();
+    const refresh = window.setInterval(fetchData, 60000);
+    return () => window.clearInterval(refresh);
   }, [fetchData]);
 
   const totalInvested = investments.reduce((s, i) => s + i.amount_invested, 0);
@@ -390,14 +437,37 @@ export default function Investisseur() {
                 }}
               />
             ) : (
-              investments.map((inv, index) => (
-                <PortfolioCard
-                  key={inv.id}
-                  investment={inv as any}
-                  index={index}
-                  onClick={() => openDetail(inv)}
-                />
-              ))
+              investments.map((inv, index) => {
+                const sensor = sensorSummary[inv.id];
+                return (
+                  <div key={inv.id} className="space-y-2">
+                    <PortfolioCard
+                      investment={inv as any}
+                      index={index}
+                      onClick={() => openDetail(inv)}
+                    />
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-l-2 border-primary/40 pl-3 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1 font-medium text-foreground">
+                        <Activity className="h-3.5 w-3.5 text-primary" />
+                        {sensor?.deviceCount || 0} capteur{sensor?.deviceCount === 1 ? "" : "s"}
+                      </span>
+                      {sensor?.deviceCount ? (
+                        <>
+                          <span>{sensor.activeDevices} actif{sensor.activeDevices === 1 ? "" : "s"}</span>
+                          <span>{sensor.readingCount} mesure{sensor.readingCount === 1 ? "" : "s"} récente{sensor.readingCount === 1 ? "" : "s"}</span>
+                          {sensor.latestAt && sensor.latestMetric && sensor.latestValue !== null && (
+                            <span>
+                              Dernière : {sensor.latestValue.toFixed(1)} {sensor.latestUnit || ""} · {format(new Date(sensor.latestAt), "dd/MM HH:mm", { locale: fr })}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span>Aucun capteur sur la parcelle financée</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
             )}
           </TabsContent>
 
