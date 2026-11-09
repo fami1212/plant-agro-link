@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { AIContextualTip } from "@/components/ai/AIContextualTip";
@@ -104,10 +106,9 @@ export default function Investisseur() {
         supabase.rpc("get_investor_sensor_feed"),
       ]);
 
-      if (sensorError) throw sensorError;
       const summary: Record<string, SensorPortfolioSummary> = {};
       const deviceIds: Record<string, Set<string>> = {};
-      (sensorFeed || []).forEach((reading) => {
+      (sensorError ? [] : sensorFeed || []).forEach((reading) => {
         if (!reading.device_id) return;
         const entry = summary[reading.investment_id] || {
           deviceCount: 0,
@@ -181,6 +182,8 @@ export default function Investisseur() {
 
   useEffect(() => {
     fetchData();
+    const refresh = window.setInterval(fetchData, 60000);
+    return () => window.clearInterval(refresh);
   }, [fetchData]);
 
   const totalInvested = investments.reduce((s, i) => s + i.amount_invested, 0);
