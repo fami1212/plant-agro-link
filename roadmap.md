@@ -5,4 +5,7 @@
 - [x] Relier les alertes de seuil aux mesures reçues, même quand l'application est fermée.
 - [x] Déployer la réception des capteurs.
 - [x] Vérifier en direct : connexion du compte test OK, aucun profil étranger lisible, annuaire sans adresse.
+- [x] Espace Investisseur : portefeuille, projets et suivi des relevés relié aux investissements/parcelles financés.
+- [x] Historique graphique par capteur et résumé IoT dans le portefeuille ; fonctions de lecture réservées aux comptes authentifiés.
+- [ ] Vérifier les graphiques avec des relevés réels : l’investissement actif testé n’a actuellement aucun capteur associé à sa parcelle.
 - [ ] Emails depuis plant-erea.com : en attente que l'utilisateur configure le domaine (fenêtre de configuration ouverte), puis créer les modèles d'emails (auth + litiges).
